@@ -1,0 +1,117 @@
+# EduPortal - Student-Teacher Learning Management System
+
+## Overview
+
+EduPortal is a comprehensive Learning Management System (LMS) built with modern web technologies. It provides a complete educational platform that facilitates interaction between students and teachers, course management, assignment handling, and academic progress tracking. The system is designed to be intuitive, secure, and scalable.
+
+## System Architecture
+
+### Frontend Architecture
+- **Framework**: React with TypeScript
+- **Build Tool**: Vite for fast development and optimized builds
+- **UI Framework**: Radix UI components with custom styling
+- **Styling**: Tailwind CSS with custom design tokens
+- **State Management**: TanStack Query for server state management
+- **Routing**: Wouter for client-side routing
+- **Component Library**: Comprehensive UI components using shadcn/ui architecture
+
+### Backend Architecture
+- **Runtime**: Node.js with Express.js framework
+- **Language**: TypeScript with ES modules
+- **Database**: PostgreSQL with Drizzle ORM
+- **Database Provider**: Neon Database (@neondatabase/serverless)
+- **Session Management**: Express sessions with PostgreSQL store
+- **File Uploads**: Multer for handling file uploads
+- **Authentication**: Replit Auth integration with OpenID Connect
+
+## Key Components
+
+### Database Schema
+The system uses a comprehensive PostgreSQL schema with the following core entities:
+- **Users**: Stores user profiles with role-based access (student, teacher, admin)
+- **Courses**: Course information with teacher assignments
+- **Enrollments**: Student-course relationships
+- **Assignments**: Course assignments with due dates and requirements
+- **Submissions**: Student assignment submissions with grading
+- **Announcements**: Course-wide announcements
+- **Messages**: Direct messaging between users
+- **Discussions**: Course discussion boards with replies
+- **Sessions**: Session storage for authentication
+
+### Authentication System
+- **Provider**: Replit Auth with OpenID Connect
+- **Session Storage**: PostgreSQL-backed sessions
+- **Role-based Access**: Student, Teacher, and Admin roles
+- **Security**: HTTP-only cookies with secure flags
+
+### Core Features
+1. **User Management**: Profile management with role-based permissions
+2. **Course Management**: Create, organize, and manage courses
+3. **Assignment System**: Assignment creation, submission, and grading
+4. **Communication**: Announcements, messaging, and discussion boards
+5. **Dashboard**: Personalized dashboards for different user roles
+6. **File Management**: Upload and download course materials
+7. **Calendar Integration**: Track deadlines and events
+
+## Data Flow
+
+### Authentication Flow
+1. User initiates login via Replit Auth
+2. OpenID Connect validates credentials
+3. User session created in PostgreSQL
+4. Role-based access granted based on user profile
+
+### Course Management Flow
+1. Teachers create courses with metadata
+2. Students enroll in available courses
+3. Course materials and assignments are managed
+4. Progress tracking and grading workflows
+
+### Assignment Workflow
+1. Teachers create assignments with requirements
+2. Students submit assignments through file uploads
+3. Grading and feedback system
+4. Grade book management
+
+## External Dependencies
+
+### Core Dependencies
+- **Database**: Neon PostgreSQL serverless database
+- **Authentication**: Replit Auth service
+- **File Storage**: Local file system with multer
+- **UI Components**: Radix UI primitives
+- **Validation**: Zod for schema validation
+- **Date Handling**: date-fns for date operations
+
+### Development Dependencies
+- **TypeScript**: Type safety and development experience
+- **ESBuild**: Fast bundling for production
+- **Vite**: Development server and build tool
+- **Tailwind CSS**: Utility-first CSS framework
+
+## Deployment Strategy
+
+### Development Environment
+- **Command**: `npm run dev`
+- **Features**: Hot reload, development logging, Vite middleware
+- **Database**: Development database with migrations
+
+### Production Build
+- **Frontend**: Vite build process creating optimized static assets
+- **Backend**: ESBuild bundling for Node.js deployment
+- **Database**: Drizzle migrations for schema management
+- **Command**: `npm run build && npm start`
+
+### Database Management
+- **Migrations**: Drizzle Kit for schema migrations
+- **Connection**: Pooled connections via Neon serverless
+- **Schema**: Centralized schema definitions in shared directory
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## Changelog
+
+Changelog:
+- July 05, 2025. Initial setup

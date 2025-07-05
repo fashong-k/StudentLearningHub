@@ -1,0 +1,203 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(240, 10%, 3.9%);
+  --muted: hsl(240, 4.8%, 95.9%);
+  --muted-foreground: hsl(240, 3.7%, 45.1%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(240, 10%, 3.9%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(240, 10%, 3.9%);
+  --border: hsl(240, 5.9%, 90%);
+  --input: hsl(240, 5.9%, 90%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(240, 4.8%, 95.9%);
+  --secondary-foreground: hsl(240, 5.9%, 10%);
+  --accent: hsl(240, 4.8%, 95.9%);
+  --accent-foreground: hsl(240, 5.9%, 10%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 5.9%, 10%);
+  --radius: 0.5rem;
+  
+  /* Custom LMS colors */
+  --lms-primary: hsl(207, 90%, 54%);
+  --lms-secondary: hsl(0, 0%, 26%);
+  --lms-accent: hsl(14, 100%, 57%);
+  --lms-success: hsl(122, 39%, 49%);
+  --lms-warning: hsl(36, 100%, 50%);
+  --lms-error: hsl(4, 90%, 58%);
+  --lms-surface: hsl(0, 0%, 100%);
+  --lms-background: hsl(0, 0%, 96%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Custom LMS styles */
+.lms-primary {
+  background-color: var(--lms-primary);
+  color: white;
+}
+
+.lms-secondary {
+  background-color: var(--lms-secondary);
+  color: white;
+}
+
+.lms-accent {
+  background-color: var(--lms-accent);
+  color: white;
+}
+
+.lms-success {
+  background-color: var(--lms-success);
+  color: white;
+}
+
+.lms-warning {
+  background-color: var(--lms-warning);
+  color: white;
+}
+
+.lms-error {
+  background-color: var(--lms-error);
+  color: white;
+}
+
+.lms-surface {
+  background-color: var(--lms-surface);
+}
+
+.lms-background {
+  background-color: var(--lms-background);
+}
+
+/* Navigation styles */
+.nav-link {
+  @apply flex items-center px-3 py-2 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors;
+}
+
+.nav-link.active {
+  @apply bg-blue-50 text-blue-700;
+}
+
+/* Course card styles */
+.course-card {
+  @apply border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer;
+}
+
+.course-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Status badge styles */
+.status-badge {
+  @apply px-2 py-1 text-xs rounded-full font-medium;
+}
+
+.status-badge.success {
+  @apply bg-green-100 text-green-800;
+}
+
+.status-badge.warning {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.status-badge.error {
+  @apply bg-red-100 text-red-800;
+}
+
+.status-badge.info {
+  @apply bg-blue-100 text-blue-800;
+}
+
+/* Quick action styles */
+.quick-action {
+  @apply flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors cursor-pointer;
+}
+
+/* Calendar styles */
+.calendar-day {
+  @apply text-center py-2 text-sm;
+}
+
+.calendar-day.has-event {
+  @apply rounded bg-blue-100 text-blue-800;
+}
+
+.calendar-day.has-deadline {
+  @apply rounded bg-red-100 text-red-800;
+}
+
+/* Floating action button */
+.fab {
+  @apply fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-colors flex items-center justify-center z-50;
+}
+
+/* Loading spinner */
+.loading-spinner {
+  @apply animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600;
+}
+
+/* Skeleton loading */
+.skeleton {
+  @apply bg-gray-200 rounded animate-pulse;
+}
+
+/* Responsive utilities */
+@media (max-width: 768px) {
+  .mobile-hidden {
+    display: none;
+  }
+  
+  .mobile-sidebar {
+    @apply fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform -translate-x-full transition-transform;
+  }
+  
+  .mobile-sidebar.open {
+    @apply translate-x-0;
+  }
+}
