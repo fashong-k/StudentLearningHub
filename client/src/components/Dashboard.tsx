@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Bell, Mail, Settings, Plus } from "lucide-react";
+import { Search, Bell, Mail, Settings, Plus, BookOpen } from "lucide-react";
 import CourseCard from "./CourseCard";
 import QuickStats from "./QuickStats";
 import AnnouncementsList from "./AnnouncementsList";
