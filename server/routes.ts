@@ -3,16 +3,59 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { sequelize, testConnection } from "./db";
 import {
-  insertCourseSchema,
-  insertAssignmentSchema,
-  insertSubmissionSchema,
-  insertAnnouncementSchema,
-  insertMessageSchema,
-  insertDiscussionSchema,
-  insertDiscussionReplySchema,
-} from "@shared/schema";
+  User,
+  Course,
+  Enrollment,
+  Assignment,
+  Submission,
+  Announcement,
+  Message,
+  setupAssociations
+} from "./models/models";
 import { z } from "zod";
+
+// Simple validation schemas for Sequelize
+const insertCourseSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().optional(),
+  courseCode: z.string().min(1),
+  semester: z.string().optional(),
+  year: z.number().optional(),
+  teacherId: z.string().min(1),
+});
+
+const insertAssignmentSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().optional(),
+  courseId: z.number(),
+  dueDate: z.string().optional(),
+  totalPoints: z.number().optional(),
+});
+
+const insertSubmissionSchema = z.object({
+  assignmentId: z.number(),
+  studentId: z.string().min(1),
+  submittedAt: z.string().optional(),
+  grade: z.number().optional(),
+  feedback: z.string().optional(),
+});
+
+const insertAnnouncementSchema = z.object({
+  title: z.string().min(1),
+  content: z.string().min(1),
+  courseId: z.number(),
+  authorId: z.string().min(1),
+  isImportant: z.boolean().optional(),
+});
+
+const insertMessageSchema = z.object({
+  senderId: z.string().min(1),
+  receiverId: z.string().min(1),
+  content: z.string().min(1),
+  isRead: z.boolean().optional(),
+});
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -37,6 +80,14 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize database
+  await testConnection();
+  setupAssociations();
+  
+  // Sync database (create tables if they don't exist, don't alter existing ones)
+  await sequelize.sync({ force: false });
+  console.log('Database synchronized successfully.');
+  
   // Auth middleware
   await setupAuth(app);
 
