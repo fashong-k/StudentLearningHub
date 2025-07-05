@@ -1,0 +1,29 @@
+Create a comprehensive Student-Teacher Learning Platform (LMS) like "Canvas (Virginia Tech)"  with the objective to create an intuitive and secure learning management system (LMS) that enhances the educational experience by streamlining communication, course management, and resource accessibility for students and teachers. 
+Key Features: 
+1. Multi-tenant application 
+2. User Profiles:
+ - Student Profiles: Display academic progress, enrolled courses, grades, and personalized dashboards.
+ - Lecturer Profiles: Include teaching schedules, course materials, and grading tools.
+ - Authentication: Two-factor authentication (2FA) using telegram
+ - Authorization Levels: Ensure secure access to sensitive data based on user roles. 
+3. Core Functionalities:
+- Course Management: Create, manage, and organize courses with modules and assignments. Ability to upload objective questions and their possible answers. Written assignments for upload must have Microsoft office integration (Word, Powerpoint, Excel and other documents). Include integrated coding platform for IT courses.
+- Announcements: Centralized communication for updates and notifications.
+- Calendar Integration: Track deadlines, events, and schedules.
+- Messaging System: Facilitate direct communication between students and lecturers.
+- Gradebook: Automatically grade assignments and provide detailed feedback.
+- Resource Linking: Integrate with electronic books and external learning tools.
+- Discussion board: A thread for discussion.
+4. Advanced Tools:
+- Analytics Dashboard: Provide insights into student engagement and performance.
+- Plagiarism Detection: Ensure academic integrity in assignments.
+- Mobile Compatibility: Offer seamless access across devices.
+
+Technologies and Tools
+ - Material UI + TypeScript + Node.js
+ - Database: PostgreSQL
+ - Analytics: Tableau, Power BI
+
+NOTE:
+Code Editor is VS Code.
+Provide ready to deploy, rich Frontend, functional backend codes that can be extended to add more features.
