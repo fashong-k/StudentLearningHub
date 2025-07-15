@@ -80,6 +80,61 @@ const upload = multer({
   },
 });
 
+// Function to create default users
+async function createDefaultUsers() {
+  try {
+    console.log('Creating default users...');
+    
+    const defaultUsers = [
+      {
+        id: 'admin',
+        email: 'admin@lms.local',
+        firstName: 'System',
+        lastName: 'Administrator',
+        role: 'admin',
+        profileImageUrl: null
+      },
+      {
+        id: 'teacher',
+        email: 'teacher@lms.local',
+        firstName: 'John',
+        lastName: 'Teacher',
+        role: 'teacher',
+        profileImageUrl: null
+      },
+      {
+        id: 'student',
+        email: 'student@lms.local',
+        firstName: 'Jane',
+        lastName: 'Student',
+        role: 'student',
+        profileImageUrl: null
+      }
+    ];
+    
+    for (const userData of defaultUsers) {
+      try {
+        // Check if user already exists
+        const existingUser = await User.findByPk(userData.id);
+        
+        if (existingUser) {
+          console.log(`User "${userData.id}" already exists, skipping...`);
+        } else {
+          // Create the user
+          await User.create(userData);
+          console.log(`✅ Created default user: ${userData.id} (${userData.role})`);
+        }
+      } catch (error) {
+        console.error(`Failed to create user "${userData.id}":`, error.message);
+      }
+    }
+    
+    console.log('Default users setup completed.');
+  } catch (error) {
+    console.error('Error creating default users:', error.message);
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database
   try {
@@ -92,6 +147,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Sync database (create tables if they don't exist, don't alter existing ones)
       await sequelize.sync({ force: false });
       console.log('Database synchronized successfully.');
+      
+      // Create default users if they don't exist
+      await createDefaultUsers();
       
       console.log('All database tables have been created successfully.');
     } else {

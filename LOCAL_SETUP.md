@@ -73,7 +73,18 @@ This script will:
 - Create all necessary tables
 - Show you which tables were created
 
-**Important:** The application will automatically create tables when you start it for the first time. The setup script is just for verification and troubleshooting.
+**Create seed data (optional):**
+
+```bash
+node seed-data.js
+```
+
+This script will:
+- Create the default admin, teacher, and student users
+- Show you which users were created
+- Skip users that already exist
+
+**Important:** The application will automatically create tables and seed data when you start it for the first time. These scripts are just for verification and troubleshooting.
 
 ### 5. Start the Application
 
@@ -122,13 +133,31 @@ The application will automatically create the following tables in your `student_
 1. The application connects to your PostgreSQL database
 2. It creates the `student_learning_hub` schema if it doesn't exist
 3. It creates all necessary tables using Sequelize ORM
-4. You'll see messages like:
+4. It automatically creates default users with login credentials
+5. You'll see messages like:
    - "Database connection has been established successfully."
    - "Schema 'student_learning_hub' created or already exists."
    - "Database synchronized successfully."
+   - "Creating default users..."
+   - "✅ Created default user: admin (admin)"
+   - "✅ Created default user: teacher (teacher)"
+   - "✅ Created default user: student (student)"
+   - "Default users setup completed."
    - "All database tables have been created successfully."
 
 **If you see these messages, your database is working correctly!**
+
+## Default User Accounts
+
+The application automatically creates three default user accounts for testing:
+
+| Username | Password | Role    | Email              |
+|----------|----------|---------|-------------------|
+| admin    | admin123 | admin   | admin@lms.local   |
+| teacher  | teacher123| teacher | teacher@lms.local |
+| student  | student123| student | student@lms.local |
+
+**Note:** These users are created automatically when you start the application for the first time. If they already exist, the system will skip creating them.
 
 ## Authentication Notes
 
