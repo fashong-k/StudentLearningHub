@@ -51,7 +51,31 @@ DB_SCHEMA=student_learning_hub
 npm install
 ```
 
-### 4. Start the Application
+### 4. Database Setup and Verification
+
+**Check if your database is properly configured:**
+
+```bash
+node verify-database.js
+```
+
+This will show you which tables exist and which are missing.
+
+**Set up database tables (optional):**
+
+```bash
+node setup-database.js
+```
+
+This script will:
+- Test the database connection
+- Create the schema if it doesn't exist
+- Create all necessary tables
+- Show you which tables were created
+
+**Important:** The application will automatically create tables when you start it for the first time. The setup script is just for verification and troubleshooting.
+
+### 5. Start the Application
 
 **Option 1: Using npm script (works on all platforms)**
 ```bash
@@ -92,6 +116,19 @@ The application will automatically create the following tables in your `student_
 - `announcements` - Course announcements
 - `messages` - User messaging
 - `sessions` - Session storage for authentication
+
+**What happens when you start the application:**
+
+1. The application connects to your PostgreSQL database
+2. It creates the `student_learning_hub` schema if it doesn't exist
+3. It creates all necessary tables using Sequelize ORM
+4. You'll see messages like:
+   - "Database connection has been established successfully."
+   - "Schema 'student_learning_hub' created or already exists."
+   - "Database synchronized successfully."
+   - "All database tables have been created successfully."
+
+**If you see these messages, your database is working correctly!**
 
 ## Authentication Notes
 

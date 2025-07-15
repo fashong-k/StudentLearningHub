@@ -36,7 +36,8 @@ if (databaseUrl) {
     },
     define: {
       schema: dbSchema
-    }
+    },
+    schema: dbSchema
   };
 }
 
@@ -49,5 +50,26 @@ export async function testConnection() {
     console.log('Database connection has been established successfully.');
   } catch (error) {
     console.error('Unable to connect to the database:', error);
+    throw error;
+  }
+}
+
+// Initialize database with proper schema setup
+export async function initializeDatabase() {
+  try {
+    // Test connection first
+    await testConnection();
+    
+    // Create schema if using local database
+    if (!process.env.DATABASE_URL) {
+      const schema = process.env.DB_SCHEMA || 'student_learning_hub';
+      await sequelize.query(`CREATE SCHEMA IF NOT EXISTS "${schema}"`);
+      console.log(`Schema "${schema}" created or already exists.`);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Database initialization failed:', error);
+    return false;
   }
 }

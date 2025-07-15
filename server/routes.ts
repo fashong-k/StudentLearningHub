@@ -4,7 +4,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { setupLocalAuth, isLocallyAuthenticated } from "./localAuth";
-import { sequelize, testConnection } from "./db";
+import { sequelize, testConnection, initializeDatabase } from "./db";
 import {
   User,
   Course,
@@ -83,14 +83,22 @@ const upload = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database
   try {
-    await testConnection();
-    setupAssociations();
+    const dbInitialized = await initializeDatabase();
     
-    // Sync database (create tables if they don't exist, don't alter existing ones)
-    await sequelize.sync({ force: false });
-    console.log('Database synchronized successfully.');
+    if (dbInitialized) {
+      // Set up model associations
+      setupAssociations();
+      
+      // Sync database (create tables if they don't exist, don't alter existing ones)
+      await sequelize.sync({ force: false });
+      console.log('Database synchronized successfully.');
+      
+      console.log('All database tables have been created successfully.');
+    } else {
+      console.log('Database initialization failed, continuing without database...');
+    }
   } catch (error) {
-    console.error('Database connection failed:', error);
+    console.error('Database setup failed:', error);
     console.log('Continuing without database connection for local development...');
   }
   
