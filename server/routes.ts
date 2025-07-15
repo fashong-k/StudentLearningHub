@@ -95,18 +95,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
   
   // Auth middleware - use local auth if no DATABASE_URL (local development)
-  if (process.env.DATABASE_URL) {
-    await setupAuth(app);
-  } else {
-    console.log('Using local authentication for development');
+  if (process.env.DB_HOST) {
     setupLocalAuth(app);
-  }
+  } 
+
+  // if (process.env.DATABASE_URL) {
+  //   await setupAuth(app);
+  // } else {
+  //   console.log('Using local authentication for development');
+  //   setupLocalAuth(app);
+  // }
 
   // Static file serving for uploads
   app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
   // Determine which auth middleware to use
-  const authMiddleware = process.env.DATABASE_URL ? isAuthenticated : isLocallyAuthenticated;
+  const authMiddleware = isLocallyAuthenticated;
+  // const authMiddleware = process.env.DATABASE_URL ? isAuthenticated : isLocallyAuthenticated;
 
   // Course routes
   app.get("/api/courses", authMiddleware, async (req: any, res) => {
