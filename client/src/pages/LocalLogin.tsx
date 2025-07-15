@@ -35,6 +35,8 @@ export default function LocalLogin() {
           title: "Login Successful",
           description: `Welcome back, ${data.user.firstName}!`,
         });
+        
+        // Navigate to dashboard (role-specific content handled by Dashboard component)
         setLocation('/');
       } else {
         const errorData = await response.json();

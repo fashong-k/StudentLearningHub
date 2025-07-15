@@ -12,6 +12,9 @@ import Courses from "@/pages/Courses";
 import Assignments from "@/pages/Assignments";
 import Grades from "@/pages/Grades";
 import Profile from "@/pages/Profile";
+import Analytics from "@/pages/Analytics";
+import Announcements from "@/pages/Announcements";
+import Messages from "@/pages/Messages";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -37,6 +40,9 @@ function Router() {
           <Route path="/courses" component={Courses} />
           <Route path="/assignments" component={Assignments} />
           <Route path="/grades" component={Grades} />
+          <Route path="/analytics" component={Analytics} />
+          <Route path="/announcements" component={Announcements} />
+          <Route path="/messages" component={Messages} />
           <Route path="/profile" component={Profile} />
         </>
       )}
