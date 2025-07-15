@@ -1,5 +1,7 @@
 import { storage } from './storage';
 import type { Express, Request, Response, NextFunction } from 'express';
+import session from 'express-session';
+import MemoryStore from 'memorystore';
 
 // Simple local authentication for development
 export interface LocalUser {
@@ -46,6 +48,23 @@ const userCredentials = {
 };
 
 export function setupLocalAuth(app: Express) {
+  // Set up session middleware for local development
+  const MemoryStoreSession = MemoryStore(session);
+  
+  app.use(session({
+    secret: 'local-dev-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    store: new MemoryStoreSession({
+      checkPeriod: 86400000, // prune expired entries every 24h
+    }),
+    cookie: {
+      secure: false, // set to true in production with HTTPS
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    }
+  }));
+
   // Local login endpoint
   app.post('/api/local/login', async (req: Request, res: Response) => {
     const { username, password } = req.body;

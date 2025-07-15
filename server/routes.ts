@@ -165,17 +165,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('Continuing without database connection for local development...');
   }
   
-  // Auth middleware - use local auth if no DATABASE_URL (local development)
-  if (process.env.DB_HOST) {
-    setupLocalAuth(app);
-  } 
-
-  // if (process.env.DATABASE_URL) {
-  //   await setupAuth(app);
-  // } else {
-  //   console.log('Using local authentication for development');
-  //   setupLocalAuth(app);
-  // }
+  // Auth middleware - use local auth for local development
+  console.log('Setting up local authentication for development');
+  setupLocalAuth(app);
 
   // Static file serving for uploads
   app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
