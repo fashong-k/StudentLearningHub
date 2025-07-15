@@ -47,7 +47,7 @@ export default function Courses() {
     },
   });
 
-  const { data: courses = [], isLoading: coursesLoading } = useQuery({
+  const { data: courses = [], isLoading: coursesLoading } = useQuery<any[]>({
     queryKey: ["/api/courses"],
     enabled: !!user,
   });

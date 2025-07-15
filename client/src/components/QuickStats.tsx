@@ -6,7 +6,7 @@ import { BookOpen, Variable, BadgePercent, TrendingUp } from "lucide-react";
 export default function QuickStats() {
   const { user } = useAuth();
 
-  const { data: courses = [] } = useQuery({
+  const { data: courses = [] } = useQuery<any[]>({
     queryKey: ["/api/courses"],
     enabled: !!user,
   });

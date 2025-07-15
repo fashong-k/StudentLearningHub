@@ -358,7 +358,7 @@ export default function Messages() {
                       <Avatar className="w-10 h-10">
                         <AvatarImage src={otherParticipant?.avatar} alt={otherParticipant?.name} />
                         <AvatarFallback>
-                          {otherParticipant?.name.split(' ').map(n => n[0]).join('')}
+                          {otherParticipant?.name.split(' ').map((n: string) => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
@@ -400,7 +400,7 @@ export default function Messages() {
                       <Avatar className="w-10 h-10">
                         <AvatarImage src={getOtherParticipant(selectedConversationData)?.avatar} />
                         <AvatarFallback>
-                          {getOtherParticipant(selectedConversationData)?.name.split(' ').map(n => n[0]).join('')}
+                          {getOtherParticipant(selectedConversationData)?.name.split(' ').map((n: string) => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
                       <div>

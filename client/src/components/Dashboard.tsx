@@ -13,7 +13,7 @@ import UpcomingDeadlines from "./UpcomingDeadlines";
 export default function Dashboard() {
   const { user } = useAuth();
 
-  const { data: courses = [] } = useQuery({
+  const { data: courses = [] } = useQuery<any[]>({
     queryKey: ["/api/courses"],
     enabled: !!user,
   });
