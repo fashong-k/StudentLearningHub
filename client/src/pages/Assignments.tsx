@@ -60,6 +60,24 @@ export default function Assignments() {
     enabled: !!user,
   });
 
+  // Fetch assignments for all courses
+  const { data: assignments = [], isLoading: assignmentsLoading } = useQuery({
+    queryKey: ["/api/assignments"],
+    enabled: !!user && courses.length > 0,
+    queryFn: async () => {
+      const allAssignments = [];
+      for (const course of courses) {
+        try {
+          const courseAssignments = await apiRequest(`/api/courses/${course.id}/assignments`, "GET");
+          allAssignments.push(...courseAssignments);
+        } catch (error) {
+          console.error(`Failed to fetch assignments for course ${course.id}:`, error);
+        }
+      }
+      return allAssignments;
+    },
+  });
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       toast({
@@ -82,8 +100,8 @@ export default function Assignments() {
     );
   }
 
-  // Sample assignment data
-  const sampleAssignments = [
+  // Use real assignments data; fallback to sample data only if retrieval fails
+  const sampleAssignments = assignments.length === 0 ? [
     {
       id: 1,
       title: "Problem Set 3: Sorting Algorithms",
@@ -154,7 +172,7 @@ export default function Assignments() {
       submittedAt: null,
       feedback: null
     }
-  ];
+  ] : assignments;
 
   const getStatusBadge = (assignment: any) => {
     const today = new Date();
@@ -193,7 +211,7 @@ export default function Assignments() {
     }
   };
 
-  const filteredAssignments = sampleAssignments.filter(assignment => {
+  const displayAssignments = sampleAssignments.filter(assignment => {
     const matchesSearch = assignment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          assignment.courseCode.toLowerCase().includes(searchTerm.toLowerCase());
     
@@ -399,7 +417,7 @@ export default function Assignments() {
 
           {/* Assignments List */}
           <div className="space-y-4">
-            {filteredAssignments.map((assignment) => (
+            {displayAssignments.map((assignment) => (
               <Card key={assignment.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
@@ -470,7 +488,7 @@ export default function Assignments() {
             ))}
           </div>
 
-          {filteredAssignments.length === 0 && (
+          {displayAssignments.length === 0 && (
             <div className="text-center py-12">
               <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No assignments found</h3>

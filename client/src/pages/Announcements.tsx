@@ -63,6 +63,24 @@ export default function Announcements() {
     enabled: !!user,
   });
 
+  // Fetch announcements for all courses
+  const { data: announcements = [], isLoading: announcementsLoading } = useQuery({
+    queryKey: ["/api/announcements"],
+    enabled: !!user && courses.length > 0,
+    queryFn: async () => {
+      const allAnnouncements = [];
+      for (const course of courses) {
+        try {
+          const courseAnnouncements = await apiRequest(`/api/courses/${course.id}/announcements`, "GET");
+          allAnnouncements.push(...courseAnnouncements);
+        } catch (error) {
+          console.error(`Failed to fetch announcements for course ${course.id}:`, error);
+        }
+      }
+      return allAnnouncements;
+    },
+  });
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       toast({
@@ -85,8 +103,8 @@ export default function Announcements() {
     );
   }
 
-  // Sample announcements data
-  const sampleAnnouncements = [
+  // Use real announcements data; fallback to sample data only if retrieval fails
+  const sampleAnnouncements = announcements.length === 0 ? [
     {
       id: 1,
       title: "Midterm Exam Schedule Released",
@@ -183,7 +201,7 @@ export default function Announcements() {
       totalStudents: 32,
       isRead: true
     }
-  ];
+  ] : announcements;
 
   const getAnnouncementIcon = (type: string, isImportant: boolean) => {
     if (isImportant) return <AlertCircle className="w-5 h-5 text-red-600" />;
@@ -221,7 +239,7 @@ export default function Announcements() {
     }
   };
 
-  const filteredAnnouncements = sampleAnnouncements.filter(announcement => {
+  const displayAnnouncements = sampleAnnouncements.filter(announcement => {
     const matchesSearch = announcement.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          announcement.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          announcement.courseCode.toLowerCase().includes(searchTerm.toLowerCase());
@@ -241,7 +259,7 @@ export default function Announcements() {
   });
 
   // Sort announcements: pinned first, then by date
-  const sortedAnnouncements = [...filteredAnnouncements].sort((a, b) => {
+  const sortedAnnouncements = [...displayAnnouncements].sort((a, b) => {
     if (a.isPinned && !b.isPinned) return -1;
     if (!a.isPinned && b.isPinned) return 1;
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();

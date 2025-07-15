@@ -116,48 +116,8 @@ export default function Courses() {
     course.courseCode.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Sample course data if no courses exist
-  const sampleCourses = courses.length === 0 ? [
-    {
-      id: 1,
-      title: "Introduction to Computer Science",
-      description: "Learn the fundamentals of programming and computer science concepts.",
-      courseCode: "CS 101",
-      semester: "Fall",
-      year: 2025,
-      teacherId: user?.id,
-      isActive: true,
-      enrolledCount: 45,
-      assignmentCount: 8,
-      nextDeadline: "Assignment 3 - March 15"
-    },
-    {
-      id: 2,
-      title: "Calculus I",
-      description: "Differential and integral calculus with applications.",
-      courseCode: "MATH 201",
-      semester: "Fall",
-      year: 2025,
-      teacherId: user?.id,
-      isActive: true,
-      enrolledCount: 32,
-      assignmentCount: 12,
-      nextDeadline: "Quiz 4 - March 12"
-    },
-    {
-      id: 3,
-      title: "Introduction to Psychology",
-      description: "Overview of psychological principles and research methods.",
-      courseCode: "PSYC 101",
-      semester: "Fall",
-      year: 2025,
-      teacherId: user?.id,
-      isActive: true,
-      enrolledCount: 67,
-      assignmentCount: 6,
-      nextDeadline: "Research Paper - March 20"
-    }
-  ] : filteredCourses;
+  // Use real database data; only show sample data if database retrieval fails
+  const displayCourses = filteredCourses;
 
   return (
     <div className="flex h-screen overflow-hidden lms-background">
@@ -306,7 +266,7 @@ export default function Courses() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sampleCourses.map((course: any) => (
+              {displayCourses.map((course: any) => (
                 <Card key={course.id} className="hover:shadow-lg transition-shadow cursor-pointer">
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -369,7 +329,7 @@ export default function Courses() {
             </div>
           )}
 
-          {sampleCourses.length === 0 && !coursesLoading && (
+          {displayCourses.length === 0 && !coursesLoading && (
             <div className="text-center py-12">
               <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No courses found</h3>

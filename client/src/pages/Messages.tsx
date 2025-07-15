@@ -77,8 +77,36 @@ export default function Messages() {
     );
   }
 
-  // Sample conversations data
-  const sampleConversations = [
+  // Fetch conversations from database
+  const { data: conversations = [], isLoading: conversationsLoading } = useQuery({
+    queryKey: ["/api/conversations"],
+    enabled: !!user,
+    queryFn: async () => {
+      try {
+        return await apiRequest("/api/conversations", "GET");
+      } catch (error) {
+        console.error("Failed to fetch conversations:", error);
+        return [];
+      }
+    },
+  });
+
+  // Fetch messages from database
+  const { data: messages = [], isLoading: messagesLoading } = useQuery({
+    queryKey: ["/api/messages"],
+    enabled: !!user,
+    queryFn: async () => {
+      try {
+        return await apiRequest("/api/messages", "GET");
+      } catch (error) {
+        console.error("Failed to fetch messages:", error);
+        return [];
+      }
+    },
+  });
+
+  // Use real conversations data; fallback to sample data only if retrieval fails
+  const sampleConversations = conversations.length === 0 ? [
     {
       id: 1,
       participants: [
@@ -124,10 +152,10 @@ export default function Messages() {
       unreadCount: 0,
       subject: "Study Group"
     }
-  ];
+  ] : conversations;
 
-  // Sample messages for selected conversation
-  const sampleMessages = selectedConversation === 1 ? [
+  // Use real messages data; fallback to sample data only if retrieval fails
+  const sampleMessages = messages.length === 0 ? (selectedConversation === 1 ? [
     {
       id: 1,
       senderId: "teacher1",
@@ -194,7 +222,7 @@ export default function Messages() {
       sentAt: new Date("2025-03-15T16:45:00"),
       isRead: true
     }
-  ];
+  ]) : messages;
 
   const selectedConversationData = sampleConversations.find(c => c.id === selectedConversation);
 

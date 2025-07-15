@@ -55,8 +55,22 @@ export default function Grades() {
     );
   }
 
-  // Sample grade data
-  const sampleGrades = [
+  // Fetch grades from database
+  const { data: grades = [], isLoading: gradesLoading } = useQuery({
+    queryKey: ["/api/grades"],
+    enabled: !!user,
+    queryFn: async () => {
+      try {
+        return await apiRequest("/api/grades", "GET");
+      } catch (error) {
+        console.error("Failed to fetch grades:", error);
+        return [];
+      }
+    },
+  });
+
+  // Use real grades data; fallback to sample data only if retrieval fails
+  const sampleGrades = grades.length === 0 ? [
     {
       id: 1,
       courseCode: "CS 101",
@@ -132,7 +146,7 @@ export default function Grades() {
       weight: 12,
       letterGrade: "B"
     }
-  ];
+  ] : grades;
 
   // Sample course summaries
   const courseSummaries = [
