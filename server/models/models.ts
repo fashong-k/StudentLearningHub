@@ -109,6 +109,7 @@ Course.init({
   courseCode: {
     type: DataTypes.STRING,
     allowNull: false,
+    field: 'course_code',
   },
   semester: {
     type: DataTypes.STRING,
@@ -119,6 +120,7 @@ Course.init({
   teacherId: {
     type: DataTypes.STRING,
     allowNull: false,
+    field: 'teacher_id',
   },
 }, {
   sequelize,
@@ -157,14 +159,17 @@ Enrollment.init({
   studentId: {
     type: DataTypes.STRING,
     allowNull: false,
+    field: 'student_id',
   },
   courseId: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    field: 'course_id',
   },
   enrolledAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
+    field: 'enrolled_at',
   },
 }, {
   sequelize,
@@ -214,13 +219,16 @@ Assignment.init({
   courseId: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    field: 'course_id',
   },
   dueDate: {
     type: DataTypes.DATE,
+    field: 'due_date',
   },
   totalPoints: {
     type: DataTypes.INTEGER,
     defaultValue: 100,
+    field: 'total_points',
   },
 }, {
   sequelize,
@@ -263,13 +271,16 @@ Submission.init({
   assignmentId: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    field: 'assignment_id',
   },
   studentId: {
     type: DataTypes.STRING,
     allowNull: false,
+    field: 'student_id',
   },
   submittedAt: {
     type: DataTypes.DATE,
+    field: 'submitted_at',
   },
   grade: {
     type: DataTypes.DECIMAL(5, 2),
@@ -326,14 +337,17 @@ Announcement.init({
   courseId: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    field: 'course_id',
   },
   authorId: {
     type: DataTypes.STRING,
     allowNull: false,
+    field: 'author_id',
   },
   isImportant: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
+    field: 'is_important',
   },
 }, {
   sequelize,
@@ -374,10 +388,12 @@ Message.init({
   senderId: {
     type: DataTypes.STRING,
     allowNull: false,
+    field: 'sender_id',
   },
   receiverId: {
     type: DataTypes.STRING,
     allowNull: false,
+    field: 'receiver_id',
   },
   content: {
     type: DataTypes.TEXT,
@@ -386,6 +402,7 @@ Message.init({
   isRead: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
+    field: 'is_read',
   },
 }, {
   sequelize,
