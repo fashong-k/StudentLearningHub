@@ -2,7 +2,8 @@ import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, authMiddleware } from "./replitAuth";
+import { setupLocalAuth, isLocallyAuthenticated } from "./localAuth";
 import { sequelize, testConnection } from "./db";
 import {
   User,
@@ -93,26 +94,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('Continuing without database connection for local development...');
   }
   
-  // Auth middleware
-  await setupAuth(app);
+  // Auth middleware - use local auth if no DATABASE_URL (local development)
+  if (process.env.DATABASE_URL) {
+    await setupAuth(app);
+  } else {
+    console.log('Using local authentication for development');
+    setupLocalAuth(app);
+  }
 
   // Static file serving for uploads
   app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
-  // Auth routes
-  app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  // Determine which auth middleware to use
+  const authMiddleware = process.env.DATABASE_URL ? authMiddleware : isLocallyAuthenticated;
 
   // Course routes
-  app.get("/api/courses", isAuthenticated, async (req: any, res) => {
+  app.get("/api/courses", authMiddleware, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -135,7 +132,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/courses/:id", isAuthenticated, async (req: any, res) => {
+  app.get("/api/courses/:id", authMiddleware, async (req: any, res) => {
     try {
       const courseId = parseInt(req.params.id);
       const course = await storage.getCourseById(courseId);
@@ -151,7 +148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/courses", isAuthenticated, async (req: any, res) => {
+  app.post("/api/courses", authMiddleware, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -173,7 +170,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/courses/:id", isAuthenticated, async (req: any, res) => {
+  app.put("/api/courses/:id", authMiddleware, async (req: any, res) => {
     try {
       const courseId = parseInt(req.params.id);
       const userId = req.user.claims.sub;
@@ -197,7 +194,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/courses/:id", isAuthenticated, async (req: any, res) => {
+  app.delete("/api/courses/:id", authMiddleware, async (req: any, res) => {
     try {
       const courseId = parseInt(req.params.id);
       const userId = req.user.claims.sub;
@@ -225,7 +222,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Enrollment routes
-  app.post("/api/courses/:id/enroll", isAuthenticated, async (req: any, res) => {
+  app.post("/api/courses/:id/enroll", authMiddleware, async (req: any, res) => {
     try {
       const courseId = parseInt(req.params.id);
       const userId = req.user.claims.sub;
@@ -243,7 +240,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/courses/:id/enroll", isAuthenticated, async (req: any, res) => {
+  app.delete("/api/courses/:id/enroll", authMiddleware, async (req: any, res) => {
     try {
       const courseId = parseInt(req.params.id);
       const userId = req.user.claims.sub;
@@ -266,7 +263,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Assignment routes
-  app.get("/api/courses/:id/assignments", isAuthenticated, async (req: any, res) => {
+  app.get("/api/courses/:id/assignments", authMiddleware, async (req: any, res) => {
     try {
       const courseId = parseInt(req.params.id);
       const assignments = await storage.getAssignments(courseId);
@@ -277,7 +274,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/courses/:id/assignments", isAuthenticated, async (req: any, res) => {
+  app.post("/api/courses/:id/assignments", authMiddleware, async (req: any, res) => {
     try {
       const courseId = parseInt(req.params.id);
       const userId = req.user.claims.sub;
@@ -305,7 +302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/assignments/:id", isAuthenticated, async (req: any, res) => {
+  app.put("/api/assignments/:id", authMiddleware, async (req: any, res) => {
     try {
       const assignmentId = parseInt(req.params.id);
       const userId = req.user.claims.sub;
@@ -334,7 +331,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/assignments/:id", isAuthenticated, async (req: any, res) => {
+  app.delete("/api/assignments/:id", authMiddleware, async (req: any, res) => {
     try {
       const assignmentId = parseInt(req.params.id);
       const userId = req.user.claims.sub;
@@ -367,7 +364,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Submission routes
-  app.get("/api/assignments/:id/submissions", isAuthenticated, async (req: any, res) => {
+  app.get("/api/assignments/:id/submissions", authMiddleware, async (req: any, res) => {
     try {
       const assignmentId = parseInt(req.params.id);
       const userId = req.user.claims.sub;
@@ -401,7 +398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/assignments/:id/submissions", isAuthenticated, upload.single("file"), async (req: any, res) => {
+  app.post("/api/assignments/:id/submissions", authMiddleware, upload.single("file"), async (req: any, res) => {
     try {
       const assignmentId = parseInt(req.params.id);
       const userId = req.user.claims.sub;
@@ -432,7 +429,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/submissions/:id/grade", isAuthenticated, async (req: any, res) => {
+  app.put("/api/submissions/:id/grade", authMiddleware, async (req: any, res) => {
     try {
       const submissionId = parseInt(req.params.id);
       const userId = req.user.claims.sub;
@@ -467,7 +464,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Announcement routes
-  app.get("/api/courses/:id/announcements", isAuthenticated, async (req: any, res) => {
+  app.get("/api/courses/:id/announcements", authMiddleware, async (req: any, res) => {
     try {
       const courseId = parseInt(req.params.id);
       const announcements = await storage.getCourseAnnouncements(courseId);
@@ -478,7 +475,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/courses/:id/announcements", isAuthenticated, async (req: any, res) => {
+  app.post("/api/courses/:id/announcements", authMiddleware, async (req: any, res) => {
     try {
       const courseId = parseInt(req.params.id);
       const userId = req.user.claims.sub;
@@ -508,7 +505,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Message routes
-  app.get("/api/messages", isAuthenticated, async (req: any, res) => {
+  app.get("/api/messages", authMiddleware, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const messages = await storage.getMessages(userId);
@@ -519,7 +516,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/messages", isAuthenticated, async (req: any, res) => {
+  app.post("/api/messages", authMiddleware, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -537,7 +534,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Analytics routes
-  app.get("/api/analytics/student/:studentId", isAuthenticated, async (req: any, res) => {
+  app.get("/api/analytics/student/:studentId", authMiddleware, async (req: any, res) => {
     try {
       const studentId = req.params.studentId;
       const userId = req.user.claims.sub;
@@ -562,7 +559,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/analytics/course/:courseId", isAuthenticated, async (req: any, res) => {
+  app.get("/api/analytics/course/:courseId", authMiddleware, async (req: any, res) => {
     try {
       const courseId = parseInt(req.params.courseId);
       const userId = req.user.claims.sub;

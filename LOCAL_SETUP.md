@@ -71,10 +71,34 @@ The application will automatically create the following tables in your `student_
 
 ## Authentication Notes
 
-For local development, the Replit Auth system won't work as it requires Replit's environment. You'll need to:
+For local development, the application automatically switches to local authentication when no DATABASE_URL is provided. 
 
-1. Either modify the auth system to use local authentication
-2. Or use the application within Replit's environment with the DATABASE_URL approach
+### Local Login Credentials
+
+The application includes a local login system with these pre-configured accounts:
+
+**Administrator Account:**
+- Username: `admin`
+- Password: `admin123`
+- Role: Admin (full system access)
+
+**Teacher Account:**
+- Username: `teacher`
+- Password: `teacher123`
+- Role: Teacher (can create courses, assignments, grade students)
+
+**Student Account:**
+- Username: `student`
+- Password: `student123`
+- Role: Student (can enroll in courses, submit assignments)
+
+### Login Process
+
+1. Start the application with `npm run dev`
+2. Visit `http://localhost:5000` in your browser
+3. You'll see the local login page with credentials displayed
+4. Use any of the above credentials to log in
+5. The application will automatically create user accounts in your database
 
 ## Features Available
 
