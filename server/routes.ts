@@ -81,12 +81,17 @@ const upload = multer({
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database
-  await testConnection();
-  setupAssociations();
-  
-  // Sync database (create tables if they don't exist, don't alter existing ones)
-  await sequelize.sync({ force: false });
-  console.log('Database synchronized successfully.');
+  try {
+    await testConnection();
+    setupAssociations();
+    
+    // Sync database (create tables if they don't exist, don't alter existing ones)
+    await sequelize.sync({ force: false });
+    console.log('Database synchronized successfully.');
+  } catch (error) {
+    console.error('Database connection failed:', error);
+    console.log('Continuing without database connection for local development...');
+  }
   
   // Auth middleware
   await setupAuth(app);

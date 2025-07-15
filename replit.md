@@ -18,8 +18,8 @@ EduPortal is a comprehensive Learning Management System (LMS) built with modern 
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js framework
 - **Language**: TypeScript with ES modules
-- **Database**: PostgreSQL with Drizzle ORM
-- **Database Provider**: Neon Database (@neondatabase/serverless)
+- **Database**: PostgreSQL with Sequelize ORM
+- **Database Provider**: Supports both Neon Database (@neondatabase/serverless) and local PostgreSQL
 - **Session Management**: Express sessions with PostgreSQL store
 - **File Uploads**: Multer for handling file uploads
 - **Authentication**: Replit Auth integration with OpenID Connect
@@ -112,6 +112,16 @@ The system uses a comprehensive PostgreSQL schema with the following core entiti
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
+
+- January 15, 2025: Successfully migrated from Drizzle ORM to Sequelize ORM
+  - Converted all database operations to use Sequelize models
+  - Created comprehensive TypeScript interfaces for all entities
+  - Updated storage layer to use Sequelize with proper relationships
+  - Added support for both Neon Database (production) and local PostgreSQL
+  - Implemented flexible database configuration for local development
+  - Added proper error handling for database connection issues
+  - Created LOCAL_SETUP.md guide for local PostgreSQL setup
+  - Configured database schema support for custom schemas (student_learning_hub)
 
 - July 05, 2025: Completed comprehensive LMS development
   - Built complete authentication system with Replit Auth
