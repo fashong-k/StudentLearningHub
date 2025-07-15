@@ -101,7 +101,7 @@ export class DatabaseStorage implements IStorage {
         as: 'teacher',
         attributes: ['id', 'firstName', 'lastName', 'email']
       }],
-      order: [['createdAt', 'DESC']]
+      order: [['created_at', 'DESC']]
     });
     return courses.map(course => course.toJSON());
   }
@@ -125,7 +125,7 @@ export class DatabaseStorage implements IStorage {
         as: 'teacher',
         attributes: ['id', 'firstName', 'lastName', 'email']
       }],
-      order: [['createdAt', 'DESC']]
+      order: [['created_at', 'DESC']]
     });
     return courses.map(course => course.toJSON());
   }
@@ -323,7 +323,7 @@ export class DatabaseStorage implements IStorage {
         as: 'author',
         attributes: ['id', 'firstName', 'lastName', 'email']
       }],
-      order: [['createdAt', 'DESC']]
+      order: [['created_at', 'DESC']]
     });
     return announcements.map(announcement => announcement.toJSON());
   }
@@ -385,7 +385,7 @@ export class DatabaseStorage implements IStorage {
           attributes: ['id', 'firstName', 'lastName', 'email']
         }
       ],
-      order: [['createdAt', 'DESC']]
+      order: [['created_at', 'DESC']]
     });
     return messages.map(message => message.toJSON());
   }
@@ -410,7 +410,7 @@ export class DatabaseStorage implements IStorage {
           attributes: ['id', 'firstName', 'lastName', 'email']
         }
       ],
-      order: [['createdAt', 'ASC']]
+      order: [['created_at', 'ASC']]
     });
     return messages.map(message => message.toJSON());
   }

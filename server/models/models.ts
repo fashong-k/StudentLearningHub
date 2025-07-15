@@ -127,6 +127,8 @@ Course.init({
   modelName: 'Course',
   tableName: 'courses',
   timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
 });
 
 // Enrollment model
@@ -176,6 +178,8 @@ Enrollment.init({
   modelName: 'Enrollment',
   tableName: 'enrollments',
   timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
 });
 
 // Assignment model
@@ -235,6 +239,8 @@ Assignment.init({
   modelName: 'Assignment',
   tableName: 'assignments',
   timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
 });
 
 // Submission model
@@ -293,6 +299,8 @@ Submission.init({
   modelName: 'Submission',
   tableName: 'submissions',
   timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
 });
 
 // Announcement model
@@ -354,6 +362,8 @@ Announcement.init({
   modelName: 'Announcement',
   tableName: 'announcements',
   timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
 });
 
 // Message model
@@ -409,6 +419,8 @@ Message.init({
   modelName: 'Message',
   tableName: 'messages',
   timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
 });
 
 // Session model for authentication

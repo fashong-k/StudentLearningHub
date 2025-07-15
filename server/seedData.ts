@@ -41,7 +41,7 @@ export async function seedDefaultUsers() {
       firstName: 'System',
       lastName: 'Administrator',
       role: 'admin' as const,
-      profileImageUrl: null
+      profileImageUrl: undefined
     },
     {
       id: 'teacher',
@@ -49,7 +49,7 @@ export async function seedDefaultUsers() {
       firstName: 'John',
       lastName: 'Teacher',
       role: 'teacher' as const,
-      profileImageUrl: null
+      profileImageUrl: undefined
     },
     {
       id: 'student',
@@ -57,7 +57,7 @@ export async function seedDefaultUsers() {
       firstName: 'Jane',
       lastName: 'Student',
       role: 'student' as const,
-      profileImageUrl: null
+      profileImageUrl: undefined
     },
     {
       id: 'teacher2',
@@ -65,7 +65,7 @@ export async function seedDefaultUsers() {
       firstName: 'Sarah',
       lastName: 'Wilson',
       role: 'teacher' as const,
-      profileImageUrl: null
+      profileImageUrl: undefined
     },
     {
       id: 'student2',
@@ -73,7 +73,7 @@ export async function seedDefaultUsers() {
       firstName: 'Mike',
       lastName: 'Johnson',
       role: 'student' as const,
-      profileImageUrl: null
+      profileImageUrl: undefined
     },
     {
       id: 'student3',
@@ -81,7 +81,7 @@ export async function seedDefaultUsers() {
       firstName: 'Emily',
       lastName: 'Davis',
       role: 'student' as const,
-      profileImageUrl: null
+      profileImageUrl: undefined
     }
   ];
   

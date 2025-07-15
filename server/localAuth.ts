@@ -16,15 +16,15 @@ export interface LocalUser {
 // Default users for local development
 const defaultUsers: LocalUser[] = [
   {
-    id: '1',
+    id: 'admin',
     username: 'admin',
     email: 'admin@lms.local',
     role: 'admin',
-    firstName: 'Admin',
-    lastName: 'User'
+    firstName: 'System',
+    lastName: 'Administrator'
   },
   {
-    id: '2',
+    id: 'teacher',
     username: 'teacher',
     email: 'teacher@lms.local',
     role: 'teacher',
@@ -32,19 +32,46 @@ const defaultUsers: LocalUser[] = [
     lastName: 'Teacher'
   },
   {
-    id: '3',
+    id: 'student',
     username: 'student',
     email: 'student@lms.local',
     role: 'student',
     firstName: 'Jane',
     lastName: 'Student'
+  },
+  {
+    id: 'teacher2',
+    username: 'teacher2',
+    email: 'teacher2@lms.local',
+    role: 'teacher',
+    firstName: 'Sarah',
+    lastName: 'Wilson'
+  },
+  {
+    id: 'student2',
+    username: 'student2',
+    email: 'student2@lms.local',
+    role: 'student',
+    firstName: 'Mike',
+    lastName: 'Johnson'
+  },
+  {
+    id: 'student3',
+    username: 'student3',
+    email: 'student3@lms.local',
+    role: 'student',
+    firstName: 'Emily',
+    lastName: 'Davis'
   }
 ];
 
 const userCredentials = {
   admin: 'admin123',
   teacher: 'teacher123',
-  student: 'student123'
+  student: 'student123',
+  teacher2: 'teacher123',
+  student2: 'student123',
+  student3: 'student123'
 };
 
 export function setupLocalAuth(app: Express) {
