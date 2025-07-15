@@ -2,7 +2,7 @@ import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, authMiddleware } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 import { setupLocalAuth, isLocallyAuthenticated } from "./localAuth";
 import { sequelize, testConnection } from "./db";
 import {
@@ -106,7 +106,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
   // Determine which auth middleware to use
-  const authMiddleware = process.env.DATABASE_URL ? authMiddleware : isLocallyAuthenticated;
+  const authMiddleware = process.env.DATABASE_URL ? isAuthenticated : isLocallyAuthenticated;
 
   // Course routes
   app.get("/api/courses", authMiddleware, async (req: any, res) => {

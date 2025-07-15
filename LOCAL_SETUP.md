@@ -56,6 +56,9 @@ npm install
 npm run dev
 ```
 
+**Note for Windows Users:**
+If you get the error `'NODE_ENV' is not recognized as an internal or external command`, the `cross-env` package has been added to make the scripts work on Windows. The npm scripts will automatically use cross-platform environment variable setting.
+
 ## Database Schema
 
 The application will automatically create the following tables in your `student_learning_hub` schema:
