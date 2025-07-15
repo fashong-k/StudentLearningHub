@@ -9,39 +9,39 @@ const dbPass = process.env.DB_PASS || 'postgres';
 const dbName = process.env.DB_NAME || 'lms_platform';
 const dbSchema = process.env.DB_SCHEMA || 'student_learning_hub';
 
-let sequelizeConfig;
+let sequelize: Sequelize;
 
 if (databaseUrl) {
   // Use DATABASE_URL if available (for production/Replit)
-  sequelizeConfig = {
-    connectionString: databaseUrl,
-    dialect: 'postgres' as const,
+  sequelize = new Sequelize(databaseUrl, {
+    dialect: 'postgres',
     logging: false,
     dialectOptions: {
       ssl: false
     }
-  };
+  });
 } else {
   // Use individual environment variables (for local development)
-  sequelizeConfig = {
+  sequelize = new Sequelize({
     host: dbHost,
     port: dbPort,
     username: dbUser,
     password: dbPass,
     database: dbName,
-    dialect: 'postgres' as const,
+    dialect: 'postgres',
     logging: false,
     dialectOptions: {
       ssl: false
     },
     define: {
-      schema: dbSchema
-    },
-    schema: dbSchema
-  };
+      schema: dbSchema,
+      timestamps: true,
+      underscored: false
+    }
+  });
 }
 
-export const sequelize = new Sequelize(sequelizeConfig);
+export { sequelize };
 
 // Test the connection
 export async function testConnection() {

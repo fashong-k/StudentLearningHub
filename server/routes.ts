@@ -144,6 +144,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Set up model associations
       setupAssociations();
       
+      // Ensure schema exists before sync
+      const schema = process.env.DB_SCHEMA || 'student_learning_hub';
+      await sequelize.query(`CREATE SCHEMA IF NOT EXISTS "${schema}"`);
+      console.log(`Schema "${schema}" is ready for table creation.`);
+      
       // Sync database (create tables if they don't exist, don't alter existing ones)
       await sequelize.sync({ force: false });
       console.log('Database synchronized successfully.');

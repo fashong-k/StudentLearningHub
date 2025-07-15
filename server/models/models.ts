@@ -63,6 +63,7 @@ User.init({
   modelName: 'User',
   tableName: 'users',
   timestamps: true,
+  schema: process.env.DB_SCHEMA || 'student_learning_hub'
 });
 
 // Course model
