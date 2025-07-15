@@ -57,7 +57,7 @@ npm run dev
 ```
 
 **Note for Windows Users:**
-If you get the error `'NODE_ENV' is not recognized as an internal or external command`, the `cross-env` package has been added to make the scripts work on Windows. The npm scripts will automatically use cross-platform environment variable setting.
+All NODE_ENV references have been removed from the application. The system now automatically detects whether to run in development or production mode based on the presence of DATABASE_URL environment variable.
 
 ## Database Schema
 
