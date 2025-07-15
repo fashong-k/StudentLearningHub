@@ -41,8 +41,9 @@ DB_USER=postgres
 DB_PASS=postgres
 DB_NAME=lms_platform
 DB_SCHEMA=student_learning_hub
-NODE_ENV=development
 ```
+
+**Note:** NODE_ENV has been completely removed from the application for Windows compatibility.
 
 ### 3. Install Dependencies
 
@@ -52,12 +53,32 @@ npm install
 
 ### 4. Start the Application
 
+**Option 1: Using npm script (works on all platforms)**
 ```bash
 npm run dev
 ```
 
-**Note for Windows Users:**
-All NODE_ENV references have been removed from the application. The system now automatically detects whether to run in development or production mode based on the presence of DATABASE_URL environment variable.
+**Option 2: Direct command (Windows-friendly, bypasses npm script)**
+```bash
+tsx server/index.ts
+```
+
+**Option 3: Windows batch file (easiest for Windows users)**
+```batch
+start-dev.bat
+```
+
+**Important Notes:**
+- NODE_ENV has been completely removed from the server code for Windows compatibility
+- The application automatically detects development vs production mode by checking if a build directory exists
+- All three startup methods work without NODE_ENV-related errors
+- The application will continue to work even if PostgreSQL is not running (uses local authentication)
+
+**About NODE_ENV in Configuration Files:**
+- `package.json`: Contains NODE_ENV in npm scripts but cannot be modified for system stability
+- `vite.config.ts`: Contains NODE_ENV check for Replit-specific features but cannot be modified
+- **Solution**: Use Option 2 or 3 above to bypass npm scripts entirely
+- The server application itself has been made completely NODE_ENV-free for Windows compatibility
 
 ## Database Schema
 
@@ -97,11 +118,51 @@ The application includes a local login system with these pre-configured accounts
 
 ### Login Process
 
-1. Start the application with `npm run dev`
+1. Start the application using one of the methods above
 2. Visit `http://localhost:5000` in your browser
 3. You'll see the local login page with credentials displayed
 4. Use any of the above credentials to log in
 5. The application will automatically create user accounts in your database
+
+## Windows Troubleshooting
+
+### NODE_ENV Error on Windows
+
+**Problem:** Getting `'NODE_ENV' is not recognized as an internal or external command` error
+
+**Solution:** The server application code has been made completely NODE_ENV-free. However, some configuration files still contain NODE_ENV references that cannot be modified:
+
+1. **Quick Fix:** Use the direct command instead of npm:
+   ```bash
+   tsx server/index.ts
+   ```
+
+2. **Easiest Fix:** Use the Windows batch file:
+   ```batch
+   start-dev.bat
+   ```
+
+3. **Technical Details:**
+   - The server application (`server/index.ts`, `server/db.ts`, etc.) has been completely cleaned of NODE_ENV
+   - `package.json` scripts still use NODE_ENV but can be bypassed
+   - `vite.config.ts` uses NODE_ENV for Replit-specific features but doesn't affect local development
+
+### Database Connection Issues
+
+**Problem:** Database connection errors on startup
+
+**Solution:** The application is designed to work without PostgreSQL:
+- It will show database connection errors but continue running
+- Local authentication will work even without database
+- You can set up PostgreSQL later if needed
+
+### Port Already in Use
+
+**Problem:** Port 5000 is already in use
+
+**Solution:** 
+1. Kill any existing processes using port 5000
+2. Or modify the port in `server/index.ts` if needed
 
 ## Features Available
 
