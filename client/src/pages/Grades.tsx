@@ -12,6 +12,8 @@ import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
+import { useDataFallback } from "@/hooks/useDataFallback";
+import { DataFallbackAlert } from "@/components/DataFallbackAlert";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -32,6 +34,7 @@ export default function Grades() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("all");
   const [selectedSemester, setSelectedSemester] = useState("current");
+  const { isUsingFallback, failedEndpoints, showAlert, reportFailure, clearFailures } = useDataFallback();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -63,7 +66,7 @@ export default function Grades() {
       try {
         return await apiRequest("/api/grades", "GET");
       } catch (error) {
-        console.error("Failed to fetch grades:", error);
+        reportFailure("/api/grades", error);
         return [];
       }
     },
@@ -277,6 +280,13 @@ export default function Grades() {
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto p-6">
+          {/* Data Fallback Alert */}
+          <DataFallbackAlert 
+            isVisible={showAlert} 
+            failedEndpoints={failedEndpoints}
+            onDismiss={clearFailures}
+          />
+          
           {/* Student Overview */}
           {user?.role === "student" && (
             <div className="mb-6">

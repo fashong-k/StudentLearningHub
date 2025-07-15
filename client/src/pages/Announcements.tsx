@@ -18,6 +18,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertAnnouncementSchema } from "@shared/schema";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { useDataFallback } from "@/hooks/useDataFallback";
+import { DataFallbackAlert } from "@/components/DataFallbackAlert";
 import { format, formatDistanceToNow } from "date-fns";
 import { 
   Megaphone, 
@@ -47,6 +49,7 @@ export default function Announcements() {
   const [selectedCourse, setSelectedCourse] = useState("all");
   const [activeTab, setActiveTab] = useState("all");
   const queryClient = useQueryClient();
+  const { isUsingFallback, failedEndpoints, showAlert, reportFailure, clearFailures } = useDataFallback();
 
   const form = useForm({
     resolver: zodResolver(insertAnnouncementSchema),
@@ -74,7 +77,7 @@ export default function Announcements() {
           const courseAnnouncements = await apiRequest(`/api/courses/${course.id}/announcements`, "GET");
           allAnnouncements.push(...courseAnnouncements);
         } catch (error) {
-          console.error(`Failed to fetch announcements for course ${course.id}:`, error);
+          reportFailure(`/api/courses/${course.id}/announcements`, error);
         }
       }
       return allAnnouncements;
@@ -384,6 +387,13 @@ export default function Announcements() {
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto p-6">
+          {/* Data Fallback Alert */}
+          <DataFallbackAlert 
+            isVisible={showAlert} 
+            failedEndpoints={failedEndpoints}
+            onDismiss={clearFailures}
+          />
+          
           {/* Search and Filters */}
           <div className="flex items-center space-x-4 mb-6">
             <div className="relative flex-1 max-w-md">

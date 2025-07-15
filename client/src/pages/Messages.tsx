@@ -18,6 +18,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertMessageSchema } from "@shared/schema";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { useDataFallback } from "@/hooks/useDataFallback";
+import { DataFallbackAlert } from "@/components/DataFallbackAlert";
 import { format } from "date-fns";
 import { 
   MessageCircle, 
@@ -45,6 +47,7 @@ export default function Messages() {
   const [selectedConversation, setSelectedConversation] = useState<number | null>(1);
   const [messageText, setMessageText] = useState("");
   const queryClient = useQueryClient();
+  const { isUsingFallback, failedEndpoints, showAlert, reportFailure, clearFailures } = useDataFallback();
 
   const form = useForm({
     resolver: zodResolver(insertMessageSchema),
@@ -85,7 +88,7 @@ export default function Messages() {
       try {
         return await apiRequest("/api/conversations", "GET");
       } catch (error) {
-        console.error("Failed to fetch conversations:", error);
+        reportFailure("/api/conversations", error);
         return [];
       }
     },
@@ -99,7 +102,7 @@ export default function Messages() {
       try {
         return await apiRequest("/api/messages", "GET");
       } catch (error) {
-        console.error("Failed to fetch messages:", error);
+        reportFailure("/api/messages", error);
         return [];
       }
     },
@@ -337,6 +340,15 @@ export default function Messages() {
 
         {/* Main Content */}
         <main className="flex-1 flex overflow-hidden">
+          {/* Data Fallback Alert */}
+          <div className="absolute top-0 left-0 right-0 z-10 p-6">
+            <DataFallbackAlert 
+              isVisible={showAlert} 
+              failedEndpoints={failedEndpoints}
+              onDismiss={clearFailures}
+            />
+          </div>
+          
           {/* Conversations Sidebar */}
           <div className="w-80 border-r border-gray-200 flex flex-col lms-surface">
             {/* Search */}

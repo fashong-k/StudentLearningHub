@@ -18,6 +18,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertAssignmentSchema } from "@shared/schema";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { useDataFallback } from "@/hooks/useDataFallback";
+import { DataFallbackAlert } from "@/components/DataFallbackAlert";
 import { format, isAfter, differenceInDays } from "date-fns";
 import { 
   FileText, 
@@ -42,6 +44,7 @@ export default function Assignments() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const queryClient = useQueryClient();
+  const { isUsingFallback, failedEndpoints, showAlert, reportFailure, clearFailures } = useDataFallback();
 
   const form = useForm({
     resolver: zodResolver(insertAssignmentSchema),
@@ -71,7 +74,7 @@ export default function Assignments() {
           const courseAssignments = await apiRequest(`/api/courses/${course.id}/assignments`, "GET");
           allAssignments.push(...courseAssignments);
         } catch (error) {
-          console.error(`Failed to fetch assignments for course ${course.id}:`, error);
+          reportFailure(`/api/courses/${course.id}/assignments`, error);
         }
       }
       return allAssignments;
@@ -350,6 +353,13 @@ export default function Assignments() {
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto p-6">
+          {/* Data Fallback Alert */}
+          <DataFallbackAlert 
+            isVisible={showAlert} 
+            failedEndpoints={failedEndpoints}
+            onDismiss={clearFailures}
+          />
+          
           {/* Progress Overview for Students */}
           {user?.role === "student" && (
             <Card className="mb-6">

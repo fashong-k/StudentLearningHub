@@ -16,6 +16,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertCourseSchema } from "@shared/schema";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { useDataFallback } from "@/hooks/useDataFallback";
+import { DataFallbackAlert } from "@/components/DataFallbackAlert";
 import { 
   BookOpen, 
   Users, 
@@ -35,6 +37,7 @@ export default function Courses() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const queryClient = useQueryClient();
+  const { isUsingFallback, failedEndpoints, showAlert, reportFailure, clearFailures } = useDataFallback();
 
   const form = useForm({
     resolver: zodResolver(insertCourseSchema),
@@ -50,6 +53,14 @@ export default function Courses() {
   const { data: courses = [], isLoading: coursesLoading } = useQuery<any[]>({
     queryKey: ["/api/courses"],
     enabled: !!user,
+    queryFn: async () => {
+      try {
+        return await apiRequest("/api/courses", "GET");
+      } catch (error) {
+        reportFailure("/api/courses", error);
+        return [];
+      }
+    },
   });
 
   const createCourseMutation = useMutation({
@@ -240,6 +251,13 @@ export default function Courses() {
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto p-6">
+          {/* Data Fallback Alert */}
+          <DataFallbackAlert 
+            isVisible={showAlert} 
+            failedEndpoints={failedEndpoints}
+            onDismiss={clearFailures}
+          />
+          
           {/* Search and Filter */}
           <div className="flex items-center space-x-4 mb-6">
             <div className="relative flex-1 max-w-md">
