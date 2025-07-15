@@ -7,7 +7,7 @@ const dbPort = parseInt(process.env.DB_PORT || '5432');
 const dbUser = process.env.DB_USER || 'postgres';
 const dbPass = process.env.DB_PASS || 'postgres';
 const dbName = process.env.DB_NAME || 'lms_platform';
-const dbSchema = process.env.DB_SCHEMA || 'public';
+const dbSchema = process.env.DB_SCHEMA || 'student_learning_hub';
 
 let sequelizeConfig;
 
