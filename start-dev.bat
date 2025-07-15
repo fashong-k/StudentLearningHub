@@ -15,4 +15,4 @@ echo - Teacher: teacher / teacher123
 echo - Student: student / student123
 echo.
 echo Starting server...
-npm run dev
+tsx server/index.ts

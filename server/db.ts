@@ -16,12 +16,9 @@ if (databaseUrl) {
   sequelizeConfig = {
     connectionString: databaseUrl,
     dialect: 'postgres' as const,
-    logging: process.env.NODE_ENV === 'development' ? console.log : false,
+    logging: false,
     dialectOptions: {
-      ssl: process.env.NODE_ENV === 'production' ? {
-        require: true,
-        rejectUnauthorized: false
-      } : false
+      ssl: false
     }
   };
 } else {
@@ -33,7 +30,7 @@ if (databaseUrl) {
     password: dbPass,
     database: dbName,
     dialect: 'postgres' as const,
-    logging: process.env.NODE_ENV === 'development' ? console.log : false,
+    logging: false,
     dialectOptions: {
       ssl: false
     },
