@@ -321,14 +321,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You can only create assignments for your own courses" });
       }
 
-      // Convert date string to Date object before validation
-      const bodyData = {
-        ...req.body,
+      // Prepare assignment data with proper type conversion
+      const assignmentData = {
+        title: req.body.title,
+        description: req.body.description,
         courseId,
         dueDate: req.body.dueDate ? new Date(req.body.dueDate) : undefined,
+        maxPoints: req.body.maxPoints ? parseFloat(req.body.maxPoints) : undefined,
+        assignmentType: req.body.assignmentType || "homework",
+        isActive: req.body.isActive !== undefined ? req.body.isActive : true,
       };
 
-      const assignmentData = insertAssignmentSchema.parse(bodyData);
       const assignment = await storage.createAssignment(assignmentData);
       res.status(201).json(assignment);
     } catch (error) {
@@ -357,13 +360,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You can only update assignments for your own courses" });
       }
 
-      // Convert date string to Date object before validation
-      const bodyData = {
-        ...req.body,
-        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : undefined,
-      };
+      // Prepare assignment update data with proper type conversion
+      const assignmentData: any = {};
+      
+      if (req.body.title !== undefined) assignmentData.title = req.body.title;
+      if (req.body.description !== undefined) assignmentData.description = req.body.description;
+      if (req.body.dueDate !== undefined) assignmentData.dueDate = req.body.dueDate ? new Date(req.body.dueDate) : null;
+      if (req.body.maxPoints !== undefined) assignmentData.maxPoints = req.body.maxPoints ? parseFloat(req.body.maxPoints) : null;
+      if (req.body.assignmentType !== undefined) assignmentData.assignmentType = req.body.assignmentType;
+      if (req.body.isActive !== undefined) assignmentData.isActive = req.body.isActive;
 
-      const assignmentData = insertAssignmentSchema.partial().parse(bodyData);
       const updatedAssignment = await storage.updateAssignment(assignmentId, assignmentData);
       res.json(updatedAssignment);
     } catch (error) {
@@ -454,8 +460,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Assignment not found" });
       }
 
-      // Convert date string to Date object before validation
-      const bodyData = {
+      // Prepare submission data with proper type conversion
+      const submissionData = {
         assignmentId,
         studentId: userId,
         submissionText: req.body.submissionText,
@@ -464,7 +470,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isLate: assignment.dueDate ? new Date() > new Date(assignment.dueDate) : false,
       };
 
-      const submissionData = insertSubmissionSchema.parse(bodyData);
       const submission = await storage.createSubmission(submissionData);
       res.status(201).json(submission);
     } catch (error) {
