@@ -61,7 +61,7 @@ export default function Announcements() {
     },
   });
 
-  const { data: courses = [] } = useQuery({
+  const { data: courses = [] } = useQuery<any[]>({
     queryKey: ["/api/courses"],
     enabled: !!user,
   });
