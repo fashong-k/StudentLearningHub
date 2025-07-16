@@ -1,0 +1,37 @@
+[{
+	"resource": ".../StudentLearningHub/server/routes.ts",
+	"owner": "typescript",
+	"code": "2345",
+	"severity": 8,
+	"message": "Argument of type '{ title: string; courseId: number; description?: string | undefined; dueDate?: string | undefined; totalPoints?: number | undefined; }' is not assignable to parameter of type 'AssignmentCreationAttributes'.\n  Type '{ title: string; courseId: number; description?: string | undefined; dueDate?: string | undefined; totalPoints?: number | undefined; }' is not assignable to type 'Omit<AssignmentAttributes, \"id\" | \"createdAt\" | \"updatedAt\">'.\n    Types of property 'dueDate' are incompatible.\n      Type 'string | undefined' is not assignable to type 'Date | undefined'.\n        Type 'string' is not assignable to type 'Date'.",
+	"source": "ts",
+	"startLineNumber": 321,
+	"startColumn": 57,
+	"endLineNumber": 321,
+	"endColumn": 71,
+	"origin": "extHost1"
+},{
+	"resource": ".../StudentLearningHub/server/routes.ts",
+	"owner": "typescript",
+	"code": "2345",
+	"severity": 8,
+	"message": "Argument of type '{ title?: string | undefined; description?: string | undefined; courseId?: number | undefined; dueDate?: string | undefined; totalPoints?: number | undefined; }' is not assignable to parameter of type 'Partial<AssignmentCreationAttributes>'.\n  Types of property 'dueDate' are incompatible.\n    Type 'string | undefined' is not assignable to type 'Date | undefined'.\n      Type 'string' is not assignable to type 'Date'.",
+	"source": "ts",
+	"startLineNumber": 350,
+	"startColumn": 78,
+	"endLineNumber": 350,
+	"endColumn": 92,
+	"origin": "extHost1"
+},{
+	"resource": ".../StudentLearningHub/server/routes.ts",
+	"owner": "typescript",
+	"code": "2345",
+	"severity": 8,
+	"message": "Argument of type '{ assignmentId: number; studentId: string; submittedAt?: string | undefined; grade?: number | undefined; feedback?: string | undefined; }' is not assignable to parameter of type 'SubmissionCreationAttributes'.\n  Type '{ assignmentId: number; studentId: string; submittedAt?: string | undefined; grade?: number | undefined; feedback?: string | undefined; }' is not assignable to type 'Omit<SubmissionAttributes, \"id\" | \"createdAt\" | \"updatedAt\">'.\n    Types of property 'submittedAt' are incompatible.\n      Type 'string | undefined' is not assignable to type 'Date | undefined'.\n        Type 'string' is not assignable to type 'Date'.",
+	"source": "ts",
+	"startLineNumber": 448,
+	"startColumn": 57,
+	"endLineNumber": 448,
+	"endColumn": 71,
+	"origin": "extHost1"
+}]

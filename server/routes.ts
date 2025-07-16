@@ -316,6 +316,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const assignmentData = insertAssignmentSchema.parse({
         ...req.body,
         courseId,
+        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : undefined,
       });
 
       const assignment = await storage.createAssignment(assignmentData);
@@ -346,7 +347,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You can only update assignments for your own courses" });
       }
 
-      const assignmentData = insertAssignmentSchema.partial().parse(req.body);
+      const assignmentData = insertAssignmentSchema.partial().parse({
+        ...req.body,
+        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : undefined,
+      });
       const updatedAssignment = await storage.updateAssignment(assignmentId, assignmentData);
       res.json(updatedAssignment);
     } catch (error) {
@@ -442,6 +446,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         studentId: userId,
         submissionText: req.body.submissionText,
         filePath: req.file?.path,
+        submittedAt: req.body.submittedAt ? new Date(req.body.submittedAt) : new Date(),
         isLate: assignment.dueDate ? new Date() > new Date(assignment.dueDate) : false,
       });
 
