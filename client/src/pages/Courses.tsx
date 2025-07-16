@@ -42,6 +42,7 @@ import {
   Eye
 } from "lucide-react";
 import { format } from "date-fns";
+import { safeFormat, isValidDate } from "@/lib/dateUtils";
 
 export default function Courses() {
   const { toast } = useToast();
@@ -539,7 +540,7 @@ export default function Courses() {
                                         variant="outline"
                                         className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
                                       >
-                                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                        {field.value && isValidDate(field.value) ? safeFormat(field.value, "PPP") : <span>Pick a date</span>}
                                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                       </Button>
                                     </FormControl>
@@ -547,7 +548,7 @@ export default function Courses() {
                                   <PopoverContent className="w-auto p-0" align="start">
                                     <Calendar
                                       mode="single"
-                                      selected={field.value}
+                                      selected={field.value && isValidDate(field.value) ? new Date(field.value) : undefined}
                                       onSelect={field.onChange}
                                       disabled={(date) => date < new Date()}
                                       initialFocus
@@ -570,7 +571,7 @@ export default function Courses() {
                                         variant="outline"
                                         className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
                                       >
-                                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                        {field.value && isValidDate(field.value) ? safeFormat(field.value, "PPP") : <span>Pick a date</span>}
                                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                       </Button>
                                     </FormControl>
@@ -578,9 +579,12 @@ export default function Courses() {
                                   <PopoverContent className="w-auto p-0" align="start">
                                     <Calendar
                                       mode="single"
-                                      selected={field.value}
+                                      selected={field.value && isValidDate(field.value) ? new Date(field.value) : undefined}
                                       onSelect={field.onChange}
-                                      disabled={(date) => date < new Date() || (form.watch("startDate") && date < form.watch("startDate"))}
+                                      disabled={(date) => {
+                                        const startDate = form.watch("startDate");
+                                        return date < new Date() || (startDate && isValidDate(startDate) && date < new Date(startDate));
+                                      }}
                                       initialFocus
                                     />
                                   </PopoverContent>
