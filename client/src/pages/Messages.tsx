@@ -81,12 +81,13 @@ export default function Messages() {
   }
 
   // Fetch conversations from database
-  const { data: conversations = [], isLoading: conversationsLoading } = useQuery({
+  const { data: conversations = [], isLoading: conversationsLoading } = useQuery<any[]>({
     queryKey: ["/api/conversations"],
     enabled: !!user,
-    queryFn: async () => {
+    queryFn: async (): Promise<any[]> => {
       try {
-        return await apiRequest("/api/conversations", "GET");
+        const result = await apiRequest("/api/conversations", "GET");
+        return Array.isArray(result) ? result : [];
       } catch (error) {
         reportFailure("/api/conversations", error);
         return [];
@@ -95,12 +96,13 @@ export default function Messages() {
   });
 
   // Fetch messages from database
-  const { data: messages = [], isLoading: messagesLoading } = useQuery({
+  const { data: messages = [], isLoading: messagesLoading } = useQuery<any[]>({
     queryKey: ["/api/messages"],
     enabled: !!user,
-    queryFn: async () => {
+    queryFn: async (): Promise<any[]> => {
       try {
-        return await apiRequest("/api/messages", "GET");
+        const result = await apiRequest("/api/messages", "GET");
+        return Array.isArray(result) ? result : [];
       } catch (error) {
         reportFailure("/api/messages", error);
         return [];

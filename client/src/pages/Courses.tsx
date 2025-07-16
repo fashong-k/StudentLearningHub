@@ -53,9 +53,10 @@ export default function Courses() {
   const { data: courses = [], isLoading: coursesLoading } = useQuery<any[]>({
     queryKey: ["/api/courses"],
     enabled: !!user,
-    queryFn: async () => {
+    queryFn: async (): Promise<any[]> => {
       try {
-        return await apiRequest("/api/courses", "GET");
+        const result = await apiRequest("/api/courses", "GET");
+        return Array.isArray(result) ? result : [];
       } catch (error) {
         reportFailure("/api/courses", error);
         return [];
@@ -122,10 +123,10 @@ export default function Courses() {
     createCourseMutation.mutate(data);
   };
 
-  const filteredCourses = courses.filter((course: any) =>
+  const filteredCourses = Array.isArray(courses) ? courses.filter((course: any) =>
     course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     course.courseCode.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) : [];
 
   // Use real database data; only show sample data if database retrieval fails
   const displayCourses = filteredCourses;

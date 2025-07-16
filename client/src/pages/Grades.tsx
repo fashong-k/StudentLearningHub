@@ -59,12 +59,13 @@ export default function Grades() {
   }
 
   // Fetch grades from database
-  const { data: grades = [], isLoading: gradesLoading } = useQuery({
+  const { data: grades = [], isLoading: gradesLoading } = useQuery<any[]>({
     queryKey: ["/api/grades"],
     enabled: !!user,
-    queryFn: async () => {
+    queryFn: async (): Promise<any[]> => {
       try {
-        return await apiRequest("/api/grades", "GET");
+        const result = await apiRequest("/api/grades", "GET");
+        return Array.isArray(result) ? result : [];
       } catch (error) {
         reportFailure("/api/grades", error);
         return [];

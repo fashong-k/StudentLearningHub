@@ -1,0 +1,51 @@
+[{
+	"resource": ".../StudentLearningHub/client/src/pages/Courses.tsx",
+	"owner": "typescript",
+	"code": "2769",
+	"severity": 8,
+	"message": "No overload matches this call.\n  Overload 1 of 3, '(options: DefinedInitialDataOptions<any[], Error, any[], QueryKey>, queryClient?: QueryClient | undefined): DefinedUseQueryResult<any[], Error>', gave the following error.\n    Type '() => Promise<never[] | Response>' is not assignable to type 'unique symbol | QueryFunction<any[], QueryKey, never> | undefined'.\n      Type '() => Promise<never[] | Response>' is not assignable to type 'QueryFunction<any[], QueryKey, never>'.\n        Type 'Promise<never[] | Response>' is not assignable to type 'any[] | Promise<any[]>'.\n          Type 'Promise<never[] | Response>' is not assignable to type 'Promise<any[]>'.\n            Type 'never[] | Response' is not assignable to type 'any[]'.\n              Type 'Response' is missing the following properties from type 'any[]': length, pop, push, concat, and 35 more.\n  Overload 2 of 3, '(options: UndefinedInitialDataOptions<any[], Error, any[], QueryKey>, queryClient?: QueryClient | undefined): UseQueryResult<...>', gave the following error.\n    Type '() => Promise<never[] | Response>' is not assignable to type 'unique symbol | QueryFunction<any[], QueryKey, never> | undefined'.\n      Type '() => Promise<never[] | Response>' is not assignable to type 'QueryFunction<any[], QueryKey, never>'.\n        Type 'Promise<never[] | Response>' is not assignable to type 'any[] | Promise<any[]>'.\n          Type 'Promise<never[] | Response>' is not assignable to type 'Promise<any[]>'.\n            Type 'never[] | Response' is not assignable to type 'any[]'.\n              Type 'Response' is missing the following properties from type 'any[]': length, pop, push, concat, and 35 more.\n  Overload 3 of 3, '(options: UseQueryOptions<any[], Error, any[], QueryKey>, queryClient?: QueryClient | undefined): UseQueryResult<any[], Error>', gave the following error.\n    Type '() => Promise<never[] | Response>' is not assignable to type 'unique symbol | QueryFunction<any[], QueryKey, never> | undefined'.\n      Type '() => Promise<never[] | Response>' is not assignable to type 'QueryFunction<any[], QueryKey, never>'.\n        Type 'Promise<never[] | Response>' is not assignable to type 'any[] | Promise<any[]>'.\n          Type 'Promise<never[] | Response>' is not assignable to type 'Promise<any[]>'.\n            Type 'never[] | Response' is not assignable to type 'any[]'.\n              Type 'Response' is missing the following properties from type 'any[]': length, pop, push, concat, and 35 more.",
+	"source": "ts",
+	"startLineNumber": 56,
+	"startColumn": 5,
+	"endLineNumber": 56,
+	"endColumn": 12,
+	"relatedInformation": [
+		{
+			"startLineNumber": 579,
+			"startColumn": 5,
+			"endLineNumber": 579,
+			"endColumn": 12,
+			"message": "The expected type comes from property 'queryFn' which is declared here on type 'DefinedInitialDataOptions<any[], Error, any[], QueryKey>'",
+			"resource": ".../StudentLearningHub/node_modules/@tanstack/query-core/build/modern/hydration-mKPlgzt9.d.ts"
+		},
+		{
+			"startLineNumber": 579,
+			"startColumn": 5,
+			"endLineNumber": 579,
+			"endColumn": 12,
+			"message": "The expected type comes from property 'queryFn' which is declared here on type 'UndefinedInitialDataOptions<any[], Error, any[], QueryKey>'",
+			"resource": ".../StudentLearningHub/node_modules/@tanstack/query-core/build/modern/hydration-mKPlgzt9.d.ts"
+		},
+		{
+			"startLineNumber": 579,
+			"startColumn": 5,
+			"endLineNumber": 579,
+			"endColumn": 12,
+			"message": "The expected type comes from property 'queryFn' which is declared here on type 'UseQueryOptions<any[], Error, any[], QueryKey>'",
+			"resource": ".../StudentLearningHub/node_modules/@tanstack/query-core/build/modern/hydration-mKPlgzt9.d.ts"
+		}
+	],
+	"origin": "extHost1"
+},{
+	"resource": ".../StudentLearningHub/client/src/pages/Courses.tsx",
+	"owner": "typescript",
+	"code": "2339",
+	"severity": 8,
+	"message": "Property 'filter' does not exist on type 'TQueryFnData | never[]'.\n  Property 'filter' does not exist on type 'TQueryFnData'.",
+	"source": "ts",
+	"startLineNumber": 125,
+	"startColumn": 35,
+	"endLineNumber": 125,
+	"endColumn": 41,
+	"origin": "extHost1"
+}]
