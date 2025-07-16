@@ -198,6 +198,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(course);
     } catch (error) {
       console.error("Error creating course:", error);
+      if (error.name === "SequelizeUniqueConstraintError") {
+        return res.status(409).json({ message: "Course code already exists" });
+      }
       res.status(500).json({ message: "Failed to create course" });
     }
   });
@@ -222,6 +225,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedCourse);
     } catch (error) {
       console.error("Error updating course:", error);
+      if (error.name === "SequelizeUniqueConstraintError") {
+        return res.status(409).json({ message: "Course code already exists" });
+      }
       res.status(500).json({ message: "Failed to update course" });
     }
   });
@@ -250,6 +256,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting course:", error);
       res.status(500).json({ message: "Failed to delete course" });
+    }
+  });
+
+  // Enroll in a course
+  app.post("/api/courses/:id/enroll", authMiddleware, async (req: any, res) => {
+    try {
+      const courseId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== "student") {
+        return res.status(403).json({ message: "Only students can enroll in courses" });
+      }
+
+      const course = await storage.getCourseById(courseId);
+      if (!course) {
+        return res.status(404).json({ message: "Course not found" });
+      }
+
+      const enrollment = await storage.enrollStudent(userId, courseId);
+      res.status(201).json(enrollment);
+    } catch (error) {
+      console.error("Error enrolling in course:", error);
+      if (error.name === "SequelizeUniqueConstraintError") {
+        return res.status(409).json({ message: "Already enrolled in this course" });
+      }
+      res.status(500).json({ message: "Failed to enroll in course" });
     }
   });
 

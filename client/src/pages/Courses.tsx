@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
@@ -29,18 +31,40 @@ import {
   MoreVertical,
   Edit,
   Trash2,
-  UserPlus
+  UserPlus,
+  AlertCircle,
+  CheckCircle,
+  Copy,
+  Settings,
+  Eye
 } from "lucide-react";
 
 export default function Courses() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<any>(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deletingCourse, setDeletingCourse] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedSemester, setSelectedSemester] = useState("all");
+  const [codeValidation, setCodeValidation] = useState<{ isValid: boolean; message: string }>({ isValid: true, message: "" });
   const queryClient = useQueryClient();
   const { isUsingFallback, failedEndpoints, showAlert, reportFailure, clearFailures } = useDataFallback();
 
   const form = useForm({
+    resolver: zodResolver(insertCourseSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      courseCode: "",
+      semester: "Fall",
+      year: new Date().getFullYear(),
+    },
+  });
+
+  const editForm = useForm({
     resolver: zodResolver(insertCourseSchema),
     defaultValues: {
       title: "",
@@ -76,6 +100,46 @@ export default function Courses() {
       });
       setIsCreateOpen(false);
       form.reset();
+      setCodeValidation({ isValid: true, message: "" });
+      queryClient.invalidateQueries({ queryKey: ["/api/courses"] });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 500);
+        return;
+      }
+      const errorMsg = error.message.toLowerCase();
+      if (errorMsg.includes("duplicate") || errorMsg.includes("unique")) {
+        setCodeValidation({ isValid: false, message: "Course code already exists" });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to create course",
+          variant: "destructive",
+        });
+      }
+    },
+  });
+
+  const updateCourseMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      return await apiRequest("PUT", `/api/courses/${id}`, data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Course updated successfully",
+      });
+      setIsEditOpen(false);
+      setEditingCourse(null);
+      editForm.reset();
       queryClient.invalidateQueries({ queryKey: ["/api/courses"] });
     },
     onError: (error: Error) => {
@@ -92,7 +156,71 @@ export default function Courses() {
       }
       toast({
         title: "Error",
-        description: "Failed to create course",
+        description: "Failed to update course",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteCourseMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest("DELETE", `/api/courses/${id}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Course deleted successfully",
+      });
+      setIsDeleteOpen(false);
+      setDeletingCourse(null);
+      queryClient.invalidateQueries({ queryKey: ["/api/courses"] });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to delete course",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const enrollCourseMutation = useMutation({
+    mutationFn: async (courseId: number) => {
+      return await apiRequest("POST", `/api/courses/${courseId}/enroll`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Successfully enrolled in course",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/courses"] });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to enroll in course",
         variant: "destructive",
       });
     },
@@ -120,14 +248,94 @@ export default function Courses() {
     );
   }
 
+  // Course code validation and suggestion
+  const validateCourseCode = (code: string) => {
+    if (!code) {
+      setCodeValidation({ isValid: true, message: "" });
+      return;
+    }
+    
+    const existingCourse = courses.find((course: any) => 
+      course.courseCode.toLowerCase() === code.toLowerCase()
+    );
+    
+    if (existingCourse) {
+      setCodeValidation({ isValid: false, message: "Course code already exists" });
+    } else {
+      setCodeValidation({ isValid: true, message: "Course code is available" });
+    }
+  };
+
+  const suggestCourseCode = (title: string) => {
+    if (!title) return "";
+    
+    const words = title.split(" ");
+    let suggestion = "";
+    
+    if (words.length >= 2) {
+      // Use first letters of first two words + random number
+      suggestion = words[0].charAt(0).toUpperCase() + words[1].charAt(0).toUpperCase() + " " + Math.floor(Math.random() * 900 + 100);
+    } else {
+      // Use first 3 letters + random number
+      suggestion = words[0].substring(0, 3).toUpperCase() + " " + Math.floor(Math.random() * 900 + 100);
+    }
+    
+    // Check if suggested code exists
+    const existingCourse = courses.find((course: any) => 
+      course.courseCode.toLowerCase() === suggestion.toLowerCase()
+    );
+    
+    if (existingCourse) {
+      // Try with different number
+      suggestion = suggestion.split(" ")[0] + " " + Math.floor(Math.random() * 900 + 100);
+    }
+    
+    return suggestion;
+  };
+
   const onSubmit = (data: any) => {
     createCourseMutation.mutate(data);
   };
 
-  const filteredCourses = Array.isArray(courses) ? courses.filter((course: any) =>
-    course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    course.courseCode.toLowerCase().includes(searchTerm.toLowerCase())
-  ) : [];
+  const onEditSubmit = (data: any) => {
+    if (editingCourse) {
+      updateCourseMutation.mutate({ id: editingCourse.id, data });
+    }
+  };
+
+  const handleEditCourse = (course: any) => {
+    setEditingCourse(course);
+    editForm.reset({
+      title: course.title,
+      description: course.description,
+      courseCode: course.courseCode,
+      semester: course.semester,
+      year: course.year,
+    });
+    setIsEditOpen(true);
+  };
+
+  const handleDeleteCourse = (course: any) => {
+    setDeletingCourse(course);
+    setIsDeleteOpen(true);
+  };
+
+  const confirmDeleteCourse = () => {
+    if (deletingCourse) {
+      deleteCourseMutation.mutate(deletingCourse.id);
+    }
+  };
+
+  const handleEnrollCourse = (courseId: number) => {
+    enrollCourseMutation.mutate(courseId);
+  };
+
+  const filteredCourses = Array.isArray(courses) ? courses.filter((course: any) => {
+    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.courseCode.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSemester = selectedSemester === "all" || course.semester === selectedSemester;
+    return matchesSearch && matchesSemester;
+  }) : [];
 
   // Use real database data; only show sample data if database retrieval fails
   const displayCourses = filteredCourses;
@@ -181,9 +389,42 @@ export default function Courses() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Course Code</FormLabel>
-                            <FormControl>
-                              <Input placeholder="CS 101" {...field} />
-                            </FormControl>
+                            <div className="flex space-x-2">
+                              <FormControl>
+                                <Input 
+                                  placeholder="CS 101" 
+                                  {...field} 
+                                  onChange={(e) => {
+                                    field.onChange(e);
+                                    validateCourseCode(e.target.value);
+                                  }}
+                                />
+                              </FormControl>
+                              <Button 
+                                type="button" 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => {
+                                  const suggestion = suggestCourseCode(form.getValues("title"));
+                                  if (suggestion) {
+                                    form.setValue("courseCode", suggestion);
+                                    validateCourseCode(suggestion);
+                                  }
+                                }}
+                              >
+                                Suggest
+                              </Button>
+                            </div>
+                            {codeValidation.message && (
+                              <p className={`text-sm ${codeValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
+                                {codeValidation.isValid ? (
+                                  <CheckCircle className="w-4 h-4 inline mr-1" />
+                                ) : (
+                                  <AlertCircle className="w-4 h-4 inline mr-1" />
+                                )}
+                                {codeValidation.message}
+                              </p>
+                            )}
                           </FormItem>
                         )}
                       />
@@ -239,7 +480,7 @@ export default function Courses() {
                         <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
                           Cancel
                         </Button>
-                        <Button type="submit" disabled={createCourseMutation.isPending}>
+                        <Button type="submit" disabled={createCourseMutation.isPending || !codeValidation.isValid}>
                           {createCourseMutation.isPending ? "Creating..." : "Create Course"}
                         </Button>
                       </div>
@@ -250,6 +491,122 @@ export default function Courses() {
             )}
           </div>
         </header>
+
+        {/* Edit Course Dialog */}
+        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Course</DialogTitle>
+            </DialogHeader>
+            <Form {...editForm}>
+              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+                <FormField
+                  control={editForm.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Course Title</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Introduction to Computer Science" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="courseCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Course Code</FormLabel>
+                      <FormControl>
+                        <Input placeholder="CS 101" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Course description..." {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="semester"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Semester</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select semester" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Spring">Spring</SelectItem>
+                            <SelectItem value="Summer">Summer</SelectItem>
+                            <SelectItem value="Fall">Fall</SelectItem>
+                            <SelectItem value="Winter">Winter</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={editForm.control}
+                    name="year"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Year</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={updateCourseMutation.isPending}>
+                    {updateCourseMutation.isPending ? "Updating..." : "Update Course"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Course Dialog */}
+        <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the course "{deletingCourse?.title}" 
+                and all associated data including assignments, submissions, and enrollments.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDeleteCourse}
+                className="bg-red-600 hover:bg-red-700"
+                disabled={deleteCourseMutation.isPending}
+              >
+                {deleteCourseMutation.isPending ? "Deleting..." : "Delete Course"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto p-6">
@@ -271,10 +628,18 @@ export default function Courses() {
                 className="pl-10"
               />
             </div>
-            <Button variant="outline">
-              <Filter className="w-4 h-4 mr-2" />
-              Filter
-            </Button>
+            <Select value={selectedSemester} onValueChange={setSelectedSemester}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Filter by semester" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Semesters</SelectItem>
+                <SelectItem value="Spring">Spring</SelectItem>
+                <SelectItem value="Summer">Summer</SelectItem>
+                <SelectItem value="Fall">Fall</SelectItem>
+                <SelectItem value="Winter">Winter</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Courses Grid */}
@@ -301,9 +666,30 @@ export default function Courses() {
                           </p>
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm">
-                        <MoreVertical className="w-4 h-4" />
-                      </Button>
+                      {user?.role === "teacher" && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEditCourse(course)}>
+                              <Edit className="w-4 h-4 mr-2" />
+                              Edit Course
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(course.courseCode)}>
+                              <Copy className="w-4 h-4 mr-2" />
+                              Copy Course Code
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleDeleteCourse(course)} className="text-red-600">
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete Course
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -330,15 +716,21 @@ export default function Courses() {
 
                     <div className="flex space-x-2">
                       <Button size="sm" className="flex-1">
+                        <Eye className="w-4 h-4 mr-2" />
                         View Course
                       </Button>
                       {user?.role === "teacher" && (
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" onClick={() => handleEditCourse(course)}>
                           <Edit className="w-4 h-4" />
                         </Button>
                       )}
                       {user?.role === "student" && (
-                        <Button size="sm" variant="outline">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => handleEnrollCourse(course.id)}
+                          disabled={enrollCourseMutation.isPending}
+                        >
                           <UserPlus className="w-4 h-4" />
                         </Button>
                       )}
