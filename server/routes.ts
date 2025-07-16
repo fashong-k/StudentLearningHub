@@ -164,7 +164,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(course);
     } catch (error) {
       console.error("Error creating course:", error);
-      if (error.name === "SequelizeUniqueConstraintError") {
+      if (error instanceof Error && error.name === "SequelizeUniqueConstraintError") {
         return res.status(409).json({ message: "Course code already exists" });
       }
       res.status(500).json({ message: "Failed to create course" });
@@ -191,7 +191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedCourse);
     } catch (error) {
       console.error("Error updating course:", error);
-      if (error.name === "SequelizeUniqueConstraintError") {
+      if (error instanceof Error && error.name === "SequelizeUniqueConstraintError") {
         return res.status(409).json({ message: "Course code already exists" });
       }
       res.status(500).json({ message: "Failed to update course" });
@@ -389,8 +389,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title: req.body.title,
         description: req.body.description,
         courseId,
-        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : undefined,
-        maxPoints: req.body.maxPoints ? parseFloat(req.body.maxPoints) : undefined,
+        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : null,
+        maxPoints: req.body.maxPoints ? req.body.maxPoints.toString() : null,
         assignmentType: req.body.assignmentType || "homework",
         isActive: req.body.isActive !== undefined ? req.body.isActive : true,
       };
@@ -527,8 +527,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const submissionData = {
         assignmentId,
         studentId: userId,
-        submissionText: req.body.submissionText,
-        filePath: req.file?.path,
+        submissionText: req.body.submissionText || null,
+        filePath: req.file?.path || null,
         submittedAt: req.body.submittedAt ? new Date(req.body.submittedAt) : new Date(),
         isLate: assignment.dueDate ? new Date() > new Date(assignment.dueDate) : false,
       };
@@ -650,11 +650,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You can only create announcements for your own courses" });
       }
 
-      const announcementData = insertAnnouncementSchema.parse({
-        ...req.body,
+      const announcementData = {
+        title: req.body.title,
         courseId,
+        content: req.body.content,
         authorId: userId,
-      });
+        isImportant: req.body.isImportant || false,
+      };
 
       const announcement = await storage.createAnnouncement(announcementData);
       res.status(201).json(announcement);
@@ -692,10 +694,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
-      const messageData = insertMessageSchema.parse({
-        ...req.body,
+      const messageData = {
+        content: req.body.content,
         senderId: userId,
-      });
+        receiverId: req.body.receiverId,
+        courseId: req.body.courseId || null,
+        isRead: req.body.isRead || false,
+        subject: req.body.subject || null,
+        sentAt: new Date(),
+      };
 
       const message = await storage.sendMessage(messageData);
       res.status(201).json(message);
@@ -805,7 +812,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Only teachers and admins can run plagiarism checks
-      if (user.role !== 'teacher' && user.role !== 'admin') {
+      if (!user || (user.role !== 'teacher' && user.role !== 'admin')) {
         return res.status(403).json({ message: "Insufficient permissions" });
       }
 
@@ -818,8 +825,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if user has permission to check this submission
       if (user.role === 'teacher') {
         const assignment = await storage.getAssignmentById(submission.assignmentId);
+        if (!assignment) {
+          return res.status(404).json({ message: "Assignment not found" });
+        }
         const course = await storage.getCourseById(assignment.courseId);
-        if (course.teacherId !== userId) {
+        if (!course || course.teacherId !== userId) {
           return res.status(403).json({ message: "You can only check submissions for your courses" });
         }
       }
@@ -845,18 +855,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
 
-      // Only teachers and admins can view plagiarism results
-      if (user.role !== 'teacher' && user.role !== 'admin') {
+      if (!user || (user.role !== 'teacher' && user.role !== 'admin')) {
         return res.status(403).json({ message: "Insufficient permissions" });
       }
 
-      const { plagiarismService } = await import('./plagiarismDetection');
-      const result = await plagiarismService.getPlagiarismResults(parseInt(submissionId));
-
-      if (!result) {
-        return res.status(404).json({ message: "Plagiarism check not found" });
+      // Check if user has permission to view this submission's results
+      if (user.role === 'teacher') {
+        const submission = await storage.getSubmissionById(parseInt(submissionId));
+        if (!submission) {
+          return res.status(404).json({ message: "Submission not found" });
+        }
+        const assignment = await storage.getAssignmentById(submission.assignmentId);
+        if (!assignment) {
+          return res.status(404).json({ message: "Assignment not found" });
+        }
+        const course = await storage.getCourseById(assignment.courseId);
+        if (!course || course.teacherId !== userId) {
+          return res.status(403).json({ message: "You can only view results for your courses" });
+        }
       }
 
+      // Get plagiarism results
+      const { plagiarismService } = await import('./plagiarismDetection');
+      const result = await plagiarismService.getPlagiarismResults(parseInt(submissionId));
+      
+      if (!result) {
+        return res.status(404).json({ message: "No plagiarism results found" });
+      }
+      
       res.json(result);
     } catch (error) {
       console.error("Error fetching plagiarism results:", error);
@@ -871,14 +897,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
 
       // Only teachers and admins can view course plagiarism results
-      if (user.role !== 'teacher' && user.role !== 'admin') {
+      if (!user || (user.role !== 'teacher' && user.role !== 'admin')) {
         return res.status(403).json({ message: "Insufficient permissions" });
       }
 
       // Check if user has permission to view this course
       if (user.role === 'teacher') {
         const course = await storage.getCourseById(parseInt(courseId));
-        if (course.teacherId !== userId) {
+        if (!course || course.teacherId !== userId) {
           return res.status(403).json({ message: "You can only view plagiarism results for your courses" });
         }
       }
