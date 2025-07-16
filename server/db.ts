@@ -2,15 +2,16 @@ import { Sequelize } from 'sequelize';
 
 // Database configuration - support both DATABASE_URL and individual env vars
 const databaseUrl = process.env.DATABASE_URL;
-const dbHost = process.env.DB_HOST || 'localhost';
-const dbPort = parseInt(process.env.DB_PORT || '5432');
-const dbUser = process.env.DB_USER || 'postgres';
-const dbPass = process.env.DB_PASS || 'postgres';
-const dbName = process.env.DB_NAME || 'lms_platform';
-const dbSchema = process.env.DB_SCHEMA || 'student_learning_hub';
+const dbHost = process.env.DB_HOST;
+const dbPort = process.env.DB_PORT ? parseInt(process.env.DB_PORT) : undefined;
+const dbUser = process.env.DB_USER;
+const dbPass = process.env.DB_PASS;
+const dbName = process.env.DB_NAME;
+const dbSchema = process.env.DB_SCHEMA;
 
 let sequelize: Sequelize;
 
+// Check if we have DATABASE_URL or individual database variables
 if (databaseUrl) {
   // Use DATABASE_URL if available (for production/Replit)
   sequelize = new Sequelize(databaseUrl, {
@@ -20,7 +21,7 @@ if (databaseUrl) {
       ssl: false
     }
   });
-} else {
+} else if (dbHost && dbPort && dbUser && dbPass && dbName) {
   // Use individual environment variables (for local development)
   sequelize = new Sequelize({
     host: dbHost,
@@ -34,11 +35,14 @@ if (databaseUrl) {
       ssl: false
     },
     define: {
-      schema: dbSchema,
+      schema: dbSchema || 'student_learning_hub',
       timestamps: true,
       underscored: false
     }
   });
+} else {
+  console.log("missing env file!");
+  throw new Error("Database configuration missing: Either DATABASE_URL or DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_NAME must be provided in .env file");
 }
 
 export { sequelize };
@@ -61,10 +65,13 @@ export async function initializeDatabase() {
     await testConnection();
     
     // Create schema if using local database
-    if (!process.env.DATABASE_URL) {
-      const schema = process.env.DB_SCHEMA || 'student_learning_hub';
-      await sequelize.query(`CREATE SCHEMA IF NOT EXISTS "${schema}"`);
-      console.log(`Schema "${schema}" created or already exists.`);
+    if (!databaseUrl) {
+      if (!dbSchema) {
+        console.log("missing env file!");
+        throw new Error("DB_SCHEMA environment variable is required for local database setup");
+      }
+      await sequelize.query(`CREATE SCHEMA IF NOT EXISTS "${dbSchema}"`);
+      console.log(`Schema "${dbSchema}" is ready for table creation.`);
     }
     
     return true;
