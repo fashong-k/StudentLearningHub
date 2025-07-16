@@ -75,6 +75,11 @@ export interface CourseAttributes {
   semester?: string;
   year?: number;
   teacherId: string;
+  termType?: 'semester' | 'term';
+  startDate?: Date;
+  endDate?: Date;
+  visibility?: 'private' | 'institution';
+  gradingScheme?: 'letter' | 'percentage' | 'points';
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -89,6 +94,11 @@ export class Course extends Model<CourseAttributes, CourseCreationAttributes> im
   declare semester?: string;
   declare year?: number;
   declare teacherId: string;
+  declare termType?: 'semester' | 'term';
+  declare startDate?: Date;
+  declare endDate?: Date;
+  declare visibility?: 'private' | 'institution';
+  declare gradingScheme?: 'letter' | 'percentage' | 'points';
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
 }
@@ -122,6 +132,27 @@ Course.init({
     allowNull: false,
     field: 'teacher_id',
   },
+  termType: {
+    type: DataTypes.ENUM('semester', 'term'),
+    field: 'term_type',
+  },
+  startDate: {
+    type: DataTypes.DATE,
+    field: 'start_date',
+  },
+  endDate: {
+    type: DataTypes.DATE,
+    field: 'end_date',
+  },
+  visibility: {
+    type: DataTypes.ENUM('private', 'institution'),
+    defaultValue: 'private',
+  },
+  gradingScheme: {
+    type: DataTypes.ENUM('letter', 'percentage', 'points'),
+    defaultValue: 'letter',
+    field: 'grading_scheme',
+  },
 }, {
   sequelize,
   modelName: 'Course',
@@ -129,6 +160,7 @@ Course.init({
   timestamps: true,
   createdAt: 'created_at',
   updatedAt: 'updated_at',
+  schema: process.env.DB_SCHEMA || 'student_learning_hub'
 });
 
 // Enrollment model

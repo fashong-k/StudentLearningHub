@@ -232,10 +232,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Only teachers can create courses" });
       }
 
+      console.log("Raw request body:", req.body);
+      
       const courseData = insertCourseSchema.parse({
         ...req.body,
         teacherId: userId,
       });
+
+      console.log("Parsed course data:", courseData);
 
       const course = await storage.createCourse(courseData);
       res.status(201).json(course);

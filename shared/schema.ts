@@ -685,12 +685,6 @@ export const insertCourseSchema = createInsertSchema(courses).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
-}).extend({
-  termType: z.enum(["semester", "term"]).optional(),
-  startDate: z.coerce.date().optional(),
-  endDate: z.coerce.date().optional(),
-  visibility: z.enum(["private", "institution"]).optional(),
-  gradingScheme: z.enum(["letter", "percentage", "points"]).optional(),
 });
 
 export const insertAssignmentSchema = createInsertSchema(assignments).omit({
