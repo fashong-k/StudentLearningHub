@@ -4,26 +4,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
-// Load environment variables from .env file
-try {
-  const envPath = join(process.cwd(), '.env');
-  const envFile = readFileSync(envPath, 'utf8');
-  
-  envFile.split('\n').forEach(line => {
-    const trimmed = line.trim();
-    if (trimmed && !trimmed.startsWith('#')) {
-      const [key, ...valueParts] = trimmed.split('=');
-      if (key && valueParts.length > 0) {
-        const value = valueParts.join('=').trim().replace(/^["']|["']$/g, ''); // Remove quotes
-        process.env[key.trim()] = value;
-      }
-    }
-  });
-  
-  console.log('Environment variables loaded from .env file');
-} catch (error) {
-  console.log('No .env file found or error reading it:', error);
-}
+// Environment variables are now loaded in db.ts before database configuration
 
 const app = express();
 app.use(express.json());

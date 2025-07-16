@@ -204,6 +204,8 @@ Preferred communication style: Simple, everyday language.
   - Fixed environment variable loading by implementing custom .env file reader in server/index.ts
   - Resolved process.env.DB_HOST undefined issue with manual environment variable parsing
   - Added error handling for missing .env files while maintaining compatibility
+  - Moved environment variable loading to server/db.ts for better local development compatibility
+  - Ensured .env file is loaded before database configuration in both Replit and local environments
 
 ## Changelog
 
