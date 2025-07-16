@@ -491,6 +491,17 @@ export class DatabaseStorage implements IStorage {
       averageGrade
     };
   }
+
+  // Plagiarism detection methods
+  async getPlagiarismCheck(submissionId: number): Promise<any> {
+    // For now, return null as we're using the plagiarism service directly
+    return null;
+  }
+
+  async getCoursePlagiarismChecks(courseId: number): Promise<any[]> {
+    // For now, return empty array as we're using the plagiarism service directly
+    return [];
+  }
 }
 
 export const storage = new DatabaseStorage();

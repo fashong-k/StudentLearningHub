@@ -62,6 +62,9 @@ export const notificationTypeEnum = pgEnum("notification_type", ["assignment_due
 // Define attendance status enum
 export const attendanceStatusEnum = pgEnum("attendance_status", ["present", "absent", "tardy", "excused"]);
 
+// Define plagiarism check status enum
+export const plagiarismStatusEnum = pgEnum("plagiarism_status", ["pending", "processing", "completed", "failed"]);
+
 // Courses table
 export const courses = pgTable("courses", {
   id: serial("id").primaryKey(),
@@ -375,6 +378,36 @@ export const systemLogs = pgTable("system_logs", {
   timestamp: timestamp("timestamp").defaultNow(),
 });
 
+// Plagiarism checks table
+export const plagiarismChecks = pgTable("plagiarism_checks", {
+  id: serial("id").primaryKey(),
+  submissionId: integer("submission_id").notNull(),
+  originalText: text("original_text").notNull(),
+  similarityScore: decimal("similarity_score", { precision: 5, scale: 2 }), // 0-100 percentage
+  matchedSources: jsonb("matched_sources"), // Array of matched sources
+  suspiciousPatterns: jsonb("suspicious_patterns"), // Array of detected patterns
+  analysisResults: jsonb("analysis_results"), // Detailed analysis results
+  status: plagiarismStatusEnum("status").default("pending"),
+  checkedAt: timestamp("checked_at").defaultNow(),
+  checkedBy: varchar("checked_by").notNull(), // teacherId who initiated check
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Plagiarism database for comparison (stores previous submissions)
+export const plagiarismDatabase = pgTable("plagiarism_database", {
+  id: serial("id").primaryKey(),
+  submissionId: integer("submission_id").notNull(),
+  courseId: integer("course_id").notNull(),
+  studentId: varchar("student_id").notNull(),
+  assignmentId: integer("assignment_id").notNull(),
+  textContent: text("text_content").notNull(),
+  textFingerprint: varchar("text_fingerprint", { length: 64 }), // Hash for quick comparison
+  wordCount: integer("word_count"),
+  submittedAt: timestamp("submitted_at").defaultNow(),
+  isActive: boolean("is_active").default(true),
+});
+
 // Define relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   teachingCourses: many(courses),
@@ -652,6 +685,38 @@ export const systemLogsRelations = relations(systemLogs, ({ one }) => ({
   }),
 }));
 
+// Plagiarism checks relations
+export const plagiarismChecksRelations = relations(plagiarismChecks, ({ one }) => ({
+  submission: one(submissions, {
+    fields: [plagiarismChecks.submissionId],
+    references: [submissions.id],
+  }),
+  checker: one(users, {
+    fields: [plagiarismChecks.checkedBy],
+    references: [users.id],
+  }),
+}));
+
+// Plagiarism database relations
+export const plagiarismDatabaseRelations = relations(plagiarismDatabase, ({ one }) => ({
+  submission: one(submissions, {
+    fields: [plagiarismDatabase.submissionId],
+    references: [submissions.id],
+  }),
+  course: one(courses, {
+    fields: [plagiarismDatabase.courseId],
+    references: [courses.id],
+  }),
+  student: one(users, {
+    fields: [plagiarismDatabase.studentId],
+    references: [users.id],
+  }),
+  assignment: one(assignments, {
+    fields: [plagiarismDatabase.assignmentId],
+    references: [assignments.id],
+  }),
+}));
+
 // Export types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -783,6 +848,14 @@ export type CalendarEvent = typeof calendarEvents.$inferSelect;
 export type InsertSystemLog = typeof systemLogs.$inferInsert;
 export type SystemLog = typeof systemLogs.$inferSelect;
 
+// Plagiarism Checks
+export type InsertPlagiarismCheck = typeof plagiarismChecks.$inferInsert;
+export type PlagiarismCheck = typeof plagiarismChecks.$inferSelect;
+
+// Plagiarism Database
+export type InsertPlagiarismDatabase = typeof plagiarismDatabase.$inferInsert;
+export type PlagiarismDatabase = typeof plagiarismDatabase.$inferSelect;
+
 // Insert schemas for forms
 export const insertCourseMaterialSchema = createInsertSchema(courseMaterials).omit({
   id: true,
@@ -817,4 +890,16 @@ export const insertCalendarEventSchema = createInsertSchema(calendarEvents).omit
   id: true,
   createdAt: true,
   updatedAt: true,
+});
+
+export const insertPlagiarismCheckSchema = createInsertSchema(plagiarismChecks).omit({
+  id: true,
+  checkedAt: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPlagiarismDatabaseSchema = createInsertSchema(plagiarismDatabase).omit({
+  id: true,
+  submittedAt: true,
 });

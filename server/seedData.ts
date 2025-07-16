@@ -267,6 +267,7 @@ export async function seedSampleSubmissions(assignments: any[]) {
     {
       assignmentId: assignments[0]?.id, // Problem Set 3: Sorting Algorithms
       studentId: 'student',
+      submissionText: 'I have implemented three sorting algorithms: bubble sort, merge sort, and quicksort. Bubble sort has a time complexity of O(n²) and is the least efficient. Merge sort has O(n log n) complexity and uses a divide-and-conquer approach. Quicksort also has O(n log n) average case but O(n²) worst case. The implementation shows that merge sort is most consistent in performance across different input sizes.',
       submittedAt: new Date('2025-03-14'),
       grade: 88,
       feedback: 'Good implementation of algorithms. Consider optimizing the quicksort partition function.'
@@ -274,6 +275,7 @@ export async function seedSampleSubmissions(assignments: any[]) {
     {
       assignmentId: assignments[1]?.id, // Lab Exercise: Binary Trees
       studentId: 'student',
+      submissionText: 'Binary trees are hierarchical data structures where each node has at most two children. I implemented insertion, deletion, and traversal operations. The insert operation maintains the binary search tree property where left children are smaller and right children are larger than the parent node.',
       submittedAt: new Date('2025-03-10'),
       grade: 70,
       feedback: 'Correct implementation but submitted late. Consider time management for future assignments.'
@@ -283,6 +285,7 @@ export async function seedSampleSubmissions(assignments: any[]) {
     {
       assignmentId: assignments[2]?.id, // Integration Quiz
       studentId: 'student',
+      submissionText: 'Integration by parts uses the formula ∫u dv = uv - ∫v du. For the problem ∫x cos(x) dx, I set u = x and dv = cos(x) dx, which gives du = dx and v = sin(x). Therefore, the integral equals x sin(x) - ∫sin(x) dx = x sin(x) + cos(x) + C.',
       submittedAt: new Date('2025-03-12'),
       grade: 45,
       feedback: 'Excellent work on integration by parts. Minor error in partial fractions problem.'
@@ -290,6 +293,7 @@ export async function seedSampleSubmissions(assignments: any[]) {
     {
       assignmentId: assignments[3]?.id, // Homework 4: Derivatives
       studentId: 'student',
+      submissionText: 'The chain rule states that if f(x) = g(h(x)), then f\'(x) = g\'(h(x)) × h\'(x). For the function f(x) = sin(x²), we have g(u) = sin(u) and h(x) = x². Therefore, f\'(x) = cos(x²) × 2x = 2x cos(x²).',
       submittedAt: new Date('2025-02-28'),
       grade: 42,
       feedback: 'Good grasp of chain rule. Practice more with implicit differentiation.'
@@ -299,15 +303,17 @@ export async function seedSampleSubmissions(assignments: any[]) {
     {
       assignmentId: assignments[6]?.id, // Chapter 3 Quiz
       studentId: 'student',
+      submissionText: 'Memory formation involves encoding, storage, and retrieval processes. The hippocampus plays a crucial role in consolidating short-term memories into long-term storage. Different types of memory include semantic, episodic, and procedural memory, each with distinct neural pathways and characteristics.',
       submittedAt: new Date('2025-03-05'),
       grade: 18,
       feedback: 'Strong understanding of cognitive concepts. Review attention mechanisms.'
     },
     
-    // Additional student submissions
+    // Additional student submissions - some with similar content to test plagiarism detection
     {
       assignmentId: assignments[0]?.id, // Problem Set 3: Sorting Algorithms
       studentId: 'student2',
+      submissionText: 'I have implemented three sorting algorithms: bubble sort, merge sort, and quicksort. Bubble sort has O(n²) time complexity and is inefficient. Merge sort has O(n log n) complexity using divide-and-conquer. Quicksort has O(n log n) average case complexity but O(n²) worst case. The results show that merge sort performs consistently across different input sizes.',
       submittedAt: new Date('2025-03-14'),
       grade: 92,
       feedback: 'Excellent implementation with great code documentation.'
@@ -315,6 +321,7 @@ export async function seedSampleSubmissions(assignments: any[]) {
     {
       assignmentId: assignments[2]?.id, // Integration Quiz
       studentId: 'student2',
+      submissionText: 'Integration by parts formula is ∫u dv = uv - ∫v du. For ∫x cos(x) dx, I choose u = x and dv = cos(x) dx, giving du = dx and v = sin(x). The solution is x sin(x) - ∫sin(x) dx = x sin(x) + cos(x) + C.',
       submittedAt: new Date('2025-03-12'),
       grade: 48,
       feedback: 'Very good understanding of integration techniques.'

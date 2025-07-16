@@ -874,6 +874,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Plagiarism detection endpoints
+  app.post("/api/plagiarism/check", authMiddleware, async (req: any, res) => {
+    try {
+      const { submissionId } = req.body;
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!submissionId) {
+        return res.status(400).json({ message: "Submission ID is required" });
+      }
+
+      // Only teachers and admins can run plagiarism checks
+      if (user.role !== 'teacher' && user.role !== 'admin') {
+        return res.status(403).json({ message: "Insufficient permissions" });
+      }
+
+      // Get submission details
+      const submission = await storage.getSubmissionById(submissionId);
+      if (!submission) {
+        return res.status(404).json({ message: "Submission not found" });
+      }
+
+      // Check if user has permission to check this submission
+      if (user.role === 'teacher') {
+        const assignment = await storage.getAssignmentById(submission.assignmentId);
+        const course = await storage.getCourseById(assignment.courseId);
+        if (course.teacherId !== userId) {
+          return res.status(403).json({ message: "You can only check submissions for your courses" });
+        }
+      }
+
+      // Run plagiarism check
+      const { plagiarismService } = await import('./plagiarismDetection');
+      const result = await plagiarismService.analyzeSubmission(
+        submissionId,
+        submission.submissionText || '',
+        userId
+      );
+
+      res.json(result);
+    } catch (error) {
+      console.error("Plagiarism check error:", error);
+      res.status(500).json({ message: "Failed to run plagiarism check" });
+    }
+  });
+
+  app.get("/api/plagiarism/results/:submissionId", authMiddleware, async (req: any, res) => {
+    try {
+      const { submissionId } = req.params;
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+
+      // Only teachers and admins can view plagiarism results
+      if (user.role !== 'teacher' && user.role !== 'admin') {
+        return res.status(403).json({ message: "Insufficient permissions" });
+      }
+
+      const { plagiarismService } = await import('./plagiarismDetection');
+      const result = await plagiarismService.getPlagiarismResults(parseInt(submissionId));
+
+      if (!result) {
+        return res.status(404).json({ message: "Plagiarism check not found" });
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error fetching plagiarism results:", error);
+      res.status(500).json({ message: "Failed to fetch plagiarism results" });
+    }
+  });
+
+  app.get("/api/plagiarism/course/:courseId", authMiddleware, async (req: any, res) => {
+    try {
+      const { courseId } = req.params;
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+
+      // Only teachers and admins can view course plagiarism results
+      if (user.role !== 'teacher' && user.role !== 'admin') {
+        return res.status(403).json({ message: "Insufficient permissions" });
+      }
+
+      // Check if user has permission to view this course
+      if (user.role === 'teacher') {
+        const course = await storage.getCourseById(parseInt(courseId));
+        if (course.teacherId !== userId) {
+          return res.status(403).json({ message: "You can only view plagiarism results for your courses" });
+        }
+      }
+
+      const { plagiarismService } = await import('./plagiarismDetection');
+      const results = await plagiarismService.getCoursePlagiarismChecks(parseInt(courseId));
+
+      res.json(results);
+    } catch (error) {
+      console.error("Error fetching course plagiarism results:", error);
+      res.status(500).json({ message: "Failed to fetch course plagiarism results" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

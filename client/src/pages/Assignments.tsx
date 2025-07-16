@@ -46,6 +46,8 @@ export default function Assignments() {
   const [activeTab, setActiveTab] = useState("all");
   const queryClient = useQueryClient();
   const { isUsingFallback, failedEndpoints, showAlert, reportFailure, clearFailures } = useDataFallback();
+  const [plagiarismResults, setPlagiarismResults] = useState<{[key: number]: any}>({});
+  const [checkingPlagiarism, setCheckingPlagiarism] = useState<Set<number>>(new Set());
 
   const form = useForm({
     resolver: zodResolver(insertAssignmentSchema),
@@ -63,6 +65,53 @@ export default function Assignments() {
     queryKey: ["/api/courses"],
     enabled: !!user,
   });
+
+  // Plagiarism detection mutation
+  const runPlagiarismCheck = useMutation({
+    mutationFn: async (submissionId: number) => {
+      return await apiRequest("POST", "/api/plagiarism/check", { submissionId });
+    },
+    onSuccess: (data, submissionId) => {
+      setCheckingPlagiarism(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(submissionId);
+        return newSet;
+      });
+      setPlagiarismResults(prev => ({ ...prev, [submissionId]: data }));
+      toast({
+        title: "Plagiarism Check Complete",
+        description: `Similarity score: ${data.similarityScore.toFixed(1)}%`,
+      });
+    },
+    onError: (error, submissionId) => {
+      setCheckingPlagiarism(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(submissionId);
+        return newSet;
+      });
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to run plagiarism check. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handlePlagiarismCheck = (submissionId: number) => {
+    setCheckingPlagiarism(prev => new Set(prev).add(submissionId));
+    runPlagiarismCheck.mutate(submissionId);
+  };
 
   // Fetch assignments for all courses
   const { data: assignments = [], isLoading: assignmentsLoading } = useQuery<any[]>({
@@ -473,6 +522,41 @@ export default function Assignments() {
                           <Upload className="w-4 h-4 mr-2" />
                           Submit
                         </Button>
+                      )}
+                      {user?.role === "teacher" && assignment.submittedAt && (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handlePlagiarismCheck(assignment.id)}
+                          disabled={checkingPlagiarism.has(assignment.id)}
+                          className="text-orange-600 border-orange-600 hover:bg-orange-50"
+                        >
+                          {checkingPlagiarism.has(assignment.id) ? (
+                            <>
+                              <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-orange-600 border-t-transparent"></div>
+                              Checking...
+                            </>
+                          ) : (
+                            <>
+                              <Shield className="w-4 h-4 mr-2" />
+                              Check Plagiarism
+                            </>
+                          )}
+                        </Button>
+                      )}
+                      {plagiarismResults[assignment.id] && (
+                        <div className="flex items-center space-x-2">
+                          <div className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs ${
+                            plagiarismResults[assignment.id].similarityScore > 30 
+                              ? 'bg-red-100 text-red-800' 
+                              : plagiarismResults[assignment.id].similarityScore > 15 
+                                ? 'bg-yellow-100 text-yellow-800' 
+                                : 'bg-green-100 text-green-800'
+                          }`}>
+                            <AlertTriangle className="w-3 h-3" />
+                            <span>{plagiarismResults[assignment.id].similarityScore.toFixed(1)}% similar</span>
+                          </div>
+                        </div>
                       )}
                       {user?.role === "student" && assignment.submittedAt && (
                         <Button size="sm" variant="outline">
