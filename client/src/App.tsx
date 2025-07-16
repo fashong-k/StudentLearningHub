@@ -10,6 +10,7 @@ import Landing from "@/pages/Landing";
 import LocalLogin from "@/pages/LocalLogin";
 import Home from "@/pages/Home";
 import Courses from "@/pages/Courses";
+import CourseView from "@/pages/CourseView";
 import Assignments from "@/pages/Assignments";
 import Grades from "@/pages/Grades";
 import Profile from "@/pages/Profile";
@@ -44,6 +45,11 @@ function Router() {
           <Route path="/courses">
             <ProtectedRoute route="/courses">
               <Courses />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/courses/:courseId">
+            <ProtectedRoute route="/courses/:courseId">
+              <CourseView />
             </ProtectedRoute>
           </Route>
           <Route path="/assignments">

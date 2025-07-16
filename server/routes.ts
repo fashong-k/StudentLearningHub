@@ -180,6 +180,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get course enrollments
+  app.get("/api/enrollments/:courseId", authMiddleware, async (req: any, res) => {
+    try {
+      const courseId = parseInt(req.params.courseId);
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== "teacher") {
+        return res.status(403).json({ message: "Only teachers can view enrollments" });
+      }
+
+      const enrollments = await storage.getCourseEnrollments(courseId);
+      res.json(enrollments);
+    } catch (error) {
+      console.error("Error fetching enrollments:", error);
+      res.status(500).json({ message: "Failed to fetch enrollments" });
+    }
+  });
+
+  // Get course assignments
+  app.get("/api/assignments/:courseId", authMiddleware, async (req: any, res) => {
+    try {
+      const courseId = parseInt(req.params.courseId);
+      const assignments = await storage.getAssignments(courseId);
+      res.json(assignments);
+    } catch (error) {
+      console.error("Error fetching assignments:", error);
+      res.status(500).json({ message: "Failed to fetch assignments" });
+    }
+  });
+
+  // Get course announcements
+  app.get("/api/announcements/:courseId", authMiddleware, async (req: any, res) => {
+    try {
+      const courseId = parseInt(req.params.courseId);
+      const announcements = await storage.getCourseAnnouncements(courseId);
+      res.json(announcements);
+    } catch (error) {
+      console.error("Error fetching announcements:", error);
+      res.status(500).json({ message: "Failed to fetch announcements" });
+    }
+  });
+
   app.post("/api/courses", authMiddleware, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -283,6 +326,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(409).json({ message: "Already enrolled in this course" });
       }
       res.status(500).json({ message: "Failed to enroll in course" });
+    }
+  });
+
+  // Unenroll from a course
+  app.delete("/api/courses/:id/enroll", authMiddleware, async (req: any, res) => {
+    try {
+      const courseId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== "student") {
+        return res.status(403).json({ message: "Only students can unenroll from courses" });
+      }
+
+      const success = await storage.unenrollStudent(userId, courseId);
+      if (success) {
+        res.json({ message: "Successfully unenrolled from course" });
+      } else {
+        res.status(404).json({ message: "Enrollment not found" });
+      }
+    } catch (error) {
+      console.error("Error unenrolling from course:", error);
+      res.status(500).json({ message: "Failed to unenroll from course" });
     }
   });
 

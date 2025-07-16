@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -52,6 +53,7 @@ export default function Courses() {
   const [codeValidation, setCodeValidation] = useState<{ isValid: boolean; message: string }>({ isValid: true, message: "" });
   const queryClient = useQueryClient();
   const { isUsingFallback, failedEndpoints, showAlert, reportFailure, clearFailures } = useDataFallback();
+  const [, setLocation] = useLocation();
 
   const form = useForm({
     resolver: zodResolver(insertCourseSchema),
@@ -328,6 +330,10 @@ export default function Courses() {
 
   const handleEnrollCourse = (courseId: number) => {
     enrollCourseMutation.mutate(courseId);
+  };
+
+  const handleViewCourse = (courseId: number) => {
+    setLocation(`/courses/${courseId}`);
   };
 
   const filteredCourses = Array.isArray(courses) ? courses.filter((course: any) => {
@@ -715,7 +721,7 @@ export default function Courses() {
                     )}
 
                     <div className="flex space-x-2">
-                      <Button size="sm" className="flex-1">
+                      <Button size="sm" className="flex-1" onClick={() => handleViewCourse(course.id)}>
                         <Eye className="w-4 h-4 mr-2" />
                         View Course
                       </Button>
