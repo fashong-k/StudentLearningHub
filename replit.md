@@ -222,6 +222,14 @@ Preferred communication style: Simple, everyday language.
   - Added error handling for logout process with fallback redirect
   - Logout buttons have visual feedback with red hover states for clear indication
   - Full logout flow tested and working: login → authenticated → logout → unauthorized
+
+- July 16, 2025: Fixed 404 routing issue with "Sign In to Continue" button
+  - Fixed Landing.tsx "Sign In to Continue" button routing from /api/login to /login
+  - Updated all remaining /api/login references to /login across all frontend pages
+  - Fixed authentication redirects in Assignments, Courses, Analytics, and Profile pages
+  - Eliminated 404 Page Not Found errors when clicking sign-in buttons
+  - All authentication routing now properly points to local login page
+  - Complete resolution of broken authentication redirects throughout the application
   - Removed all hard-coded database configuration from db.ts
   - Added proper environment variable validation for DATABASE_URL and individual DB variables
   - Implemented "missing env file!" console logging for missing required variables
