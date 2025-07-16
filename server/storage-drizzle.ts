@@ -2,14 +2,14 @@ import { users, courses, enrollments, assignments, submissions, announcements, m
 import { db } from "./db-drizzle";
 import { eq, and, desc, asc } from "drizzle-orm";
 import type { 
-  UserAttributes, 
-  CourseAttributes, 
-  EnrollmentAttributes,
-  AssignmentAttributes,
-  SubmissionAttributes,
-  AnnouncementAttributes,
-  MessageAttributes
-} from "./models/models";
+  User as UserAttributes, 
+  Course as CourseAttributes, 
+  Enrollment as EnrollmentAttributes,
+  Assignment as AssignmentAttributes,
+  Submission as SubmissionAttributes,
+  Announcement as AnnouncementAttributes,
+  Message as MessageAttributes
+} from "@shared/schema";
 
 // Interface for storage operations
 export interface IStorage {
