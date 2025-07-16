@@ -26,7 +26,7 @@ if (!process.env.DATABASE_URL && !process.env.DB_HOST) {
 
 let db: any;
 
-if (process.env.DATABASE_URL) {
+if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '""' && process.env.DATABASE_URL !== '') {
   // Use Neon serverless for production
   neonConfig.webSocketConstructor = ws;
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
