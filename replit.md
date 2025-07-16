@@ -18,7 +18,7 @@ EduPortal is a comprehensive Learning Management System (LMS) built with modern 
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js framework
 - **Language**: TypeScript with ES modules
-- **Database**: PostgreSQL with Sequelize ORM
+- **Database**: PostgreSQL with Drizzle ORM
 - **Database Provider**: Supports both Neon Database (@neondatabase/serverless) and local PostgreSQL
 - **Session Management**: Express sessions with PostgreSQL store
 - **File Uploads**: Multer for handling file uploads
@@ -104,8 +104,9 @@ The system uses a comprehensive PostgreSQL schema with the following core entiti
 
 ### Database Management
 - **Migrations**: Drizzle Kit for schema migrations
-- **Connection**: Pooled connections via Neon serverless
-- **Schema**: Centralized schema definitions in shared directory
+- **Connection**: Pooled connections via Neon serverless or local PostgreSQL
+- **Schema**: Centralized schema definitions in shared directory with 27 comprehensive tables
+- **ORM**: Drizzle ORM for type-safe database operations
 
 ## User Preferences
 
@@ -286,6 +287,16 @@ Preferred communication style: Simple, everyday language.
   - Added proper enrollment relationships connecting students to multiple courses
   - Database now contains all sample data from frontend components ensuring consistency
   - DB_INIT=true functionality allows complete database reinitialization with fresh comprehensive data
+
+- July 16, 2025: Successfully migrated from Sequelize to Drizzle ORM for improved performance and type safety
+  - Created new Drizzle database connection (server/db-drizzle.ts) with support for both Neon and local PostgreSQL
+  - Built comprehensive Drizzle storage layer (server/storage-drizzle.ts) with full CRUD operations
+  - Updated server routes to use Drizzle instead of Sequelize for all database operations
+  - Generated proper database migrations with all 27 tables (users, courses, assignments, submissions, etc.)
+  - Enhanced database connection to work with existing local PostgreSQL configuration
+  - Eliminated hybrid database system that was causing confusion between Sequelize and Drizzle schemas
+  - Application now runs with unified Drizzle ORM providing better type safety and performance
+  - All database operations now use type-safe Drizzle queries with proper TypeScript integration
 
 - July 16, 2025: Converted Analytics page from hard-coded to database-driven analytics
 - July 16, 2025: Enhanced course creation with comprehensive configuration system
