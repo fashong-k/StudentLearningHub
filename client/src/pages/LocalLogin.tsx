@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +15,22 @@ export default function LocalLogin() {
   const [error, setError] = useState('');
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+
+  // Pre-fill username from URL parameter if provided
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const usernameParam = urlParams.get('username');
+    if (usernameParam) {
+      setUsername(usernameParam);
+      // Auto-fill password for development convenience
+      const passwordMap: { [key: string]: string } = {
+        'admin': 'admin123',
+        'teacher': 'teacher123',
+        'student': 'student123'
+      };
+      setPassword(passwordMap[usernameParam] || '');
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

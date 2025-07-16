@@ -1,8 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { GraduationCap, BookOpen, Users, Award } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { GraduationCap, BookOpen, Users, Award, UserCircle, Briefcase, Shield } from "lucide-react";
+import { useState } from "react";
 
 export default function Landing() {
+  const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
+
+  const handleRoleSelection = (role: string, username: string) => {
+    setIsRoleDialogOpen(false);
+    // Navigate to login with pre-filled username
+    window.location.href = `/login?username=${username}`;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-16">
@@ -18,13 +28,59 @@ export default function Landing() {
             the educational experience through streamlined communication, course management, 
             and resource accessibility.
           </p>
-          <Button 
-            size="lg" 
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
-            onClick={() => window.location.href = '/login'}
-          >
-            Get Started
-          </Button>
+          <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                size="lg" 
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
+              >
+                Get Started
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-center">Choose Your Role</DialogTitle>
+                <DialogDescription className="text-center">
+                  Select your role to get started with EduPortal
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <Button
+                  variant="outline"
+                  className="h-auto p-4 flex flex-col items-center gap-2 hover:bg-blue-50"
+                  onClick={() => handleRoleSelection('student', 'student')}
+                >
+                  <UserCircle className="w-8 h-8 text-blue-600" />
+                  <div className="text-center">
+                    <div className="font-semibold">Student</div>
+                    <div className="text-sm text-gray-600">Access courses, assignments, and grades</div>
+                  </div>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-auto p-4 flex flex-col items-center gap-2 hover:bg-green-50"
+                  onClick={() => handleRoleSelection('teacher', 'teacher')}
+                >
+                  <Briefcase className="w-8 h-8 text-green-600" />
+                  <div className="text-center">
+                    <div className="font-semibold">Teacher</div>
+                    <div className="text-sm text-gray-600">Create courses, manage assignments, and grade students</div>
+                  </div>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-auto p-4 flex flex-col items-center gap-2 hover:bg-purple-50"
+                  onClick={() => handleRoleSelection('admin', 'admin')}
+                >
+                  <Shield className="w-8 h-8 text-purple-600" />
+                  <div className="text-center">
+                    <div className="font-semibold">Administrator</div>
+                    <div className="text-sm text-gray-600">Manage users, courses, and system settings</div>
+                  </div>
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
