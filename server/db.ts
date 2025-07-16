@@ -23,6 +23,29 @@ if (!process.env.DB_HOST && !process.env.DATABASE_URL) {
   } catch (error) {
     console.log('No .env file found or error reading it:', error);
   }
+} else {
+  // Always load .env file to ensure all variables are available
+  try {
+    const envPath = join(process.cwd(), '.env');
+    const envFile = readFileSync(envPath, 'utf8');
+    
+    envFile.split('\n').forEach(line => {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith('#')) {
+        const [key, ...valueParts] = trimmed.split('=');
+        if (key && valueParts.length > 0) {
+          const value = valueParts.join('=').trim().replace(/^["']|["']$/g, ''); // Remove quotes
+          if (!process.env[key.trim()]) {
+            process.env[key.trim()] = value;
+          }
+        }
+      }
+    });
+    
+    console.log('Environment variables loaded from .env file');
+  } catch (error) {
+    console.log('No .env file found or error reading it:', error);
+  }
 }
 
 // Database configuration - support both DATABASE_URL and individual env vars

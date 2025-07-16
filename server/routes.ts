@@ -92,12 +92,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Set up model associations
       setupAssociations();
       
-      // Sync database (create tables if they don't exist, don't alter existing ones)
-      await sequelize.sync({ force: false });
-      console.log('Database synchronized successfully.');
+      // Check if DB_INIT is true to drop and recreate tables
+      const shouldInitialize = process.env.DB_INIT === 'true';
       
-      // Run the comprehensive seeding process
-      await runSeedProcess();
+      if (shouldInitialize) {
+        console.log('DB_INIT=true detected. Dropping all tables and reinitializing...');
+        // Drop all tables and recreate them
+        await sequelize.sync({ force: true });
+        console.log('All tables dropped and recreated successfully.');
+        
+        // Run the comprehensive seeding process (force seeding)
+        await runSeedProcess(true);
+      } else {
+        // Sync database (create tables if they don't exist, don't alter existing ones)
+        await sequelize.sync({ force: false });
+        console.log('Database synchronized successfully.');
+        
+        // Run the comprehensive seeding process (normal seeding)
+        await runSeedProcess(false);
+      }
       
       console.log('All database tables have been created successfully.');
     } else {

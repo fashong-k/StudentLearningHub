@@ -417,7 +417,7 @@ export async function seedSampleMessages() {
   }
 }
 
-export async function runSeedProcess() {
+export async function runSeedProcess(forceInit: boolean = false) {
   console.log('=================================');
   console.log('  Database Seeding Process');
   console.log('=================================');
@@ -428,10 +428,14 @@ export async function runSeedProcess() {
     return;
   }
   
-  const dataExists = await checkIfDataExists();
-  if (dataExists) {
-    console.log('Sample data already exists, skipping seeding process');
-    return;
+  if (!forceInit) {
+    const dataExists = await checkIfDataExists();
+    if (dataExists) {
+      console.log('Sample data already exists, skipping seeding process');
+      return;
+    }
+  } else {
+    console.log('DB_INIT=true detected. Force seeding data...');
   }
   
   try {

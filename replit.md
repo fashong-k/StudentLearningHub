@@ -208,6 +208,10 @@ Preferred communication style: Simple, everyday language.
   - Ensured .env file is loaded before database configuration in both Replit and local environments
   - Fixed duplicate schema creation messages by removing redundant logic in server/routes.ts
   - Schema creation now happens only once in initializeDatabase() function for cleaner console output
+  - Added DB_INIT environment variable functionality for database reinitialization
+  - When DB_INIT=true, all tables are dropped and recreated with fresh seed data
+  - When DB_INIT=false, normal database synchronization occurs without dropping existing data
+  - Enhanced environment variable loading to ensure all variables are properly loaded
 
 ## Changelog
 
