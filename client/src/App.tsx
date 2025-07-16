@@ -33,7 +33,10 @@ function Router() {
   return (
     <Switch>
       {!isAuthenticated ? (
-        <Route path="/" component={isLocalDevelopment ? LocalLogin : Landing} />
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/login" component={LocalLogin} />
+        </>
       ) : (
         <>
           <Route path="/" component={Home} />
