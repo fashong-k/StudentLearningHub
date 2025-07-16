@@ -233,7 +233,7 @@ export default function Messages() {
 
   const filteredConversations = sampleConversations.filter(conversation =>
     conversation.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    conversation.participants.some(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    conversation.participants.some((p: any) => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const sendMessage = () => {
