@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Bell, Mail, Settings, Plus, BookOpen } from "lucide-react";
+import { Search, Bell, Mail, Settings, Plus, BookOpen, LogOut } from "lucide-react";
 import CourseCard from "./CourseCard";
 import QuickStats from "./QuickStats";
 import AnnouncementsList from "./AnnouncementsList";
@@ -12,6 +12,21 @@ import UpcomingDeadlines from "./UpcomingDeadlines";
 
 export default function Dashboard() {
   const { user } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/local/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      // Force refresh to clear all state and redirect to login
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Fallback: still redirect to login page
+      window.location.href = '/login';
+    }
+  };
 
   const { data: courses = [] } = useQuery<any[]>({
     queryKey: ["/api/courses"],
@@ -57,6 +72,15 @@ export default function Dashboard() {
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full"></div>
           </div>
           <Settings className="w-5 h-5 text-gray-600 cursor-pointer hover:text-gray-800" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLogout}
+            className="p-1 hover:bg-red-50 hover:text-red-600"
+            title="Logout"
+          >
+            <LogOut className="w-4 h-4" />
+          </Button>
         </div>
       </header>
 

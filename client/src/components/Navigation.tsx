@@ -10,7 +10,7 @@ import {
   ChartScatter, 
   School,
   LayoutDashboard,
-  EllipsisVertical
+  LogOut
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -31,8 +31,19 @@ export default function Navigation() {
   const { user } = useAuth();
   const [location, setLocation] = useLocation();
 
-  const handleLogout = () => {
-    window.location.href = '/api/logout';
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/local/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      // Force refresh to clear all state and redirect to login
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Fallback: still redirect to login page
+      window.location.href = '/login';
+    }
   };
 
   return (
@@ -90,9 +101,10 @@ export default function Navigation() {
             variant="ghost"
             size="sm"
             onClick={handleLogout}
-            className="p-1"
+            className="p-1 hover:bg-red-50 hover:text-red-600"
+            title="Logout"
           >
-            <EllipsisVertical className="w-4 h-4" />
+            <LogOut className="w-4 h-4" />
           </Button>
         </div>
       </div>
