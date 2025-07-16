@@ -67,7 +67,7 @@ export default function Announcements() {
   });
 
   // Fetch announcements for all courses
-  const { data: announcements = [], isLoading: announcementsLoading } = useQuery({
+  const { data: announcements = [], isLoading: announcementsLoading } = useQuery<any[]>({
     queryKey: ["/api/announcements"],
     enabled: !!user && courses.length > 0,
     queryFn: async () => {
@@ -75,7 +75,9 @@ export default function Announcements() {
       for (const course of courses) {
         try {
           const courseAnnouncements = await apiRequest(`/api/courses/${course.id}/announcements`, "GET");
-          allAnnouncements.push(...courseAnnouncements);
+          if (Array.isArray(courseAnnouncements)) {
+            allAnnouncements.push(...courseAnnouncements);
+          }
         } catch (error) {
           reportFailure(`/api/courses/${course.id}/announcements`, error);
         }

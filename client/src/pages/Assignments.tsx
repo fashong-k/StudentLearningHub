@@ -64,7 +64,7 @@ export default function Assignments() {
   });
 
   // Fetch assignments for all courses
-  const { data: assignments = [], isLoading: assignmentsLoading } = useQuery({
+  const { data: assignments = [], isLoading: assignmentsLoading } = useQuery<any[]>({
     queryKey: ["/api/assignments"],
     enabled: !!user && courses.length > 0,
     queryFn: async () => {
@@ -72,7 +72,9 @@ export default function Assignments() {
       for (const course of courses) {
         try {
           const courseAssignments = await apiRequest(`/api/courses/${course.id}/assignments`, "GET");
-          allAssignments.push(...courseAssignments);
+          if (Array.isArray(courseAssignments)) {
+            allAssignments.push(...courseAssignments);
+          }
         } catch (error) {
           reportFailure(`/api/courses/${course.id}/assignments`, error);
         }
