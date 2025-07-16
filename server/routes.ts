@@ -295,6 +295,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Assignment routes
+  app.get("/api/assignments", authMiddleware, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      let assignments = [];
+      
+      if (user.role === "student") {
+        // Students see assignments from their enrolled courses
+        const courses = await storage.getStudentCourses(userId);
+        for (const course of courses) {
+          const courseAssignments = await storage.getAssignments(course.id);
+          assignments.push(...courseAssignments);
+        }
+      } else if (user.role === "teacher") {
+        // Teachers see assignments from their courses
+        const courses = await storage.getTeacherCourses(userId);
+        for (const course of courses) {
+          const courseAssignments = await storage.getAssignments(course.id);
+          assignments.push(...courseAssignments);
+        }
+      } else {
+        // Admin sees all assignments
+        const courses = await storage.getCourses();
+        for (const course of courses) {
+          const courseAssignments = await storage.getAssignments(course.id);
+          assignments.push(...courseAssignments);
+        }
+      }
+      
+      res.json(assignments);
+    } catch (error) {
+      console.error("Error fetching assignments:", error);
+      res.status(500).json({ message: "Failed to fetch assignments" });
+    }
+  });
+
   app.get("/api/courses/:id/assignments", authMiddleware, async (req: any, res) => {
     try {
       const courseId = parseInt(req.params.id);
@@ -513,6 +554,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Announcement routes
+  app.get("/api/announcements", authMiddleware, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      let announcements = [];
+      
+      if (user.role === "student") {
+        // Students see announcements from their enrolled courses
+        const courses = await storage.getStudentCourses(userId);
+        for (const course of courses) {
+          const courseAnnouncements = await storage.getCourseAnnouncements(course.id);
+          announcements.push(...courseAnnouncements);
+        }
+      } else if (user.role === "teacher") {
+        // Teachers see announcements from their courses
+        const courses = await storage.getTeacherCourses(userId);
+        for (const course of courses) {
+          const courseAnnouncements = await storage.getCourseAnnouncements(course.id);
+          announcements.push(...courseAnnouncements);
+        }
+      } else {
+        // Admin sees all announcements
+        const courses = await storage.getCourses();
+        for (const course of courses) {
+          const courseAnnouncements = await storage.getCourseAnnouncements(course.id);
+          announcements.push(...courseAnnouncements);
+        }
+      }
+      
+      // Sort announcements by creation date (newest first)
+      announcements.sort((a, b) => new Date(b.createdAt || b.created_at).getTime() - new Date(a.createdAt || a.created_at).getTime());
+      
+      res.json(announcements);
+    } catch (error) {
+      console.error("Error fetching announcements:", error);
+      res.status(500).json({ message: "Failed to fetch announcements" });
+    }
+  });
+
   app.get("/api/courses/:id/announcements", authMiddleware, async (req: any, res) => {
     try {
       const courseId = parseInt(req.params.id);
@@ -579,6 +664,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error sending message:", error);
       res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
+  // Grades route
+  app.get("/api/grades", authMiddleware, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (user.role === "student") {
+        // Students see their own grades
+        const grades = await storage.getStudentGrades(userId);
+        res.json(grades);
+      } else if (user.role === "teacher") {
+        // Teachers see all submissions for their courses
+        const courses = await storage.getTeacherCourses(userId);
+        const allSubmissions = [];
+        
+        for (const course of courses) {
+          const assignments = await storage.getAssignments(course.id);
+          for (const assignment of assignments) {
+            const submissions = await storage.getSubmissions(assignment.id);
+            allSubmissions.push(...submissions);
+          }
+        }
+        
+        res.json(allSubmissions);
+      } else {
+        // Admin can see all grades
+        const grades = await storage.getStudentGrades(userId);
+        res.json(grades);
+      }
+    } catch (error) {
+      console.error("Error fetching grades:", error);
+      res.status(500).json({ message: "Failed to fetch grades" });
     }
   });
 
