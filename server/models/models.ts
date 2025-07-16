@@ -16,14 +16,14 @@ export interface UserAttributes {
 export interface UserCreationAttributes extends Optional<UserAttributes, 'createdAt' | 'updatedAt'> {}
 
 export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
-  public id!: string;
-  public email?: string;
-  public firstName?: string;
-  public lastName?: string;
-  public profileImageUrl?: string;
-  public role?: 'student' | 'teacher' | 'admin';
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare id: string;
+  declare email?: string;
+  declare firstName?: string;
+  declare lastName?: string;
+  declare profileImageUrl?: string;
+  declare role?: 'student' | 'teacher' | 'admin';
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 User.init({
@@ -82,15 +82,15 @@ export interface CourseAttributes {
 export interface CourseCreationAttributes extends Optional<CourseAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
 
 export class Course extends Model<CourseAttributes, CourseCreationAttributes> implements CourseAttributes {
-  public id!: number;
-  public title!: string;
-  public description?: string;
-  public courseCode!: string;
-  public semester?: string;
-  public year?: number;
-  public teacherId!: string;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare id: number;
+  declare title: string;
+  declare description?: string;
+  declare courseCode: string;
+  declare semester?: string;
+  declare year?: number;
+  declare teacherId: string;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 Course.init({
@@ -144,12 +144,12 @@ export interface EnrollmentAttributes {
 export interface EnrollmentCreationAttributes extends Optional<EnrollmentAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
 
 export class Enrollment extends Model<EnrollmentAttributes, EnrollmentCreationAttributes> implements EnrollmentAttributes {
-  public id!: number;
-  public studentId!: string;
-  public courseId!: number;
-  public enrolledAt?: Date;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare id: number;
+  declare studentId: string;
+  declare courseId: number;
+  declare enrolledAt?: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 Enrollment.init({
@@ -197,14 +197,14 @@ export interface AssignmentAttributes {
 export interface AssignmentCreationAttributes extends Optional<AssignmentAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
 
 export class Assignment extends Model<AssignmentAttributes, AssignmentCreationAttributes> implements AssignmentAttributes {
-  public id!: number;
-  public title!: string;
-  public description?: string;
-  public courseId!: number;
-  public dueDate?: Date;
-  public totalPoints?: number;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare id: number;
+  declare title: string;
+  declare description?: string;
+  declare courseId: number;
+  declare dueDate?: Date;
+  declare totalPoints?: number;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 Assignment.init({
@@ -258,14 +258,14 @@ export interface SubmissionAttributes {
 export interface SubmissionCreationAttributes extends Optional<SubmissionAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
 
 export class Submission extends Model<SubmissionAttributes, SubmissionCreationAttributes> implements SubmissionAttributes {
-  public id!: number;
-  public assignmentId!: number;
-  public studentId!: string;
-  public submittedAt?: Date;
-  public grade?: number;
-  public feedback?: string;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare id: number;
+  declare assignmentId: number;
+  declare studentId: string;
+  declare submittedAt?: Date;
+  declare grade?: number;
+  declare feedback?: string;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 Submission.init({
@@ -318,14 +318,14 @@ export interface AnnouncementAttributes {
 export interface AnnouncementCreationAttributes extends Optional<AnnouncementAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
 
 export class Announcement extends Model<AnnouncementAttributes, AnnouncementCreationAttributes> implements AnnouncementAttributes {
-  public id!: number;
-  public title!: string;
-  public content!: string;
-  public courseId!: number;
-  public authorId!: string;
-  public isImportant?: boolean;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare id: number;
+  declare title: string;
+  declare content: string;
+  declare courseId: number;
+  declare authorId: string;
+  declare isImportant?: boolean;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 Announcement.init({
@@ -380,13 +380,13 @@ export interface MessageAttributes {
 export interface MessageCreationAttributes extends Optional<MessageAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
 
 export class Message extends Model<MessageAttributes, MessageCreationAttributes> implements MessageAttributes {
-  public id!: number;
-  public senderId!: string;
-  public receiverId!: string;
-  public content!: string;
-  public isRead?: boolean;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare id: number;
+  declare senderId: string;
+  declare receiverId: string;
+  declare content: string;
+  declare isRead?: boolean;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 Message.init({
