@@ -41,6 +41,12 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Define course visibility enum
+export const courseVisibilityEnum = pgEnum("course_visibility", ["private", "institution"]);
+
+// Define grading scheme enum
+export const gradingSchemeEnum = pgEnum("grading_scheme", ["letter", "percentage", "points"]);
+
 // Courses table
 export const courses = pgTable("courses", {
   id: serial("id").primaryKey(),
@@ -50,6 +56,11 @@ export const courses = pgTable("courses", {
   teacherId: varchar("teacher_id").notNull(),
   semester: varchar("semester", { length: 50 }),
   year: integer("year"),
+  termType: varchar("term_type", { length: 20 }).default("semester"), // "semester" or "term"
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  visibility: courseVisibilityEnum("visibility").default("private"),
+  gradingScheme: gradingSchemeEnum("grading_scheme").default("letter"),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -275,6 +286,12 @@ export const insertCourseSchema = createInsertSchema(courses).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  termType: z.enum(["semester", "term"]).optional(),
+  startDate: z.coerce.date().optional(),
+  endDate: z.coerce.date().optional(),
+  visibility: z.enum(["private", "institution"]).optional(),
+  gradingScheme: z.enum(["letter", "percentage", "points"]).optional(),
 });
 
 export const insertAssignmentSchema = createInsertSchema(assignments).omit({
