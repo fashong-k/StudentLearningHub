@@ -97,12 +97,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (shouldInitialize) {
         console.log('DB_INIT=true detected. Dropping all tables and reinitializing...');
-        // Drop all tables and recreate them
-        await sequelize.sync({ force: true });
-        console.log('All tables dropped and recreated successfully.');
-        
-        // Run the comprehensive seeding process (force seeding)
-        await runSeedProcess(true);
+        try {
+          // Drop all tables and recreate them
+          await sequelize.sync({ force: true });
+          console.log('All tables dropped and recreated successfully.');
+          
+          // Run the comprehensive seeding process (force seeding)
+          await runSeedProcess(true);
+        } catch (error) {
+          console.error('Error during database reinitialization:', error);
+          // Fall back to normal sync if force fails
+          await sequelize.sync({ force: false });
+          console.log('Database synchronized successfully (fallback).');
+          await runSeedProcess(false);
+        }
       } else {
         // Sync database (create tables if they don't exist, don't alter existing ones)
         await sequelize.sync({ force: false });
@@ -313,12 +321,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You can only create assignments for your own courses" });
       }
 
-      const assignmentData = insertAssignmentSchema.parse({
+      // Convert date string to Date object before validation
+      const bodyData = {
         ...req.body,
         courseId,
         dueDate: req.body.dueDate ? new Date(req.body.dueDate) : undefined,
-      });
+      };
 
+      const assignmentData = insertAssignmentSchema.parse(bodyData);
       const assignment = await storage.createAssignment(assignmentData);
       res.status(201).json(assignment);
     } catch (error) {
@@ -347,10 +357,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You can only update assignments for your own courses" });
       }
 
-      const assignmentData = insertAssignmentSchema.partial().parse({
+      // Convert date string to Date object before validation
+      const bodyData = {
         ...req.body,
         dueDate: req.body.dueDate ? new Date(req.body.dueDate) : undefined,
-      });
+      };
+
+      const assignmentData = insertAssignmentSchema.partial().parse(bodyData);
       const updatedAssignment = await storage.updateAssignment(assignmentId, assignmentData);
       res.json(updatedAssignment);
     } catch (error) {
@@ -441,15 +454,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Assignment not found" });
       }
 
-      const submissionData = insertSubmissionSchema.parse({
+      // Convert date string to Date object before validation
+      const bodyData = {
         assignmentId,
         studentId: userId,
         submissionText: req.body.submissionText,
         filePath: req.file?.path,
         submittedAt: req.body.submittedAt ? new Date(req.body.submittedAt) : new Date(),
         isLate: assignment.dueDate ? new Date() > new Date(assignment.dueDate) : false,
-      });
+      };
 
+      const submissionData = insertSubmissionSchema.parse(bodyData);
       const submission = await storage.createSubmission(submissionData);
       res.status(201).json(submission);
     } catch (error) {
