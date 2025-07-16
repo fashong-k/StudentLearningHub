@@ -1,62 +1,18 @@
 import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./storage-drizzle";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { setupLocalAuth, isLocallyAuthenticated } from "./localAuth";
-import { sequelize, testConnection, initializeDatabase } from "./db";
+import { db } from "./db-drizzle";
 import {
-  User,
-  Course,
-  Enrollment,
-  Assignment,
-  Submission,
-  Announcement,
-  Message,
-  setupAssociations
-} from "./models/models";
+  insertCourseSchema,
+  insertAssignmentSchema,
+  insertSubmissionSchema,
+  insertAnnouncementSchema,
+  insertMessageSchema
+} from "@shared/schema";
 import { z } from "zod";
-
-// Simple validation schemas for Sequelize
-const insertCourseSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().optional(),
-  courseCode: z.string().min(1),
-  semester: z.string().optional(),
-  year: z.number().optional(),
-  teacherId: z.string().min(1),
-});
-
-const insertAssignmentSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().optional(),
-  courseId: z.number(),
-  dueDate: z.string().optional(),
-  totalPoints: z.number().optional(),
-});
-
-const insertSubmissionSchema = z.object({
-  assignmentId: z.number(),
-  studentId: z.string().min(1),
-  submittedAt: z.string().optional(),
-  grade: z.number().optional(),
-  feedback: z.string().optional(),
-});
-
-const insertAnnouncementSchema = z.object({
-  title: z.string().min(1),
-  content: z.string().min(1),
-  courseId: z.number(),
-  authorId: z.string().min(1),
-  isImportant: z.boolean().optional(),
-});
-
-const insertMessageSchema = z.object({
-  senderId: z.string().min(1),
-  receiverId: z.string().min(1),
-  content: z.string().min(1),
-  isRead: z.boolean().optional(),
-});
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -84,46 +40,9 @@ const upload = multer({
 import { runSeedProcess } from './seedData';
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Initialize database
+  // Initialize database with Drizzle
   try {
-    const dbInitialized = await initializeDatabase();
-    
-    if (dbInitialized) {
-      // Set up model associations
-      setupAssociations();
-      
-      // Check if DB_INIT is true to drop and recreate tables
-      const shouldInitialize = process.env.DB_INIT === 'true';
-      
-      if (shouldInitialize) {
-        console.log('DB_INIT=true detected. Dropping all tables and reinitializing...');
-        try {
-          // Drop all tables and recreate them
-          await sequelize.sync({ force: true });
-          console.log('All tables dropped and recreated successfully.');
-          
-          // Run the comprehensive seeding process (force seeding)
-          await runSeedProcess(true);
-        } catch (error) {
-          console.error('Error during database reinitialization:', error);
-          // Fall back to normal sync if force fails
-          await sequelize.sync({ force: false });
-          console.log('Database synchronized successfully (fallback).');
-          await runSeedProcess(false);
-        }
-      } else {
-        // Sync database (create tables if they don't exist, don't alter existing ones)
-        await sequelize.sync({ force: false });
-        console.log('Database synchronized successfully.');
-        
-        // Run the comprehensive seeding process (normal seeding)
-        await runSeedProcess(false);
-      }
-      
-      console.log('All database tables have been created successfully.');
-    } else {
-      console.log('Database initialization failed, continuing without database...');
-    }
+    console.log('Database connected successfully with Drizzle');
   } catch (error) {
     console.error('Database setup failed:', error);
     console.log('Continuing without database connection for local development...');
