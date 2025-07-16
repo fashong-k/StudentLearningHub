@@ -21,7 +21,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { useDataFallback } from "@/hooks/useDataFallback";
 import { DataFallbackAlert } from "@/components/DataFallbackAlert";
 import { hasPermission } from "@/lib/roleUtils";
-import { format, formatDistanceToNow } from "date-fns";
+import { safeFormat, safeFormatDistanceToNow } from "@/lib/dateUtils";
 import { 
   Megaphone, 
   Plus, 
@@ -475,10 +475,10 @@ export default function Announcements() {
                             </div>
                             <div className="flex items-center">
                               <Calendar className="w-4 h-4 mr-1" />
-                              {format(announcement.createdAt, "MMM d, yyyy 'at' h:mm a")}
+                              {safeFormat(announcement.createdAt, "MMM d, yyyy 'at' h:mm a", "Recently")}
                             </div>
                             <div className="text-gray-400">
-                              {formatDistanceToNow(announcement.createdAt, { addSuffix: true })}
+                              {safeFormatDistanceToNow(announcement.createdAt, { addSuffix: true }, "Recently")}
                             </div>
                           </div>
                           

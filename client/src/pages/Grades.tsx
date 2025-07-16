@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { format } from "date-fns";
+import { safeFormat } from "@/lib/dateUtils";
 import { useDataFallback } from "@/hooks/useDataFallback";
 import { DataFallbackAlert } from "@/components/DataFallbackAlert";
 import { 
@@ -481,12 +481,12 @@ export default function Grades() {
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          {grade.submittedAt ? format(new Date(grade.submittedAt), "MMM d, yyyy") : 'N/A'}
+                          {safeFormat(grade.submittedAt, "MMM d, yyyy", "N/A")}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          {grade.gradedAt ? format(new Date(grade.gradedAt), "MMM d, yyyy") : 'N/A'}
+                          {safeFormat(grade.gradedAt, "MMM d, yyyy", "N/A")}
                         </div>
                       </TableCell>
                       <TableCell>

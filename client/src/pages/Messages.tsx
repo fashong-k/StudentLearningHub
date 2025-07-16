@@ -20,7 +20,7 @@ import { insertMessageSchema } from "@shared/schema";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useDataFallback } from "@/hooks/useDataFallback";
 import { DataFallbackAlert } from "@/components/DataFallbackAlert";
-import { format } from "date-fns";
+import { safeFormat } from "@/lib/dateUtils";
 import { 
   MessageCircle, 
   Send, 
@@ -484,7 +484,7 @@ export default function Messages() {
                         <p className={`text-xs mt-1 ${
                           message.senderId === user?.id ? 'text-blue-100' : 'text-gray-500'
                         }`}>
-                          {format(message.sentAt, "h:mm a")}
+                          {safeFormat(message.sentAt, "h:mm a", "Just now")}
                         </p>
                       </div>
                     </div>
