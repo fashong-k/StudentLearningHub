@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import { queryClient } from '@/lib/queryClient';
 
 export default function LocalLogin() {
   const [username, setUsername] = useState('');
@@ -35,6 +36,12 @@ export default function LocalLogin() {
           title: "Login Successful",
           description: `Welcome back, ${data.user.firstName}!`,
         });
+        
+        // Invalidate the auth query to refresh authentication state
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        
+        // Wait for authentication state to refresh, then navigate
+        await queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
         
         // Navigate to dashboard (role-specific content handled by Dashboard component)
         setLocation('/');

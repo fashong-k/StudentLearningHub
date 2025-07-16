@@ -230,6 +230,13 @@ Preferred communication style: Simple, everyday language.
   - Eliminated 404 Page Not Found errors when clicking sign-in buttons
   - All authentication routing now properly points to local login page
   - Complete resolution of broken authentication redirects throughout the application
+
+- July 16, 2025: Fixed post-login routing to dashboard instead of landing page
+  - Updated LocalLogin component to invalidate auth query cache after successful login
+  - Added queryClient.refetchQueries to ensure authentication state is refreshed before navigation
+  - User is now properly redirected to dashboard (Home component) after successful login
+  - Authentication state is properly updated, preventing redirect back to landing page
+  - Login flow now works correctly: login → authenticated → dashboard
   - Removed all hard-coded database configuration from db.ts
   - Added proper environment variable validation for DATABASE_URL and individual DB variables
   - Implemented "missing env file!" console logging for missing required variables
