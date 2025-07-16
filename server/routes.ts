@@ -589,7 +589,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Sort announcements by creation date (newest first)
-      announcements.sort((a, b) => new Date(b.createdAt || b.created_at).getTime() - new Date(a.createdAt || a.created_at).getTime());
+      announcements.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       
       res.json(announcements);
     } catch (error) {
