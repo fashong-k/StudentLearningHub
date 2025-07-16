@@ -643,6 +643,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Message routes
+  app.get("/api/conversations", authMiddleware, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      // For now, return empty array as conversations are not implemented yet
+      // In a real implementation, this would aggregate messages by conversation
+      res.json([]);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      res.status(500).json({ message: "Failed to fetch conversations" });
+    }
+  });
+
   app.get("/api/messages", authMiddleware, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
