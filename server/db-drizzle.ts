@@ -40,6 +40,7 @@ if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '""' && process.env
     password: process.env.DB_PASS,
     database: process.env.DB_NAME,
     ssl: false,
+    options: process.env.DB_SCHEMA ? `-c search_path=${process.env.DB_SCHEMA},public` : undefined,
   });
   db = drizzleNode(pool, { schema });
 } else {

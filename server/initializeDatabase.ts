@@ -1,10 +1,44 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { db } from './db-drizzle';
 import { sql } from 'drizzle-orm';
 
 export async function initializeDatabase() {
   console.log('Initializing database tables...');
   
+  // Load environment variables if not already loaded
+  if (!process.env.DB_SCHEMA) {
+    try {
+      const envPath = join(process.cwd(), '.env');
+      const envContent = readFileSync(envPath, 'utf8');
+      
+      envContent.split('\n').forEach(line => {
+        const [key, value] = line.split('=');
+        if (key && value && !process.env[key]) {
+          process.env[key] = value.trim();
+        }
+      });
+    } catch (error) {
+      console.log('Could not load .env file for database initialization');
+    }
+  }
+  
   try {
+    // Debug environment variables
+    console.log('DB_SCHEMA env var:', process.env.DB_SCHEMA);
+    console.log('All DB env vars:', {
+      DB_HOST: process.env.DB_HOST,
+      DB_NAME: process.env.DB_NAME,
+      DB_SCHEMA: process.env.DB_SCHEMA
+    });
+    
+    // Set the search path to use the correct schema
+    const schemaName = process.env.DB_SCHEMA || 'public';
+    console.log(`Using database schema: ${schemaName}`);
+    
+    // Create schema if it doesn't exist (raw SQL for schema creation)
+    await db.execute(sql.raw(`CREATE SCHEMA IF NOT EXISTS ${schemaName}`));
+    await db.execute(sql.raw(`SET search_path TO ${schemaName}, public`));
     // Create enums first
     await db.execute(sql`
       DO $$ BEGIN
