@@ -415,7 +415,7 @@ export default function Messages() {
                               </Badge>
                             )}
                             <span className="text-xs text-gray-500">
-                              {format(conversation.lastMessage.sentAt, "MMM d")}
+                              {safeFormat(conversation.lastMessage.sentAt, "MMM d", "Recent")}
                             </span>
                           </div>
                         </div>

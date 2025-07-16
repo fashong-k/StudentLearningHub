@@ -20,7 +20,8 @@ import { insertAssignmentSchema } from "@shared/schema";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useDataFallback } from "@/hooks/useDataFallback";
 import { DataFallbackAlert } from "@/components/DataFallbackAlert";
-import { format, isAfter, differenceInDays } from "date-fns";
+import { safeFormat } from "@/lib/dateUtils";
+import { isAfter, differenceInDays } from "date-fns";
 import { 
   FileText, 
   Clock, 
@@ -449,7 +450,7 @@ export default function Assignments() {
                         <div className="flex items-center space-x-6 text-sm text-gray-500">
                           <div className="flex items-center">
                             <Calendar className="w-4 h-4 mr-1" />
-                            Due: {format(assignment.dueDate, "MMM d, yyyy 'at' h:mm a")}
+                            Due: {safeFormat(assignment.dueDate, "MMM d, yyyy 'at' h:mm a", "No due date")}
                           </div>
                           <div>Course: {assignment.courseCode}</div>
                           <div>Points: {assignment.maxPoints}</div>
