@@ -106,42 +106,26 @@ export async function seedSampleCourses() {
   const sampleCourses = [
     {
       title: 'Introduction to Computer Science',
-      description: 'Learn the fundamentals of programming, algorithms, and data structures. This course covers basic programming concepts using Python.',
-      courseCode: 'CS101',
+      description: 'Learn the fundamentals of programming, algorithms, and data structures. This course covers basic programming concepts using Python and introduces computational thinking.',
+      courseCode: 'CS 101',
       semester: 'Fall',
-      year: 2024,
+      year: 2025,
       teacherId: 'teacher'
     },
     {
-      title: 'Database Systems',
-      description: 'Comprehensive course covering relational databases, SQL, normalization, and database design principles.',
-      courseCode: 'CS203',
+      title: 'Calculus I',
+      description: 'Differential and integral calculus with applications. Topics include limits, derivatives, integrals, and the fundamental theorem of calculus.',
+      courseCode: 'MATH 201',
       semester: 'Fall',
-      year: 2024,
-      teacherId: 'teacher'
-    },
-    {
-      title: 'Web Development',
-      description: 'Learn to build modern web applications using HTML, CSS, JavaScript, and popular frameworks.',
-      courseCode: 'CS301',
-      semester: 'Fall',
-      year: 2024,
+      year: 2025,
       teacherId: 'teacher2'
     },
     {
-      title: 'Data Structures and Algorithms',
-      description: 'In-depth study of fundamental data structures and algorithms with emphasis on efficiency and problem-solving.',
-      courseCode: 'CS202',
-      semester: 'Spring',
-      year: 2024,
-      teacherId: 'teacher2'
-    },
-    {
-      title: 'Software Engineering',
-      description: 'Principles and practices of software development including project management, testing, and maintenance.',
-      courseCode: 'CS401',
-      semester: 'Spring',
-      year: 2024,
+      title: 'Introduction to Psychology',
+      description: 'Overview of psychological principles, research methods, and applications in understanding human behavior and mental processes.',
+      courseCode: 'PSYC 101',
+      semester: 'Fall',
+      year: 2025,
       teacherId: 'teacher'
     }
   ];
@@ -171,17 +155,15 @@ export async function seedSampleEnrollments(courses: any[]) {
   
   const enrollments = [
     // Students enrolled in multiple courses
-    { studentId: 'student', courseId: courses[0]?.id }, // CS101
-    { studentId: 'student', courseId: courses[1]?.id }, // CS203
-    { studentId: 'student', courseId: courses[2]?.id }, // CS301
+    { studentId: 'student', courseId: courses[0]?.id }, // CS 101
+    { studentId: 'student', courseId: courses[1]?.id }, // MATH 201
+    { studentId: 'student', courseId: courses[2]?.id }, // PSYC 101
     
-    { studentId: 'student2', courseId: courses[0]?.id }, // CS101
-    { studentId: 'student2', courseId: courses[3]?.id }, // CS202
-    { studentId: 'student2', courseId: courses[4]?.id }, // CS401
+    { studentId: 'student2', courseId: courses[0]?.id }, // CS 101
+    { studentId: 'student2', courseId: courses[1]?.id }, // MATH 201
     
-    { studentId: 'student3', courseId: courses[1]?.id }, // CS203
-    { studentId: 'student3', courseId: courses[2]?.id }, // CS301
-    { studentId: 'student3', courseId: courses[3]?.id }, // CS202
+    { studentId: 'student3', courseId: courses[0]?.id }, // CS 101
+    { studentId: 'student3', courseId: courses[2]?.id }, // PSYC 101
   ];
   
   for (const enrollment of enrollments) {
@@ -205,59 +187,59 @@ export async function seedSampleAssignments(courses: any[]) {
   console.log('Seeding sample assignments...');
   
   const assignments = [
-    // CS101 assignments
+    // CS 101 assignments
     {
-      title: 'Hello World Program',
-      description: 'Write your first Python program that prints "Hello, World!" to the console.',
+      title: 'Problem Set 3: Sorting Algorithms',
+      description: 'Implement and analyze various sorting algorithms including bubble sort, merge sort, and quicksort.',
       courseId: courses[0]?.id,
-      dueDate: new Date('2024-09-15'),
-      totalPoints: 10
+      dueDate: new Date('2025-03-15'),
+      totalPoints: 100
     },
     {
-      title: 'Variables and Data Types',
-      description: 'Create a program demonstrating different data types and variable operations.',
+      title: 'Lab Exercise: Binary Trees',
+      description: 'Implement a binary search tree with insertion, deletion, and traversal operations.',
       courseId: courses[0]?.id,
-      dueDate: new Date('2024-09-22'),
-      totalPoints: 25
-    },
-    {
-      title: 'Control Structures',
-      description: 'Implement loops and conditional statements to solve basic problems.',
-      courseId: courses[0]?.id,
-      dueDate: new Date('2024-10-01'),
-      totalPoints: 35
+      dueDate: new Date('2025-03-08'),
+      totalPoints: 75
     },
     
-    // CS203 assignments
+    // MATH 201 assignments
     {
-      title: 'Database Design',
-      description: 'Design a normalized database schema for a library management system.',
+      title: 'Integration Quiz',
+      description: 'Quiz covering integration techniques including substitution, integration by parts, and partial fractions.',
       courseId: courses[1]?.id,
-      dueDate: new Date('2024-09-30'),
+      dueDate: new Date('2025-03-12'),
       totalPoints: 50
     },
     {
-      title: 'SQL Queries',
-      description: 'Write complex SQL queries to retrieve and manipulate data.',
+      title: 'Homework 4: Derivatives',
+      description: 'Problem set covering differentiation rules, chain rule, and implicit differentiation.',
       courseId: courses[1]?.id,
-      dueDate: new Date('2024-10-15'),
-      totalPoints: 40
+      dueDate: new Date('2025-02-28'),
+      totalPoints: 50
+    },
+    {
+      title: 'Midterm Exam',
+      description: 'Comprehensive exam covering chapters 1-8, including limits, derivatives, and basic integration.',
+      courseId: courses[1]?.id,
+      dueDate: new Date('2025-03-25'),
+      totalPoints: 200
     },
     
-    // CS301 assignments
+    // PSYC 101 assignments
     {
-      title: 'HTML/CSS Portfolio',
-      description: 'Create a personal portfolio website using HTML and CSS.',
+      title: 'Research Paper: Memory and Learning',
+      description: '5-page research paper on the relationship between memory formation and learning processes.',
       courseId: courses[2]?.id,
-      dueDate: new Date('2024-09-25'),
-      totalPoints: 45
+      dueDate: new Date('2025-03-20'),
+      totalPoints: 150
     },
     {
-      title: 'JavaScript Interactive Page',
-      description: 'Build an interactive web page using JavaScript and DOM manipulation.',
+      title: 'Chapter 3 Quiz',
+      description: 'Quiz covering cognitive psychology concepts including attention, memory, and perception.',
       courseId: courses[2]?.id,
-      dueDate: new Date('2024-10-10'),
-      totalPoints: 55
+      dueDate: new Date('2025-03-05'),
+      totalPoints: 20
     }
   ];
   
@@ -281,41 +263,61 @@ export async function seedSampleSubmissions(assignments: any[]) {
   console.log('Seeding sample submissions...');
   
   const submissions = [
-    // Student submissions with grades
+    // CS 101 submissions
     {
-      assignmentId: assignments[0]?.id,
+      assignmentId: assignments[0]?.id, // Problem Set 3: Sorting Algorithms
       studentId: 'student',
-      submittedAt: new Date('2024-09-14'),
-      grade: 10,
-      feedback: 'Excellent work! Clean code and correct output.'
+      submittedAt: new Date('2025-03-14'),
+      grade: 88,
+      feedback: 'Good implementation of algorithms. Consider optimizing the quicksort partition function.'
     },
     {
-      assignmentId: assignments[1]?.id,
+      assignmentId: assignments[1]?.id, // Lab Exercise: Binary Trees
       studentId: 'student',
-      submittedAt: new Date('2024-09-21'),
-      grade: 22,
-      feedback: 'Good understanding of data types. Minor syntax issues.'
+      submittedAt: new Date('2025-03-10'),
+      grade: 70,
+      feedback: 'Correct implementation but submitted late. Consider time management for future assignments.'
     },
+    
+    // MATH 201 submissions
     {
-      assignmentId: assignments[0]?.id,
-      studentId: 'student2',
-      submittedAt: new Date('2024-09-15'),
-      grade: 9,
-      feedback: 'Good work, but could improve code comments.'
-    },
-    {
-      assignmentId: assignments[1]?.id,
-      studentId: 'student2',
-      submittedAt: new Date('2024-09-22'),
-      grade: 20,
-      feedback: 'Solid understanding, keep up the good work!'
-    },
-    {
-      assignmentId: assignments[3]?.id,
-      studentId: 'student3',
-      submittedAt: new Date('2024-09-29'),
+      assignmentId: assignments[2]?.id, // Integration Quiz
+      studentId: 'student',
+      submittedAt: new Date('2025-03-12'),
       grade: 45,
-      feedback: 'Excellent database design with proper normalization.'
+      feedback: 'Excellent work on integration by parts. Minor error in partial fractions problem.'
+    },
+    {
+      assignmentId: assignments[3]?.id, // Homework 4: Derivatives
+      studentId: 'student',
+      submittedAt: new Date('2025-02-28'),
+      grade: 42,
+      feedback: 'Good grasp of chain rule. Practice more with implicit differentiation.'
+    },
+    
+    // PSYC 101 submissions
+    {
+      assignmentId: assignments[6]?.id, // Chapter 3 Quiz
+      studentId: 'student',
+      submittedAt: new Date('2025-03-05'),
+      grade: 18,
+      feedback: 'Strong understanding of cognitive concepts. Review attention mechanisms.'
+    },
+    
+    // Additional student submissions
+    {
+      assignmentId: assignments[0]?.id, // Problem Set 3: Sorting Algorithms
+      studentId: 'student2',
+      submittedAt: new Date('2025-03-14'),
+      grade: 92,
+      feedback: 'Excellent implementation with great code documentation.'
+    },
+    {
+      assignmentId: assignments[2]?.id, // Integration Quiz
+      studentId: 'student2',
+      submittedAt: new Date('2025-03-12'),
+      grade: 48,
+      feedback: 'Very good understanding of integration techniques.'
     }
   ];
   
@@ -336,32 +338,39 @@ export async function seedSampleAnnouncements(courses: any[]) {
   
   const announcements = [
     {
-      title: 'Welcome to CS101!',
-      content: 'Welcome to Introduction to Computer Science! Please review the syllabus and prepare for our first coding assignment.',
+      title: 'Midterm Exam Schedule Released',
+      content: 'The midterm examination schedule has been posted. Please check your student portal for specific dates and times. All exams will be held in the main lecture hall unless otherwise specified. Make sure to bring valid photo ID and writing materials.',
       courseId: courses[0]?.id,
       authorId: 'teacher',
       isImportant: true
     },
     {
-      title: 'Assignment 1 Due Date Extended',
-      content: 'Due to technical difficulties, the due date for Assignment 1 has been extended to September 17th.',
-      courseId: courses[0]?.id,
-      authorId: 'teacher',
-      isImportant: true
-    },
-    {
-      title: 'Database Lab Session',
-      content: 'Optional lab session will be held on Friday at 2 PM in Room 204 for extra help with SQL queries.',
+      title: 'Assignment 3 Extension',
+      content: 'Due to technical difficulties with the server last week, we are extending the deadline for Assignment 3 by 48 hours. The new deadline is Friday, March 22nd at 11:59 PM. Please use this extra time to refine your solutions.',
       courseId: courses[1]?.id,
-      authorId: 'teacher',
-      isImportant: false
-    },
-    {
-      title: 'Web Development Project Guidelines',
-      content: 'Please review the project guidelines document for your final project. Groups of 2-3 students are allowed.',
-      courseId: courses[2]?.id,
       authorId: 'teacher2',
       isImportant: false
+    },
+    {
+      title: 'Office Hours Change',
+      content: 'Starting next week, my office hours will change from Tuesday 2-4 PM to Wednesday 3-5 PM. This change is permanent for the rest of the semester. Please update your calendars accordingly.',
+      courseId: courses[2]?.id,
+      authorId: 'teacher',
+      isImportant: false
+    },
+    {
+      title: 'Guest Lecturer This Friday',
+      content: 'We\'re excited to announce that Dr. Michael Rodriguez from MIT will be giving a guest lecture this Friday on \'Advanced Algorithms in Machine Learning\'. This is a great opportunity to learn from a leading expert in the field. Attendance is highly encouraged but not mandatory.',
+      courseId: courses[0]?.id,
+      authorId: 'teacher',
+      isImportant: false
+    },
+    {
+      title: 'Research Paper Guidelines Updated',
+      content: 'I\'ve updated the research paper guidelines document with additional citation requirements and formatting specifications. Please download the latest version from the course materials section. Papers that don\'t follow the new guidelines will be returned for revision.',
+      courseId: courses[2]?.id,
+      authorId: 'teacher',
+      isImportant: true
     }
   ];
   
@@ -384,25 +393,37 @@ export async function seedSampleMessages() {
     {
       senderId: 'student',
       receiverId: 'teacher',
-      content: 'Hi Professor, I have a question about the assignment due date.',
+      content: 'Hi Professor, I have a question about the sorting algorithms assignment. Could you clarify the requirements for the efficiency analysis?',
       isRead: true
     },
     {
       senderId: 'teacher',
       receiverId: 'student',
-      content: 'Hello! The assignment is due on September 22nd. Let me know if you have any other questions.',
+      content: 'Hello! For the efficiency analysis, please include time complexity (Big O) for each algorithm and compare their performance with different input sizes. Let me know if you need more details.',
       isRead: false
     },
     {
       senderId: 'student2',
       receiverId: 'teacher2',
-      content: 'Could you please explain the web development project requirements?',
+      content: 'I\'m having trouble with the integration by parts problems. Are there any additional resources you\'d recommend?',
       isRead: true
     },
     {
       senderId: 'teacher2',
       receiverId: 'student2',
-      content: 'Sure! The project should be a responsive website using HTML, CSS, and JavaScript. I\'ll send you the detailed requirements.',
+      content: 'I recommend reviewing Khan Academy\'s integration by parts series. Also, practice with the problems at the end of Chapter 7. My office hours are Wednesday 3-5 PM if you need more help.',
+      isRead: false
+    },
+    {
+      senderId: 'student3',
+      receiverId: 'teacher',
+      content: 'Thank you for the feedback on my psychology research paper. I\'ve made the revisions you suggested.',
+      isRead: true
+    },
+    {
+      senderId: 'teacher',
+      receiverId: 'student3',
+      content: 'Great! I\'ll review your revised paper by Friday. Your improvements to the methodology section look much stronger.',
       isRead: false
     }
   ];
