@@ -14,7 +14,8 @@ try {
     if (trimmed && !trimmed.startsWith('#')) {
       const [key, ...valueParts] = trimmed.split('=');
       if (key && valueParts.length > 0) {
-        process.env[key.trim()] = valueParts.join('=').trim();
+        const value = valueParts.join('=').trim().replace(/^["']|["']$/g, ''); // Remove quotes
+        process.env[key.trim()] = value;
       }
     }
   });
