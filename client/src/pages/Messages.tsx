@@ -86,7 +86,7 @@ export default function Messages() {
     enabled: !!user,
     queryFn: async (): Promise<any[]> => {
       try {
-        const result = await apiRequest("/api/conversations", "GET");
+        const result = await apiRequest("GET", "/api/conversations");
         return Array.isArray(result) ? result : [];
       } catch (error) {
         reportFailure("/api/conversations", error);
@@ -101,7 +101,7 @@ export default function Messages() {
     enabled: !!user,
     queryFn: async (): Promise<any[]> => {
       try {
-        const result = await apiRequest("/api/messages", "GET");
+        const result = await apiRequest("GET", "/api/messages");
         return Array.isArray(result) ? result : [];
       } catch (error) {
         reportFailure("/api/messages", error);

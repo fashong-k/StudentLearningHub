@@ -65,7 +65,7 @@ export default function Grades() {
     enabled: !!user,
     queryFn: async (): Promise<any[]> => {
       try {
-        const result = await apiRequest("/api/grades", "GET");
+        const result = await apiRequest("GET", "/api/grades");
         return Array.isArray(result) ? result : [];
       } catch (error) {
         reportFailure("/api/grades", error);

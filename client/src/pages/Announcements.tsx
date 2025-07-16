@@ -74,7 +74,7 @@ export default function Announcements() {
       const allAnnouncements = [];
       for (const course of courses) {
         try {
-          const courseAnnouncements = await apiRequest(`/api/courses/${course.id}/announcements`, "GET");
+          const courseAnnouncements = await apiRequest("GET", `/api/courses/${course.id}/announcements`);
           if (Array.isArray(courseAnnouncements)) {
             allAnnouncements.push(...courseAnnouncements);
           }
@@ -94,7 +94,7 @@ export default function Announcements() {
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/api/login";
+        window.location.href = "/login";
       }, 500);
       return;
     }

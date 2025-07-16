@@ -55,7 +55,7 @@ export default function Courses() {
     enabled: !!user,
     queryFn: async (): Promise<any[]> => {
       try {
-        const result = await apiRequest("/api/courses", "GET");
+        const result = await apiRequest("GET", "/api/courses");
         return Array.isArray(result) ? result : [];
       } catch (error) {
         reportFailure("/api/courses", error);
@@ -66,7 +66,7 @@ export default function Courses() {
 
   const createCourseMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("/api/courses", "POST", data);
+      return await apiRequest("POST", "/api/courses", data);
     },
     onSuccess: () => {
       toast({

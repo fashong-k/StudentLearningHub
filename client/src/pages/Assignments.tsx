@@ -71,7 +71,7 @@ export default function Assignments() {
       const allAssignments = [];
       for (const course of courses) {
         try {
-          const courseAssignments = await apiRequest(`/api/courses/${course.id}/assignments`, "GET");
+          const courseAssignments = await apiRequest("GET", `/api/courses/${course.id}/assignments`);
           if (Array.isArray(courseAssignments)) {
             allAssignments.push(...courseAssignments);
           }
