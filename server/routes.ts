@@ -16,6 +16,7 @@ import { z } from "zod";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { initializeDatabase } from "./initializeDatabase";
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -83,6 +84,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database with Drizzle
   try {
     console.log('Database connected successfully with Drizzle');
+    
+    // Initialize database tables
+    await initializeDatabase();
     
     // Create default users if they don't exist
     await createDefaultUsers();
