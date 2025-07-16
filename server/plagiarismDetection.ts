@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { db } from './db';
+import { db } from './db-drizzle';
 import { plagiarismChecks, plagiarismDatabase, submissions } from '@shared/schema';
 import { eq, and, ne, sql } from 'drizzle-orm';
 

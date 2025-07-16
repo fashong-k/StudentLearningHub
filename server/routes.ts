@@ -37,7 +37,7 @@ const upload = multer({
 });
 
 // Import the new seeding system
-import { runSeedProcess } from './seedData';
+// import { runSeedProcess } from './seedData';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database with Drizzle
