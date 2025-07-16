@@ -206,6 +206,8 @@ Preferred communication style: Simple, everyday language.
   - Added error handling for missing .env files while maintaining compatibility
   - Moved environment variable loading to server/db.ts for better local development compatibility
   - Ensured .env file is loaded before database configuration in both Replit and local environments
+  - Fixed duplicate schema creation messages by removing redundant logic in server/routes.ts
+  - Schema creation now happens only once in initializeDatabase() function for cleaner console output
 
 ## Changelog
 
