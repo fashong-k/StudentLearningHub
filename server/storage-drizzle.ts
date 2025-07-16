@@ -94,16 +94,77 @@ export class DrizzleStorage implements IStorage {
 
   // Course operations
   async getCourses(): Promise<CourseAttributes[]> {
-    return await db.select().from(courses).orderBy(asc(courses.title));
+    const result = await db.select({
+      id: courses.id,
+      title: courses.title,
+      description: courses.description,
+      courseCode: courses.courseCode,
+      teacherId: courses.teacherId,
+      semester: courses.semester,
+      year: courses.year,
+      isActive: courses.isActive,
+      createdAt: courses.createdAt,
+      updatedAt: courses.updatedAt,
+    }).from(courses).orderBy(asc(courses.title));
+    
+    return result.map(course => ({
+      ...course,
+      termType: "semester", // Default values for missing columns
+      startDate: null,
+      endDate: null,
+      visibility: "private",
+      gradingScheme: "letter",
+    }));
   }
 
   async getCourseById(id: number): Promise<CourseAttributes | undefined> {
-    const [course] = await db.select().from(courses).where(eq(courses.id, id));
-    return course;
+    const [course] = await db.select({
+      id: courses.id,
+      title: courses.title,
+      description: courses.description,
+      courseCode: courses.courseCode,
+      teacherId: courses.teacherId,
+      semester: courses.semester,
+      year: courses.year,
+      isActive: courses.isActive,
+      createdAt: courses.createdAt,
+      updatedAt: courses.updatedAt,
+    }).from(courses).where(eq(courses.id, id));
+    
+    if (!course) return undefined;
+    
+    return {
+      ...course,
+      termType: "semester", // Default values for missing columns
+      startDate: null,
+      endDate: null,
+      visibility: "private",
+      gradingScheme: "letter",
+    };
   }
 
   async getTeacherCourses(teacherId: string): Promise<CourseAttributes[]> {
-    return await db.select().from(courses).where(eq(courses.teacherId, teacherId));
+    const result = await db.select({
+      id: courses.id,
+      title: courses.title,
+      description: courses.description,
+      courseCode: courses.courseCode,
+      teacherId: courses.teacherId,
+      semester: courses.semester,
+      year: courses.year,
+      isActive: courses.isActive,
+      createdAt: courses.createdAt,
+      updatedAt: courses.updatedAt,
+    }).from(courses).where(eq(courses.teacherId, teacherId));
+    
+    return result.map(course => ({
+      ...course,
+      termType: "semester", // Default values for missing columns
+      startDate: null,
+      endDate: null,
+      visibility: "private",
+      gradingScheme: "letter",
+    }));
   }
 
   async getStudentCourses(studentId: string): Promise<CourseAttributes[]> {
@@ -116,11 +177,7 @@ export class DrizzleStorage implements IStorage {
         teacherId: courses.teacherId,
         semester: courses.semester,
         year: courses.year,
-        termType: courses.termType,
-        startDate: courses.startDate,
-        endDate: courses.endDate,
-        visibility: courses.visibility,
-        gradingScheme: courses.gradingScheme,
+        isActive: courses.isActive,
         createdAt: courses.createdAt,
         updatedAt: courses.updatedAt,
       })
@@ -128,21 +185,71 @@ export class DrizzleStorage implements IStorage {
       .innerJoin(enrollments, eq(enrollments.courseId, courses.id))
       .where(eq(enrollments.studentId, studentId));
     
-    return result;
+    return result.map(course => ({
+      ...course,
+      termType: "semester", // Default values for missing columns
+      startDate: null,
+      endDate: null,
+      visibility: "private",
+      gradingScheme: "letter",
+    }));
   }
 
   async createCourse(course: Omit<CourseAttributes, 'id' | 'createdAt' | 'updatedAt'>): Promise<CourseAttributes> {
-    const [newCourse] = await db.insert(courses).values(course).returning();
-    return newCourse;
+    const courseData = {
+      title: course.title,
+      description: course.description,
+      courseCode: course.courseCode,
+      teacherId: course.teacherId,
+      semester: course.semester,
+      year: course.year,
+      isActive: course.isActive || true,
+    };
+    
+    const [newCourse] = await db.insert(courses).values(courseData).returning();
+    return {
+      ...newCourse,
+      termType: "semester", // Default values for missing columns
+      startDate: null,
+      endDate: null,
+      visibility: "private",
+      gradingScheme: "letter",
+    };
   }
 
   async updateCourse(id: number, course: Partial<CourseAttributes>): Promise<CourseAttributes> {
+    const updateData = {
+      title: course.title,
+      description: course.description,
+      courseCode: course.courseCode,
+      teacherId: course.teacherId,
+      semester: course.semester,
+      year: course.year,
+      isActive: course.isActive,
+      updatedAt: new Date(),
+    };
+    
+    // Remove undefined values
+    Object.keys(updateData).forEach(key => {
+      if (updateData[key] === undefined) {
+        delete updateData[key];
+      }
+    });
+    
     const [updatedCourse] = await db
       .update(courses)
-      .set({ ...course, updatedAt: new Date() })
+      .set(updateData)
       .where(eq(courses.id, id))
       .returning();
-    return updatedCourse;
+    
+    return {
+      ...updatedCourse,
+      termType: "semester", // Default values for missing columns
+      startDate: null,
+      endDate: null,
+      visibility: "private",
+      gradingScheme: "letter",
+    };
   }
 
   async deleteCourse(id: number): Promise<boolean> {

@@ -39,10 +39,53 @@ const upload = multer({
 // Import the new seeding system
 // import { runSeedProcess } from './seedData';
 
+async function createDefaultUsers() {
+  console.log('Creating default users...');
+  
+  const defaultUsers = [
+    {
+      id: 'admin',
+      email: 'admin@lms.local',
+      firstName: 'System',
+      lastName: 'Administrator',
+      role: 'admin' as const,
+      profileImageUrl: null,
+    },
+    {
+      id: 'teacher',
+      email: 'teacher@lms.local',
+      firstName: 'John',
+      lastName: 'Teacher',
+      role: 'teacher' as const,
+      profileImageUrl: null,
+    },
+    {
+      id: 'student',
+      email: 'student@lms.local',
+      firstName: 'Jane',
+      lastName: 'Student',
+      role: 'student' as const,
+      profileImageUrl: null,
+    },
+  ];
+
+  for (const user of defaultUsers) {
+    try {
+      await storage.upsertUser(user);
+      console.log(`✓ Created/updated user: ${user.id}`);
+    } catch (error) {
+      console.error(`Error creating user ${user.id}:`, error);
+    }
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database with Drizzle
   try {
     console.log('Database connected successfully with Drizzle');
+    
+    // Create default users if they don't exist
+    await createDefaultUsers();
   } catch (error) {
     console.error('Database setup failed:', error);
     console.log('Continuing without database connection for local development...');
@@ -62,7 +105,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Course routes
   app.get("/api/courses", authMiddleware, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id; // Use local auth user structure
       const user = await storage.getUser(userId);
       
       if (!user) {
@@ -153,10 +196,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log("Raw request body:", req.body);
       
-      const courseData = insertCourseSchema.parse({
-        ...req.body,
+      const courseData = {
+        title: req.body.title,
+        courseCode: req.body.courseCode,
         teacherId: userId,
-      });
+        description: req.body.description || null,
+        semester: req.body.semester || null,
+        year: req.body.year || null,
+        termType: req.body.termType || "semester",
+        startDate: req.body.startDate ? new Date(req.body.startDate) : null,
+        endDate: req.body.endDate ? new Date(req.body.endDate) : null,
+        visibility: req.body.visibility || "private",
+        gradingScheme: req.body.gradingScheme || "letter",
+        isActive: req.body.isActive !== undefined ? req.body.isActive : true,
+      };
 
       console.log("Parsed course data:", courseData);
 
@@ -245,7 +298,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(enrollment);
     } catch (error) {
       console.error("Error enrolling in course:", error);
-      if (error.name === "SequelizeUniqueConstraintError") {
+      if (error instanceof Error && error.name === "SequelizeUniqueConstraintError") {
         return res.status(409).json({ message: "Already enrolled in this course" });
       }
       res.status(500).json({ message: "Failed to enroll in course" });
@@ -531,6 +584,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         filePath: req.file?.path || null,
         submittedAt: req.body.submittedAt ? new Date(req.body.submittedAt) : new Date(),
         isLate: assignment.dueDate ? new Date() > new Date(assignment.dueDate) : false,
+        grade: null,
+        feedback: null,
+        gradedAt: null,
       };
 
       const submission = await storage.createSubmission(submissionData);

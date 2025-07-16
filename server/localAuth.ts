@@ -177,6 +177,11 @@ export const isLocallyAuthenticated = (req: Request, res: Response, next: NextFu
   
   // Add user to request for compatibility
   (req as any).user = {
+    id: sessionUser.id,
+    email: sessionUser.email,
+    firstName: sessionUser.firstName,
+    lastName: sessionUser.lastName,
+    role: sessionUser.role,
     claims: {
       sub: sessionUser.id,
       email: sessionUser.email,
