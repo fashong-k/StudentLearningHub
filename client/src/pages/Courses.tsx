@@ -18,6 +18,7 @@ import { insertCourseSchema } from "@shared/schema";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useDataFallback } from "@/hooks/useDataFallback";
 import { DataFallbackAlert } from "@/components/DataFallbackAlert";
+import { hasPermission } from "@/lib/roleUtils";
 import { 
   BookOpen, 
   Users, 
@@ -148,7 +149,7 @@ export default function Courses() {
                   : "View your enrolled courses and assignments"}
               </p>
             </div>
-            {user?.role === "teacher" && (
+            {hasPermission(user?.role || "student", "canCreateCourses") && (
               <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <DialogTrigger asChild>
                   <Button className="bg-blue-600 hover:bg-blue-700">

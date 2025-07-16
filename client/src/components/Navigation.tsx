@@ -16,16 +16,20 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const navigationItems = [
-  { path: "/", icon: LayoutDashboard, label: "LayoutDashboard" },
-  { path: "/courses", icon: BookOpen, label: "Courses" },
-  { path: "/assignments", icon: Variable, label: "Assignments" },
-  { path: "/grades", icon: BadgePercent, label: "Grades" },
-  { path: "/calendar", icon: CalendarDays, label: "Calendar" },
-  { path: "/messages", icon: MessageCircle, label: "Messages" },
-  { path: "/announcements", icon: CircleAlert, label: "Announcements" },
-  { path: "/analytics", icon: ChartScatter, label: "ChartScatter" },
-];
+const getNavigationItems = (userRole: string) => {
+  const baseItems = [
+    { path: "/", icon: LayoutDashboard, label: "Dashboard", roles: ["student", "teacher", "admin"] },
+    { path: "/courses", icon: BookOpen, label: "Courses", roles: ["student", "teacher", "admin"] },
+    { path: "/assignments", icon: Variable, label: "Assignments", roles: ["student", "teacher", "admin"] },
+    { path: "/grades", icon: BadgePercent, label: "Grades", roles: ["student", "teacher", "admin"] },
+    { path: "/messages", icon: MessageCircle, label: "Messages", roles: ["student", "teacher", "admin"] },
+    { path: "/announcements", icon: CircleAlert, label: "Announcements", roles: ["student", "teacher", "admin"] },
+    { path: "/analytics", icon: ChartScatter, label: "Analytics", roles: ["teacher", "admin"] },
+  ];
+
+  // Filter items based on user role
+  return baseItems.filter(item => item.roles.includes(userRole));
+};
 
 export default function Navigation() {
   const { user } = useAuth();
@@ -60,7 +64,7 @@ export default function Navigation() {
 
       {/* Navigation Menu */}
       <nav className="flex-1 p-4 space-y-2">
-        {navigationItems.map((item) => {
+        {getNavigationItems(user?.role || "student").map((item) => {
           const Icon = item.icon;
           const isActive = location === item.path;
           

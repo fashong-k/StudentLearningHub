@@ -20,6 +20,7 @@ import { insertAnnouncementSchema } from "@shared/schema";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useDataFallback } from "@/hooks/useDataFallback";
 import { DataFallbackAlert } from "@/components/DataFallbackAlert";
+import { hasPermission } from "@/lib/roleUtils";
 import { format, formatDistanceToNow } from "date-fns";
 import { 
   Megaphone, 
@@ -289,7 +290,7 @@ export default function Announcements() {
                   : "Stay updated with the latest course announcements"}
               </p>
             </div>
-            {user?.role === "teacher" && (
+            {hasPermission(user?.role || "student", "canCreateAnnouncements") && (
               <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <DialogTrigger asChild>
                   <Button className="bg-blue-600 hover:bg-blue-700">

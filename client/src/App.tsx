@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
 import LocalLogin from "@/pages/LocalLogin";
@@ -40,13 +41,41 @@ function Router() {
       ) : (
         <>
           <Route path="/" component={Home} />
-          <Route path="/courses" component={Courses} />
-          <Route path="/assignments" component={Assignments} />
-          <Route path="/grades" component={Grades} />
-          <Route path="/analytics" component={Analytics} />
-          <Route path="/announcements" component={Announcements} />
-          <Route path="/messages" component={Messages} />
-          <Route path="/profile" component={Profile} />
+          <Route path="/courses">
+            <ProtectedRoute route="/courses">
+              <Courses />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/assignments">
+            <ProtectedRoute route="/assignments">
+              <Assignments />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/grades">
+            <ProtectedRoute route="/grades">
+              <Grades />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/analytics">
+            <ProtectedRoute route="/analytics">
+              <Analytics />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/announcements">
+            <ProtectedRoute route="/announcements">
+              <Announcements />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/messages">
+            <ProtectedRoute route="/messages">
+              <Messages />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/profile">
+            <ProtectedRoute route="/profile">
+              <Profile />
+            </ProtectedRoute>
+          </Route>
         </>
       )}
       <Route component={NotFound} />

@@ -1,9 +1,10 @@
 import { useAuth } from "@/hooks/useAuth";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Bell, Mail, Settings, Plus, BookOpen, LogOut } from "lucide-react";
+import { Search, Bell, Mail, Settings, Plus, BookOpen, LogOut, Shield } from "lucide-react";
 import CourseCard from "./CourseCard";
 import QuickStats from "./QuickStats";
 import AnnouncementsList from "./AnnouncementsList";
@@ -12,6 +13,7 @@ import UpcomingDeadlines from "./UpcomingDeadlines";
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { can, isAdmin, isTeacher, isStudent } = usePermissions();
 
   const handleLogout = async () => {
     try {
@@ -52,7 +54,10 @@ export default function Dashboard() {
       {/* Header */}
       <header className="lms-surface border-b border-gray-200 p-4 flex items-center justify-between">
         <div className="flex items-center flex-1">
-          <h1 className="text-2xl font-bold text-gray-800 mr-6">Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-800 mr-6">
+            Dashboard
+            {isAdmin && <Shield className="inline-block w-5 h-5 ml-2 text-purple-600" />}
+          </h1>
           <div className="relative max-w-md">
             <Input
               type="text"
