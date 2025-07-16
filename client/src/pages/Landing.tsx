@@ -9,8 +9,8 @@ export default function Landing() {
 
   const handleRoleSelection = (role: string, username: string) => {
     setIsRoleDialogOpen(false);
-    // Navigate to login with pre-filled username
-    window.location.href = `/login?username=${username}`;
+    // Navigate to login with pre-filled username and selected role
+    window.location.href = `/login?username=${username}&role=${role}`;
   };
 
   return (
