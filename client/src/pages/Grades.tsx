@@ -223,8 +223,8 @@ export default function Grades() {
   };
 
   const filteredGrades = sampleGrades.filter(grade => {
-    const matchesSearch = grade.assignmentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         grade.courseCode.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (grade.assignmentName || grade.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (grade.courseCode || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCourse = selectedCourse === "all" || grade.courseCode === selectedCourse;
     return matchesSearch && matchesCourse;
   });
@@ -453,46 +453,46 @@ export default function Grades() {
                     <TableRow key={grade.id}>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{grade.assignmentName}</div>
-                          <div className="text-sm text-gray-500">Weight: {grade.weight}%</div>
+                          <div className="font-medium">{grade.assignmentName || grade.title || 'Untitled Assignment'}</div>
+                          <div className="text-sm text-gray-500">Weight: {grade.weight || 0}%</div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{grade.courseCode}</div>
-                          <div className="text-sm text-gray-500">{grade.courseName}</div>
+                          <div className="font-medium">{grade.courseCode || 'N/A'}</div>
+                          <div className="text-sm text-gray-500">{grade.courseName || 'Course'}</div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="capitalize">
-                          {grade.assignmentType}
+                          {grade.assignmentType || 'assignment'}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <div className="font-medium">
-                          {grade.grade}/{grade.maxPoints}
+                          {grade.grade || 0}/{grade.maxPoints || 100}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className={`font-bold ${getGradeColor(grade.percentage)}`}>
-                          {grade.percentage.toFixed(1)}%
+                        <div className={`font-bold ${getGradeColor(grade.percentage || 0)}`}>
+                          {(grade.percentage || 0).toFixed(1)}%
                         </div>
-                        <div className="text-sm text-gray-500">({grade.letterGrade})</div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          {format(grade.submittedAt, "MMM d, yyyy")}
-                        </div>
+                        <div className="text-sm text-gray-500">({grade.letterGrade || 'N/A'})</div>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          {format(grade.gradedAt, "MMM d, yyyy")}
+                          {grade.submittedAt ? format(new Date(grade.submittedAt), "MMM d, yyyy") : 'N/A'}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          {grade.gradedAt ? format(new Date(grade.gradedAt), "MMM d, yyyy") : 'N/A'}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="max-w-xs">
-                          <p className="text-sm text-gray-600 truncate" title={grade.feedback}>
-                            {grade.feedback}
+                          <p className="text-sm text-gray-600 truncate" title={grade.feedback || 'No feedback'}>
+                            {grade.feedback || 'No feedback provided'}
                           </p>
                         </div>
                       </TableCell>
