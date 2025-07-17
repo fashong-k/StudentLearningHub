@@ -11,6 +11,7 @@ import LocalLogin from "@/pages/LocalLogin";
 import Home from "@/pages/Home";
 import Courses from "@/pages/Courses";
 import CourseView from "@/pages/CourseView";
+import CourseSettings from "@/pages/CourseSettings";
 import Assignments from "@/pages/Assignments";
 import Grades from "@/pages/Grades";
 import Profile from "@/pages/Profile";
@@ -46,6 +47,13 @@ function Router() {
             <ProtectedRoute route="/courses">
               <Courses />
             </ProtectedRoute>
+          </Route>
+          <Route path="/courses/:courseId/settings">
+            {(params) => (
+              <ProtectedRoute route="/courses/:courseId/settings">
+                <CourseSettings courseId={params.courseId} />
+              </ProtectedRoute>
+            )}
           </Route>
           <Route path="/courses/:courseId">
             <ProtectedRoute route="/courses/:courseId">

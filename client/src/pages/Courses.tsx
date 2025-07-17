@@ -68,8 +68,6 @@ export default function Courses() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("all");
   const [codeValidation, setCodeValidation] = useState<{ isValid: boolean; message: string }>({ isValid: true, message: "" });
-  const [isConfigOpen, setIsConfigOpen] = useState(false);
-  const [configuringCourse, setConfiguringCourse] = useState<any>(null);
   const queryClient = useQueryClient();
   const { isUsingFallback, failedEndpoints, showAlert, reportFailure, clearFailures } = useDataFallback();
   const [, setLocation] = useLocation();
@@ -365,10 +363,7 @@ export default function Courses() {
     setLocation(`/courses/${courseId}`);
   };
 
-  const handleConfigureCourse = (course: any) => {
-    setConfiguringCourse(course);
-    setIsConfigOpen(true);
-  };
+
 
   const filteredCourses = Array.isArray(courses) ? courses.filter((course: any) => {
     const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -772,184 +767,7 @@ export default function Courses() {
           </DialogContent>
         </Dialog>
 
-        {/* Course Configuration Dialog */}
-        <Dialog open={isConfigOpen} onOpenChange={setIsConfigOpen}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Configure Course Settings</DialogTitle>
-            </DialogHeader>
-            
-            {configuringCourse && (
-              <div className="space-y-6">
-                {/* Course Info */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-lg mb-2">{configuringCourse.title}</h3>
-                  <p className="text-sm text-gray-600">{configuringCourse.courseCode} • {configuringCourse.semester} {configuringCourse.year}</p>
-                </div>
-                
-                {/* Grading Scheme */}
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Settings className="w-5 h-5 text-blue-600" />
-                    <h4 className="font-medium">Grading Scheme</h4>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="p-3 border rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300">
-                      <div className="font-medium">Letter Grade</div>
-                      <div className="text-sm text-gray-600">A, B, C, D, F</div>
-                    </div>
-                    <div className="p-3 border rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300">
-                      <div className="font-medium">Percentage</div>
-                      <div className="text-sm text-gray-600">0-100%</div>
-                    </div>
-                    <div className="p-3 border rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300">
-                      <div className="font-medium">Points</div>
-                      <div className="text-sm text-gray-600">Point-based</div>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Visibility Settings */}
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Eye className="w-5 h-5 text-green-600" />
-                    <h4 className="font-medium">Course Visibility</h4>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3 p-3 border rounded-lg">
-                      <input type="radio" name="visibility" id="private" className="w-4 h-4 text-blue-600" defaultChecked />
-                      <label htmlFor="private" className="flex-1 cursor-pointer">
-                        <div className="font-medium">Private</div>
-                        <div className="text-sm text-gray-600">Only enrolled users can access this course</div>
-                      </label>
-                    </div>
-                    <div className="flex items-center space-x-3 p-3 border rounded-lg">
-                      <input type="radio" name="visibility" id="institution" className="w-4 h-4 text-blue-600" />
-                      <label htmlFor="institution" className="flex-1 cursor-pointer">
-                        <div className="font-medium">Institution</div>
-                        <div className="text-sm text-gray-600">Any logged-in institutional user can access</div>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Course Dates */}
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <CalendarIcon className="w-5 h-5 text-purple-600" />
-                    <h4 className="font-medium">Course Duration</h4>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Start Date</label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button variant="outline" className="w-full justify-start text-left font-normal">
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {configuringCourse.startDate ? format(new Date(configuringCourse.startDate), "PPP") : "Pick a date"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 z-50 popover-content">
-                          <Calendar
-                            mode="single"
-                            selected={configuringCourse.startDate ? new Date(configuringCourse.startDate) : undefined}
-                            onSelect={(date) => {
-                              // Handle date selection
-                            }}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2">End Date</label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button variant="outline" className="w-full justify-start text-left font-normal">
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {configuringCourse.endDate ? format(new Date(configuringCourse.endDate), "PPP") : "Pick a date"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 z-50 popover-content">
-                          <Calendar
-                            mode="single"
-                            selected={configuringCourse.endDate ? new Date(configuringCourse.endDate) : undefined}
-                            onSelect={(date) => {
-                              // Handle date selection
-                            }}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Enrollment Management */}
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Users className="w-5 h-5 text-orange-600" />
-                    <h4 className="font-medium">Enrollment Management</h4>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium">Teachers</span>
-                        <Button size="sm" variant="outline">
-                          <Plus className="w-4 h-4 mr-1" />
-                          Add Teacher
-                        </Button>
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        {configuringCourse.teacher?.firstName} {configuringCourse.teacher?.lastName} (Primary)
-                      </div>
-                    </div>
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium">Students</span>
-                        <Button size="sm" variant="outline">
-                          <Plus className="w-4 h-4 mr-1" />
-                          Enroll Student
-                        </Button>
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        {configuringCourse.enrolledCount || 0} students enrolled
-                      </div>
-                    </div>
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium">Teaching Assistants</span>
-                        <Button size="sm" variant="outline">
-                          <Plus className="w-4 h-4 mr-1" />
-                          Add TA
-                        </Button>
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        No TAs assigned
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Action Buttons */}
-                <div className="flex justify-end space-x-2 pt-4 border-t">
-                  <Button type="button" variant="outline" onClick={() => setIsConfigOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button type="button" onClick={() => {
-                    toast({
-                      title: "Settings Updated",
-                      description: "Course configuration has been saved.",
-                    });
-                    setIsConfigOpen(false);
-                  }}>
-                    Save Changes
-                  </Button>
-                </div>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
+
 
         {/* Delete Course Dialog */}
         <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
@@ -1046,7 +864,7 @@ export default function Courses() {
                             <Edit className="w-4 h-4 mr-2" />
                             Edit Course
                           </SimpleDropdownItem>
-                          <SimpleDropdownItem onClick={() => handleConfigureCourse(course)}>
+                          <SimpleDropdownItem onClick={() => setLocation(`/courses/${course.id}/settings`)}>
                             <Settings className="w-4 h-4 mr-2" />
                             Configure Settings
                           </SimpleDropdownItem>
