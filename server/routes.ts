@@ -20,6 +20,7 @@ import path from "path";
 import fs from "fs";
 import { initializeDatabase } from "./initializeDatabase";
 import { initializeExtendedDatabase } from "./initializeExtendedDatabase";
+import { analyzeCourseDeletionImpact, simulateCourseDeletion } from "./courseDeletionAnalyzer";
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -315,10 +316,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Analyze course deletion impact
+  app.post("/api/courses/:id/analyze-deletion", authMiddleware, async (req: any, res) => {
+    try {
+      const courseId = parseInt(req.params.id);
+      const userId = req.user.id; // Use local auth user structure
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== "teacher") {
+        return res.status(403).json({ message: "Only teachers can analyze course deletion" });
+      }
+
+      const course = await storage.getCourseById(courseId);
+      if (!course || course.teacherId !== userId) {
+        return res.status(403).json({ message: "You can only analyze deletion of your own courses" });
+      }
+
+      const impactAnalysis = await analyzeCourseDeletionImpact(courseId);
+      res.json({ impactAnalysis });
+    } catch (error) {
+      console.error("Error analyzing course deletion:", error);
+      res.status(500).json({ message: "Failed to analyze course deletion" });
+    }
+  });
+
   app.delete("/api/courses/:id", authMiddleware, async (req: any, res) => {
     try {
       const courseId = parseInt(req.params.id);
-      const userId = req.user.claims.sub;
+      const userId = req.user.id; // Use local auth user structure
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== "teacher") {
@@ -330,9 +355,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You can only delete your own courses" });
       }
 
+      // Analyze impact before deletion
+      const impactAnalysis = await analyzeCourseDeletionImpact(courseId);
+      
+      // Perform the deletion - CASCADE DELETE will handle all related records
       const deleted = await storage.deleteCourse(courseId);
+      
       if (deleted) {
-        res.json({ message: "Course deleted successfully" });
+        res.json({ 
+          message: "Course deleted successfully",
+          deletionSummary: {
+            courseTitle: course.title,
+            courseCode: course.courseCode,
+            cascadeEffects: impactAnalysis.cascadeEffects,
+            totalRecordsDeleted: Object.values(impactAnalysis.cascadeEffects).reduce((sum, count) => sum + count, 0)
+          }
+        });
       } else {
         res.status(404).json({ message: "Course not found" });
       }
