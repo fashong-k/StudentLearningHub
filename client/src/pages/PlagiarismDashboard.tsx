@@ -60,9 +60,9 @@ export default function PlagiarismDashboard() {
     queryFn: async () => {
       const checks: PlagiarismCheck[] = [];
       
-      for (const course of courses) {
+      for (const course of (courses as any[])) {
         try {
-          const courseChecks = await apiRequest(`/api/plagiarism/course/${course.id}`);
+          const courseChecks = await apiRequest('GET', `/api/plagiarism/course/${course.id}`);
           checks.push(...courseChecks.map((check: any) => ({
             ...check,
             courseName: course.title,
@@ -75,7 +75,7 @@ export default function PlagiarismDashboard() {
       
       return checks;
     },
-    enabled: !!user && courses.length > 0,
+    enabled: !!user && Array.isArray(courses) && courses.length > 0,
   });
 
   // Mutation for running plagiarism checks
@@ -100,17 +100,17 @@ export default function PlagiarismDashboard() {
   });
 
   // Filter checks based on selected filters
-  const filteredChecks = allChecks.filter(check => {
+  const filteredChecks = Array.isArray(allChecks) ? allChecks.filter((check: any) => {
     const matchesSearch = searchTerm === '' || 
-      check.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      check.assignmentTitle.toLowerCase().includes(searchTerm.toLowerCase());
+      check.studentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      check.assignmentTitle?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesCourse = selectedCourse === 'all' || check.courseName === selectedCourse;
     const matchesStatus = statusFilter === 'all' || check.status === statusFilter;
     
     let matchesSeverity = true;
     if (severityFilter !== 'all') {
-      const score = check.similarityScore;
+      const score = check.similarityScore || 0;
       switch (severityFilter) {
         case 'high':
           matchesSeverity = score >= 60;
@@ -125,15 +125,15 @@ export default function PlagiarismDashboard() {
     }
     
     return matchesSearch && matchesCourse && matchesStatus && matchesSeverity;
-  });
+  }) : [];
 
   // Calculate dashboard statistics
   const stats = {
-    totalChecks: allChecks.length,
-    completedChecks: allChecks.filter(check => check.status === 'completed').length,
-    highRiskSubmissions: allChecks.filter(check => check.similarityScore >= 60).length,
-    averageSimilarity: allChecks.length > 0 
-      ? allChecks.reduce((sum, check) => sum + check.similarityScore, 0) / allChecks.length 
+    totalChecks: Array.isArray(allChecks) ? allChecks.length : 0,
+    completedChecks: Array.isArray(allChecks) ? allChecks.filter((check: any) => check.status === 'completed').length : 0,
+    highRiskSubmissions: Array.isArray(allChecks) ? allChecks.filter((check: any) => check.similarityScore >= 60).length : 0,
+    averageSimilarity: Array.isArray(allChecks) && allChecks.length > 0 
+      ? allChecks.reduce((sum: number, check: any) => sum + (check.similarityScore || 0), 0) / allChecks.length 
       : 0,
   };
 
@@ -277,7 +277,7 @@ export default function PlagiarismDashboard() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Courses</SelectItem>
-                      {courses.map((course: any) => (
+                      {Array.isArray(courses) && courses.map((course: any) => (
                         <SelectItem key={course.id} value={course.title}>
                           {course.title}
                         </SelectItem>
@@ -311,7 +311,7 @@ export default function PlagiarismDashboard() {
                       <SelectItem value="all">All Severity</SelectItem>
                       <SelectItem value="high">High (60%+)</SelectItem>
                       <SelectItem value="medium">Medium (30-59%)</SelectItem>
-                      <SelectItem value="low">Low (<30%)</SelectItem>
+                      <SelectItem value="low">Low (&lt;30%)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
