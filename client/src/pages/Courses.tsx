@@ -473,17 +473,17 @@ export default function Courses() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Term Type</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
+                            <FormControl>
+                              <Select onValueChange={field.onChange} value={field.value}>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select term type" />
                                 </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="semester">Semester</SelectItem>
-                                <SelectItem value="term">Term</SelectItem>
-                              </SelectContent>
-                            </Select>
+                                <SelectContent>
+                                  <SelectItem value="semester">Semester</SelectItem>
+                                  <SelectItem value="term">Term</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
                           </FormItem>
                         )}
                       />
@@ -496,19 +496,19 @@ export default function Courses() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Semester</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl>
+                                <FormControl>
+                                  <Select onValueChange={field.onChange} value={field.value}>
                                     <SelectTrigger>
                                       <SelectValue placeholder="Select semester" />
                                     </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="Spring">Spring</SelectItem>
-                                    <SelectItem value="Summer">Summer</SelectItem>
-                                    <SelectItem value="Fall">Fall</SelectItem>
-                                    <SelectItem value="Winter">Winter</SelectItem>
-                                  </SelectContent>
-                                </Select>
+                                    <SelectContent>
+                                      <SelectItem value="Spring">Spring</SelectItem>
+                                      <SelectItem value="Summer">Summer</SelectItem>
+                                      <SelectItem value="Fall">Fall</SelectItem>
+                                      <SelectItem value="Winter">Winter</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </FormControl>
                               </FormItem>
                             )}
                           />
@@ -618,17 +618,17 @@ export default function Courses() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Visibility</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
+                              <FormControl>
+                                <Select onValueChange={field.onChange} value={field.value}>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select visibility" />
                                   </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="private">Private (Enrolled only)</SelectItem>
-                                  <SelectItem value="institution">Institution (All users)</SelectItem>
-                                </SelectContent>
-                              </Select>
+                                  <SelectContent>
+                                    <SelectItem value="private">Private (Enrolled only)</SelectItem>
+                                    <SelectItem value="institution">Institution (All users)</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
                             </FormItem>
                           )}
                         />
@@ -638,18 +638,18 @@ export default function Courses() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Grading Scheme</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
+                              <FormControl>
+                                <Select onValueChange={field.onChange} value={field.value}>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select grading scheme" />
                                   </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="letter">Letter Grade (A-F)</SelectItem>
-                                  <SelectItem value="percentage">Percentage (0-100%)</SelectItem>
-                                  <SelectItem value="points">Points Based</SelectItem>
-                                </SelectContent>
-                              </Select>
+                                  <SelectContent>
+                                    <SelectItem value="letter">Letter Grade (A-F)</SelectItem>
+                                    <SelectItem value="percentage">Percentage (0-100%)</SelectItem>
+                                    <SelectItem value="points">Points Based</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
                             </FormItem>
                           )}
                         />
