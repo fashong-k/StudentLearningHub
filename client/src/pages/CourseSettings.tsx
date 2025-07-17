@@ -141,12 +141,14 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
   // Authentication checks
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="flex h-screen overflow-hidden lms-background">
         <Navigation />
-        <div className="container mx-auto px-4 py-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-            <div className="h-64 bg-gray-200 rounded"></div>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto bg-gray-50 p-8">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+              <div className="h-64 bg-gray-200 rounded"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -155,20 +157,22 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="flex h-screen overflow-hidden lms-background">
         <Navigation />
-        <div className="container mx-auto px-4 py-8">
-          <Card className="max-w-md mx-auto">
-            <CardHeader>
-              <CardTitle className="text-red-600">Access Denied</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 mb-4">You must be logged in to access course settings.</p>
-              <Button onClick={() => setLocation("/login")}>
-                Sign In
-              </Button>
-            </CardContent>
-          </Card>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto bg-gray-50 p-8">
+            <Card className="max-w-md mx-auto">
+              <CardHeader>
+                <CardTitle className="text-red-600">Access Denied</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">You must be logged in to access course settings.</p>
+                <Button onClick={() => setLocation("/login")}>
+                  Sign In
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     );
@@ -181,25 +185,27 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
 
   if (!isTeacher && !isAdmin) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="flex h-screen overflow-hidden lms-background">
         <Navigation />
-        <div className="container mx-auto px-4 py-8">
-          <Card className="max-w-md mx-auto">
-            <CardHeader>
-              <CardTitle className="text-orange-600">Access Restricted</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 mb-4">
-                Only teachers and administrators can access course settings.
-              </p>
-              <p className="text-sm text-gray-500 mb-4">
-                Your role: <span className="font-semibold capitalize">{userRole}</span>
-              </p>
-              <Button onClick={() => setLocation("/courses")}>
-                Return to Courses
-              </Button>
-            </CardContent>
-          </Card>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto bg-gray-50 p-8">
+            <Card className="max-w-md mx-auto">
+              <CardHeader>
+                <CardTitle className="text-orange-600">Access Restricted</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">
+                  Only teachers and administrators can access course settings.
+                </p>
+                <p className="text-sm text-gray-500 mb-4">
+                  Your role: <span className="font-semibold capitalize">{userRole}</span>
+                </p>
+                <Button onClick={() => setLocation("/courses")}>
+                  Return to Courses
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     );
@@ -219,25 +225,27 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
   // Check if teacher owns the course (admins can access all courses)
   if (course && isTeacher && String(course.teacherId) !== String(user?.id)) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="flex h-screen overflow-hidden lms-background">
         <Navigation />
-        <div className="container mx-auto px-4 py-8">
-          <Card className="max-w-md mx-auto">
-            <CardHeader>
-              <CardTitle className="text-orange-600">Course Access Denied</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 mb-4">
-                You can only configure settings for courses you teach.
-              </p>
-              <p className="text-xs text-gray-400 mb-4">
-                Course teacher: {course.teacherId} | Your ID: {user?.id}
-              </p>
-              <Button onClick={() => setLocation("/courses")}>
-                Return to Courses
-              </Button>
-            </CardContent>
-          </Card>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto bg-gray-50 p-8">
+            <Card className="max-w-md mx-auto">
+              <CardHeader>
+                <CardTitle className="text-orange-600">Course Access Denied</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">
+                  You can only configure settings for courses you teach.
+                </p>
+                <p className="text-xs text-gray-400 mb-4">
+                  Course teacher: {course.teacherId} | Your ID: {user?.id}
+                </p>
+                <Button onClick={() => setLocation("/courses")}>
+                  Return to Courses
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     );
@@ -245,12 +253,14 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="flex h-screen overflow-hidden lms-background">
         <Navigation />
-        <div className="container mx-auto px-4 py-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-            <div className="h-64 bg-gray-200 rounded"></div>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto bg-gray-50 p-8">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+              <div className="h-64 bg-gray-200 rounded"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -259,15 +269,17 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
 
   if (!course) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="flex h-screen overflow-hidden lms-background">
         <Navigation />
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Course Not Found</h1>
-            <Button onClick={() => setLocation("/courses")}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Courses
-            </Button>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto bg-gray-50 p-8">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold mb-4">Course Not Found</h1>
+              <Button onClick={() => setLocation("/courses")}>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Courses
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -275,9 +287,10 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        <div className="container mx-auto px-4 py-8">
+    <div className="flex h-screen overflow-hidden lms-background">
+      <Navigation />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-y-auto bg-gray-50 p-8">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
@@ -576,5 +589,6 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
           </Form>
         </div>
       </div>
+    </div>
   );
 }
