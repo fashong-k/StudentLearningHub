@@ -1,12 +1,11 @@
 import { db } from "./db-drizzle";
-import { courses, assignments, calendarEvents, announcements, systemLogs } from "@shared/schema";
+import { courses, assignments, announcements } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
 
 export interface CascadeUpdateResult {
   success: boolean;
   updatedRecords: {
     assignments: number;
-    calendarEvents: number;
     announcements: number;
   };
   errors: string[];
@@ -21,7 +20,6 @@ export class CourseUpdateCascade {
   ): Promise<CascadeUpdateResult> {
     const errors: string[] = [];
     let updatedAssignments = 0;
-    let updatedCalendarEvents = 0;
     let updatedAnnouncements = 0;
 
     try {
@@ -39,7 +37,6 @@ export class CourseUpdateCascade {
         // Cascade date changes to assignments
         if (this.hasDateChanges(updates, currentCourse)) {
           updatedAssignments = await this.updateAssignmentDates(courseId, updates, currentCourse);
-          updatedCalendarEvents = await this.updateCalendarEvents(courseId, updates, currentCourse);
         }
 
         // Update announcement relevance if course scope changes
@@ -55,7 +52,6 @@ export class CourseUpdateCascade {
         success: true,
         updatedRecords: {
           assignments: updatedAssignments,
-          calendarEvents: updatedCalendarEvents,
           announcements: updatedAnnouncements,
         },
         errors: [],
@@ -66,7 +62,6 @@ export class CourseUpdateCascade {
         success: false,
         updatedRecords: {
           assignments: 0,
-          calendarEvents: 0,
           announcements: 0,
         },
         errors: [error instanceof Error ? error.message : "Unknown error occurred"],

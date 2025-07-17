@@ -1,5 +1,5 @@
 import { db } from "./db-drizzle";
-import { courses, assignments, enrollments, announcements, calendarEvents, quizzes, gradeBook } from "@shared/schema";
+import { courses, assignments, enrollments, announcements, submissions } from "@shared/schema";
 import { eq, and, gte, lte, count } from "drizzle-orm";
 
 export interface CourseUpdateValidation {
@@ -10,19 +10,8 @@ export interface CourseUpdateValidation {
     enrollments: number;
     assignments: number;
     announcements: number;
-    calendarEvents: number;
-    quizzes: number;
-    grades: number;
+    submissions: number;
   };
-}
-
-export interface CourseUpdateImpact {
-  dateChanges: boolean;
-  gradingSchemeChange: boolean;
-  teacherChange: boolean;
-  codeChange: boolean;
-  affectedAssignments: number;
-  affectedEvents: number;
 }
 
 export class CourseUpdateValidator {
@@ -133,28 +122,33 @@ export class CourseUpdateValidator {
       .from(announcements)
       .where(eq(announcements.courseId, courseId));
 
-    const [calendarEventCount] = await db
-      .select({ count: count() })
-      .from(calendarEvents)
-      .where(eq(calendarEvents.courseId, courseId));
+    // Tables not yet implemented in schema
+    // const [calendarEventCount] = await db
+    //   .select({ count: count() })
+    //   .from(calendarEvents)
+    //   .where(eq(calendarEvents.courseId, courseId));
 
-    const [quizCount] = await db
-      .select({ count: count() })
-      .from(quizzes)
-      .where(and(eq(quizzes.courseId, courseId), eq(quizzes.isActive, true)));
+    // const [quizCount] = await db
+    //   .select({ count: count() })
+    //   .from(quizzes)
+    //   .where(and(eq(quizzes.courseId, courseId), eq(quizzes.isActive, true)));
 
-    const [gradeCount] = await db
+    // const [gradeCount] = await db
+    //   .select({ count: count() })
+    //   .from(gradeBook)
+    //   .where(eq(gradeBook.courseId, courseId));
+
+    const [submissionCount] = await db
       .select({ count: count() })
-      .from(gradeBook)
-      .where(eq(gradeBook.courseId, courseId));
+      .from(submissions)
+      .innerJoin(assignments, eq(submissions.assignmentId, assignments.id))
+      .where(eq(assignments.courseId, courseId));
 
     return {
       enrollments: enrollmentCount.count,
       assignments: assignmentCount.count,
       announcements: announcementCount.count,
-      calendarEvents: calendarEventCount.count,
-      quizzes: quizCount.count,
-      grades: gradeCount.count,
+      submissions: submissionCount.count,
     };
   }
 
