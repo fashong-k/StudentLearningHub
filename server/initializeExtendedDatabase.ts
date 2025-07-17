@@ -1,4 +1,4 @@
-import { db } from './db-drizzle';
+import { db, dbSchema } from './db-drizzle';
 import { sql } from 'drizzle-orm';
 import { seedExtendedData, createValidationScenarioData } from './extendedSeedData';
 
@@ -10,10 +10,10 @@ export async function initializeExtendedDatabase() {
     // Create the extended schema with all tables
     await db.execute(sql`
       -- Create schema if it doesn't exist
-      CREATE SCHEMA IF NOT EXISTS student_learning_hub;
+      CREATE SCHEMA IF NOT EXISTS ${sql.identifier(dbSchema)};
       
       -- Set search path to use the custom schema
-      SET search_path TO student_learning_hub;
+      SET search_path TO ${sql.identifier(dbSchema)};
       
       -- Create all required enum types for extended tables
       DO $$ BEGIN

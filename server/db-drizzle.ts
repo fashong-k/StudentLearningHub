@@ -32,7 +32,8 @@ if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '""' && process.env
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
   db = drizzle({ client: pool, schema });
 } else if (process.env.DB_HOST) {
-  // Use local PostgreSQL for development - force student_learning_hub schema only
+  // Use local PostgreSQL for development - use DB_SCHEMA from .env
+  const dbSchema = process.env.DB_SCHEMA || 'public';
   const pool = new NodePool({
     host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT || '5432'),
@@ -40,7 +41,7 @@ if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '""' && process.env
     password: process.env.DB_PASS,
     database: process.env.DB_NAME,
     ssl: false,
-    options: `-c search_path=student_learning_hub`,
+    options: `-c search_path=${dbSchema}`,
   });
   db = drizzleNode(pool, { 
     schema
@@ -50,5 +51,8 @@ if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '""' && process.env
     "Either DATABASE_URL or local database configuration (DB_HOST, DB_USER, etc.) must be set"
   );
 }
+
+// Export the database schema name for use in other files
+export const dbSchema = process.env.DB_SCHEMA || 'public';
 
 export { db };

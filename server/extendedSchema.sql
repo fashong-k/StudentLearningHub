@@ -1,11 +1,12 @@
 -- Extended Database Schema for Course Update Validation System
 -- This includes all tables referenced in the course update validation system
 
--- Create schema if it doesn't exist
-CREATE SCHEMA IF NOT EXISTS student_learning_hub;
+-- Create schema if it doesn't exist (schema name from environment variable)
+-- Note: This file is a template. The actual schema name is read from DB_SCHEMA environment variable
+CREATE SCHEMA IF NOT EXISTS ${DB_SCHEMA};
 
 -- Set search path to use the custom schema
-SET search_path TO student_learning_hub;
+SET search_path TO ${DB_SCHEMA};
 
 -- Create enum types
 CREATE TYPE user_role AS ENUM ('student', 'teacher', 'admin');

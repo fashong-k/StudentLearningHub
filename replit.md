@@ -315,6 +315,16 @@ Preferred communication style: Simple, everyday language.
   - Complete elimination of Sequelize import chain issues and runtime errors
   - System now running stable with pure Drizzle ORM implementation
 
+- July 17, 2025: Implemented dynamic database schema configuration system
+  - Completely eliminated hardcoded 'student_learning_hub' schema references throughout the application
+  - Updated entire codebase to use DB_SCHEMA environment variable for flexible schema configuration
+  - Modified all database operations, initialization files, and storage methods to use process.env.DB_SCHEMA
+  - Updated Drizzle ORM configuration and raw SQL queries to use dynamic schema references
+  - Fixed enum type handling for visibility and grading_scheme values in course creation
+  - Application now supports any schema name via environment configuration (default: student_learning_hub)
+  - Database connection test confirms successful operation with environment variable-based schema
+  - Enhanced system flexibility for deployment in different environments with custom schema requirements
+
 - July 16, 2025: Implemented comprehensive automatic database table creation system
   - Created initializeDatabase.ts with proper PostgreSQL schema creation
   - Added automatic table creation for all 11 core tables: users, courses, enrollments, assignments, submissions, announcements, messages, discussions, discussion_replies, plagiarism_results, sessions

@@ -1,4 +1,4 @@
-import { db } from './db-drizzle';
+import { db, dbSchema } from './db-drizzle';
 import { 
   courses, 
   assignments, 

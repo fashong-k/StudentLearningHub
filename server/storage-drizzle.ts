@@ -1,5 +1,5 @@
 import { users, courses, enrollments, assignments, submissions, announcements, messages, plagiarismChecks, plagiarismDatabase } from "@shared/schema";
-import { db } from "./db-drizzle";
+import { db, dbSchema } from "./db-drizzle";
 import { eq, and, desc, asc, sql } from "drizzle-orm";
 import type { 
   User as UserAttributes, 
@@ -75,7 +75,7 @@ export class DrizzleStorage implements IStorage {
   async getUser(id: string): Promise<UserAttributes | undefined> {
     const result = await db.execute(sql`
       SELECT id, email, first_name, last_name, profile_image_url, role, created_at, updated_at
-      FROM student_learning_hub.users
+      FROM ${sql.identifier(dbSchema)}.users
       WHERE id = ${id}
     `);
     return result.rows[0] as UserAttributes;
@@ -83,7 +83,7 @@ export class DrizzleStorage implements IStorage {
 
   async upsertUser(userData: Partial<UserAttributes> & { id: string }): Promise<UserAttributes> {
     const result = await db.execute(sql`
-      INSERT INTO student_learning_hub.users (id, email, first_name, last_name, profile_image_url, role, created_at, updated_at)
+      INSERT INTO ${sql.identifier(dbSchema)}.users (id, email, first_name, last_name, profile_image_url, role, created_at, updated_at)
       VALUES (${userData.id}, ${userData.email}, ${userData.firstName}, ${userData.lastName}, ${userData.profileImageUrl}, ${userData.role}, NOW(), NOW())
       ON CONFLICT (id) DO UPDATE SET
         email = EXCLUDED.email,
@@ -101,7 +101,7 @@ export class DrizzleStorage implements IStorage {
   async getCourses(): Promise<CourseAttributes[]> {
     const result = await db.execute(sql`
       SELECT id, title, description, course_code, teacher_id, semester, year, term_type, start_date, end_date, visibility, grading_scheme, is_active, created_at, updated_at
-      FROM student_learning_hub.courses
+      FROM ${sql.identifier(dbSchema)}.courses
       ORDER BY title ASC
     `);
     return result.rows as CourseAttributes[];
@@ -110,7 +110,7 @@ export class DrizzleStorage implements IStorage {
   async getCourseById(id: number): Promise<CourseAttributes | undefined> {
     const result = await db.execute(sql`
       SELECT id, title, description, course_code, teacher_id, semester, year, term_type, start_date, end_date, visibility, grading_scheme, is_active, created_at, updated_at
-      FROM student_learning_hub.courses
+      FROM ${sql.identifier(dbSchema)}.courses
       WHERE id = ${id}
     `);
     return result.rows[0] as CourseAttributes;
@@ -119,7 +119,7 @@ export class DrizzleStorage implements IStorage {
   async getTeacherCourses(teacherId: string): Promise<CourseAttributes[]> {
     const result = await db.execute(sql`
       SELECT id, title, description, course_code, teacher_id, semester, year, term_type, start_date, end_date, visibility, grading_scheme, is_active, created_at, updated_at
-      FROM student_learning_hub.courses
+      FROM ${sql.identifier(dbSchema)}.courses
       WHERE teacher_id = ${teacherId}
       ORDER BY title ASC
     `);
@@ -129,8 +129,8 @@ export class DrizzleStorage implements IStorage {
   async getStudentCourses(studentId: string): Promise<CourseAttributes[]> {
     const result = await db.execute(sql`
       SELECT c.id, c.title, c.description, c.course_code, c.teacher_id, c.semester, c.year, c.term_type, c.start_date, c.end_date, c.visibility, c.grading_scheme, c.is_active, c.created_at, c.updated_at
-      FROM student_learning_hub.courses c
-      INNER JOIN student_learning_hub.enrollments e ON e.course_id = c.id
+      FROM ${sql.identifier(dbSchema)}.courses c
+      INNER JOIN ${sql.identifier(dbSchema)}.enrollments e ON e.course_id = c.id
       WHERE e.student_id = ${studentId}
       ORDER BY c.title ASC
     `);
@@ -156,12 +156,12 @@ export class DrizzleStorage implements IStorage {
     // Use raw SQL to ensure proper schema and enum handling
     try {
       const result = await db.execute(sql`
-        INSERT INTO student_learning_hub.courses 
+        INSERT INTO ${sql.identifier(dbSchema)}.courses 
         (title, description, course_code, teacher_id, semester, year, term_type, start_date, end_date, visibility, grading_scheme, is_active)
         VALUES 
         (${courseData.title}, ${courseData.description}, ${courseData.courseCode}, ${courseData.teacherId}, 
          ${courseData.semester}, ${courseData.year}, ${courseData.termType}, ${courseData.startDate}, ${courseData.endDate}, 
-         ${courseData.visibility}::student_learning_hub.course_visibility, ${courseData.gradingScheme}::student_learning_hub.grading_scheme, ${courseData.isActive})
+         ${courseData.visibility}::${sql.identifier(dbSchema)}.course_visibility, ${courseData.gradingScheme}::${sql.identifier(dbSchema)}.grading_scheme, ${courseData.isActive})
         RETURNING id, title, description, course_code, teacher_id, semester, year, term_type, start_date, end_date, visibility, grading_scheme, is_active, created_at, updated_at
       `);
       

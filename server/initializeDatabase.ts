@@ -1,32 +1,32 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { db } from './db-drizzle';
+import { db, dbSchema } from './db-drizzle';
 import { sql } from 'drizzle-orm';
 
-// Function to drop all tables in student_learning_hub schema
+// Function to drop all tables in the configured schema
 async function dropAllTables() {
-  console.log('🗑️ Dropping all existing tables in student_learning_hub schema...');
+  console.log(`🗑️ Dropping all existing tables in ${dbSchema} schema...`);
   
   const dropQueries = [
-    'DROP TABLE IF EXISTS student_learning_hub.sessions CASCADE;',
-    'DROP TABLE IF EXISTS student_learning_hub.plagiarism_results CASCADE;',
-    'DROP TABLE IF EXISTS student_learning_hub.discussion_replies CASCADE;',
-    'DROP TABLE IF EXISTS student_learning_hub.discussions CASCADE;',
-    'DROP TABLE IF EXISTS student_learning_hub.messages CASCADE;',
-    'DROP TABLE IF EXISTS student_learning_hub.announcements CASCADE;',
-    'DROP TABLE IF EXISTS student_learning_hub.submissions CASCADE;',
-    'DROP TABLE IF EXISTS student_learning_hub.assignments CASCADE;',
-    'DROP TABLE IF EXISTS student_learning_hub.enrollments CASCADE;',
-    'DROP TABLE IF EXISTS student_learning_hub.courses CASCADE;',
-    'DROP TABLE IF EXISTS student_learning_hub.users CASCADE;',
+    `DROP TABLE IF EXISTS ${dbSchema}.sessions CASCADE;`,
+    `DROP TABLE IF EXISTS ${dbSchema}.plagiarism_results CASCADE;`,
+    `DROP TABLE IF EXISTS ${dbSchema}.discussion_replies CASCADE;`,
+    `DROP TABLE IF EXISTS ${dbSchema}.discussions CASCADE;`,
+    `DROP TABLE IF EXISTS ${dbSchema}.messages CASCADE;`,
+    `DROP TABLE IF EXISTS ${dbSchema}.announcements CASCADE;`,
+    `DROP TABLE IF EXISTS ${dbSchema}.submissions CASCADE;`,
+    `DROP TABLE IF EXISTS ${dbSchema}.assignments CASCADE;`,
+    `DROP TABLE IF EXISTS ${dbSchema}.enrollments CASCADE;`,
+    `DROP TABLE IF EXISTS ${dbSchema}.courses CASCADE;`,
+    `DROP TABLE IF EXISTS ${dbSchema}.users CASCADE;`,
     
     // Drop enum types
-    'DROP TYPE IF EXISTS student_learning_hub.user_role CASCADE;',
-    'DROP TYPE IF EXISTS student_learning_hub.course_visibility CASCADE;',
-    'DROP TYPE IF EXISTS student_learning_hub.grading_scheme CASCADE;',
-    'DROP TYPE IF EXISTS student_learning_hub.assignment_status CASCADE;',
-    'DROP TYPE IF EXISTS student_learning_hub.submission_status CASCADE;',
-    'DROP TYPE IF EXISTS student_learning_hub.plagiarism_status CASCADE;'
+    `DROP TYPE IF EXISTS ${dbSchema}.user_role CASCADE;`,
+    `DROP TYPE IF EXISTS ${dbSchema}.course_visibility CASCADE;`,
+    `DROP TYPE IF EXISTS ${dbSchema}.grading_scheme CASCADE;`,
+    `DROP TYPE IF EXISTS ${dbSchema}.assignment_status CASCADE;`,
+    `DROP TYPE IF EXISTS ${dbSchema}.submission_status CASCADE;`,
+    `DROP TYPE IF EXISTS ${dbSchema}.plagiarism_status CASCADE;`
   ];
   
   for (const query of dropQueries) {
@@ -41,17 +41,15 @@ async function dropAllTables() {
   console.log('✅ All tables dropped successfully');
 }
 
-// Function to create all tables in student_learning_hub schema
+// Function to create all tables in the configured schema
 async function createAllTables() {
-  console.log('🏗️ Creating all tables in student_learning_hub schema...');
+  console.log(`🏗️ Creating all tables in ${dbSchema} schema...`);
   
-  // Set the search path to use the correct schema
-  const schemaName = process.env.DB_SCHEMA || 'student_learning_hub';
-  console.log(`Using database schema: ${schemaName}`);
+  console.log(`Using database schema: ${dbSchema}`);
   
   // Create schema if it doesn't exist (raw SQL for schema creation)
-  await db.execute(sql.raw(`CREATE SCHEMA IF NOT EXISTS ${schemaName}`));
-  await db.execute(sql.raw(`SET search_path TO ${schemaName}, public`));
+  await db.execute(sql.raw(`CREATE SCHEMA IF NOT EXISTS ${dbSchema}`));
+  await db.execute(sql.raw(`SET search_path TO ${dbSchema}, public`));
   
   // Create enums first
   await db.execute(sql`
