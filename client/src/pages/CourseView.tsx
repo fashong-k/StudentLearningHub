@@ -202,7 +202,7 @@ export default function CourseView() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-4">
           <Link href="/courses">
-            <Button variant="ghost" size="sm" className="flex items-center text-gray-600 hover:text-gray-900">
+            <Button variant="outline" size="sm" className="flex items-center text-gray-600 hover:text-gray-900">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Courses
             </Button>
