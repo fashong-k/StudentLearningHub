@@ -326,7 +326,15 @@ export default function Courses() {
     console.log("Form submission data:", data);
     console.log("Form validation state:", form.formState.errors);
     console.log("Code validation state:", codeValidation);
-    createCourseMutation.mutate(data);
+    
+    // Add teacherId to the data
+    const courseData = {
+      ...data,
+      teacherId: user?.id, // Add the current user's ID as teacherId
+    };
+    
+    console.log("Final course data with teacherId:", courseData);
+    createCourseMutation.mutate(courseData);
   };
 
   const onEditSubmit = (data: any) => {
@@ -665,7 +673,17 @@ export default function Courses() {
                         <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
                           Cancel
                         </Button>
-                        <Button type="submit" disabled={createCourseMutation.isPending || (codeValidation.message && !codeValidation.isValid)}>
+                        <Button 
+                          type="submit" 
+                          disabled={createCourseMutation.isPending || (codeValidation.message && !codeValidation.isValid)}
+                          onClick={() => {
+                            console.log("Button clicked!");
+                            console.log("Mutation pending:", createCourseMutation.isPending);
+                            console.log("Code validation:", codeValidation);
+                            console.log("Form valid:", form.formState.isValid);
+                            console.log("Form errors:", form.formState.errors);
+                          }}
+                        >
                           {createCourseMutation.isPending ? "Creating..." : "Create Course"}
                         </Button>
                       </div>
