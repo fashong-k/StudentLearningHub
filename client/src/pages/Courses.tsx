@@ -93,7 +93,9 @@ export default function Courses() {
   });
 
   const editForm = useForm({
-    resolver: zodResolver(insertCourseSchema),
+    resolver: zodResolver(insertCourseSchema.extend({
+      teacherId: z.string().min(1, "Teacher ID is required"),
+    })),
     defaultValues: {
       title: "",
       description: "",
@@ -105,6 +107,7 @@ export default function Courses() {
       endDate: undefined,
       visibility: "private",
       gradingScheme: "letter",
+      teacherId: user?.id || "",
     },
   });
 
@@ -346,7 +349,16 @@ export default function Courses() {
 
   const onEditSubmit = (data: any) => {
     if (editingCourse) {
-      updateCourseMutation.mutate({ id: editingCourse.id, data });
+      // Clean up the data and ensure proper field values
+      const courseData = {
+        ...data,
+        teacherId: user?.id, // Keep the current teacher
+        // Ensure dates are properly handled
+        startDate: data.termType === "term" ? data.startDate : null,
+        endDate: data.termType === "term" ? data.endDate : null,
+      };
+      
+      updateCourseMutation.mutate({ id: editingCourse.id, data: courseData });
     }
   };
 
@@ -358,6 +370,12 @@ export default function Courses() {
       courseCode: course.courseCode,
       semester: course.semester,
       year: course.year,
+      termType: course.termType || "semester",
+      startDate: course.startDate ? new Date(course.startDate) : undefined,
+      endDate: course.endDate ? new Date(course.endDate) : undefined,
+      visibility: course.visibility || "private",
+      gradingScheme: course.gradingScheme || "letter",
+      teacherId: course.teacherId || user?.id,
     });
     setIsEditOpen(true);
   };
@@ -761,37 +779,175 @@ export default function Courses() {
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={editForm.control}
+                  name="termType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Term Type</FormLabel>
+                      <FormControl>
+                        <SimpleSelect 
+                          value={field.value} 
+                          onValueChange={(value) => { 
+                            field.onChange(value);
+                            // Clear date fields when switching to semester mode
+                            if (value === "semester") {
+                              editForm.setValue("startDate", undefined);
+                              editForm.setValue("endDate", undefined);
+                            }
+                          }}
+                          placeholder="Select term type"
+                        >
+                          <SimpleSelectItem value="semester">Semester</SimpleSelectItem>
+                          <SimpleSelectItem value="term">Term</SimpleSelectItem>
+                        </SimpleSelect>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                
+                {editForm.watch("termType") === "semester" ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={editForm.control}
+                      name="semester"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Semester</FormLabel>
+                          <FormControl>
+                            <SimpleSelect 
+                              value={field.value} 
+                              onValueChange={field.onChange}
+                              placeholder="Select semester"
+                            >
+                              <SimpleSelectItem value="Spring">Spring</SimpleSelectItem>
+                              <SimpleSelectItem value="Summer">Summer</SimpleSelectItem>
+                              <SimpleSelectItem value="Fall">Fall</SimpleSelectItem>
+                              <SimpleSelectItem value="Winter">Winter</SimpleSelectItem>
+                            </SimpleSelect>
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={editForm.control}
+                      name="year"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Year</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={editForm.control}
+                      name="startDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Start Date</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                                >
+                                  {field.value && isValidDate(field.value) ? safeFormat(field.value, "PPP") : <span>Pick a date</span>}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0 z-50 popover-content" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value && isValidDate(field.value) ? new Date(field.value) : undefined}
+                                onSelect={(date) => field.onChange(date)}
+                                disabled={(date) => date < new Date()}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={editForm.control}
+                      name="endDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>End Date</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                                >
+                                  {field.value && isValidDate(field.value) ? safeFormat(field.value, "PPP") : <span>Pick a date</span>}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0 z-50 popover-content" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value && isValidDate(field.value) ? new Date(field.value) : undefined}
+                                onSelect={(date) => field.onChange(date)}
+                                disabled={(date) => {
+                                  const startDate = editForm.watch("startDate");
+                                  return date < new Date() || (startDate && isValidDate(startDate) ? date < new Date(startDate) : false);
+                                }}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+                
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={editForm.control}
-                    name="semester"
+                    name="visibility"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Semester</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select semester" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Spring">Spring</SelectItem>
-                            <SelectItem value="Summer">Summer</SelectItem>
-                            <SelectItem value="Fall">Fall</SelectItem>
-                            <SelectItem value="Winter">Winter</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <FormLabel>Visibility</FormLabel>
+                        <FormControl>
+                          <SimpleSelect 
+                            value={field.value} 
+                            onValueChange={field.onChange}
+                            placeholder="Select visibility"
+                          >
+                            <SimpleSelectItem value="private">Private (Enrolled only)</SimpleSelectItem>
+                            <SimpleSelectItem value="institution">Institution (All users)</SimpleSelectItem>
+                          </SimpleSelect>
+                        </FormControl>
                       </FormItem>
                     )}
                   />
                   <FormField
                     control={editForm.control}
-                    name="year"
+                    name="gradingScheme"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Year</FormLabel>
+                        <FormLabel>Grading Scheme</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} />
+                          <SimpleSelect 
+                            value={field.value} 
+                            onValueChange={field.onChange}
+                            placeholder="Select grading scheme"
+                          >
+                            <SimpleSelectItem value="letter">Letter Grade (A-F)</SimpleSelectItem>
+                            <SimpleSelectItem value="percentage">Percentage (0-100%)</SimpleSelectItem>
+                            <SimpleSelectItem value="points">Points Based</SimpleSelectItem>
+                          </SimpleSelect>
                         </FormControl>
                       </FormItem>
                     )}
