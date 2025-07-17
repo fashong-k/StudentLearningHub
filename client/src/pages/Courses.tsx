@@ -628,7 +628,7 @@ export default function Courses() {
                                 <FormControl>
                                   <Input
                                     type="date"
-                                    value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                                    value={field.value && isValidDate(field.value) ? new Date(field.value).toISOString().split('T')[0] : ''}
                                     onChange={(e) => {
                                       console.log('Create form start date selected:', e.target.value);
                                       field.onChange(e.target.value ? new Date(e.target.value) : null);
@@ -648,12 +648,12 @@ export default function Courses() {
                                 <FormControl>
                                   <Input
                                     type="date"
-                                    value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                                    value={field.value && isValidDate(field.value) ? new Date(field.value).toISOString().split('T')[0] : ''}
                                     onChange={(e) => {
                                       console.log('Create form end date selected:', e.target.value);
                                       field.onChange(e.target.value ? new Date(e.target.value) : null);
                                     }}
-                                    min={form.watch("startDate") ? new Date(form.watch("startDate")).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
+                                    min={form.watch("startDate") && isValidDate(form.watch("startDate")) ? new Date(form.watch("startDate")).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
                                   />
                                 </FormControl>
                               </FormItem>
@@ -862,7 +862,7 @@ export default function Courses() {
                           <FormControl>
                             <Input
                               type="date"
-                              value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                              value={field.value && isValidDate(field.value) ? new Date(field.value).toISOString().split('T')[0] : ''}
                               onChange={(e) => {
                                 console.log('Edit form start date selected:', e.target.value);
                                 field.onChange(e.target.value ? new Date(e.target.value) : null);
@@ -882,12 +882,12 @@ export default function Courses() {
                           <FormControl>
                             <Input
                               type="date"
-                              value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                              value={field.value && isValidDate(field.value) ? new Date(field.value).toISOString().split('T')[0] : ''}
                               onChange={(e) => {
                                 console.log('Edit form end date selected:', e.target.value);
                                 field.onChange(e.target.value ? new Date(e.target.value) : null);
                               }}
-                              min={editForm.watch("startDate") ? new Date(editForm.watch("startDate")).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
+                              min={editForm.watch("startDate") && isValidDate(editForm.watch("startDate")) ? new Date(editForm.watch("startDate")).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
                             />
                           </FormControl>
                         </FormItem>
