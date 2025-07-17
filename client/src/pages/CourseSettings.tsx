@@ -35,6 +35,7 @@ interface CourseSettingsProps {
 }
 
 export default function CourseSettings({ courseId }: CourseSettingsProps) {
+  console.log("CourseSettings component called with courseId:", courseId);
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [, setLocation] = useLocation();

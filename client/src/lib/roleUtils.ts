@@ -65,5 +65,15 @@ export const canAccessRoute = (userRole: string, route: string): boolean => {
     '/profile': ['student', 'teacher', 'admin'],
   };
 
+  // Handle dynamic routes like /courses/:courseId/settings
+  if (route.includes('/courses/') && route.includes('/settings')) {
+    return ['teacher', 'admin'].includes(userRole);
+  }
+
+  // Handle dynamic routes like /courses/:courseId
+  if (route.includes('/courses/') && !route.includes('/settings')) {
+    return ['student', 'teacher', 'admin'].includes(userRole);
+  }
+
   return routePermissions[route]?.includes(userRole) || false;
 };
