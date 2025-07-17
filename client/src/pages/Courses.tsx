@@ -87,8 +87,8 @@ export default function Courses() {
       semester: "Fall",
       year: new Date().getFullYear(),
       termType: "semester",
-      startDate: undefined,
-      endDate: undefined,
+      startDate: null,
+      endDate: null,
       visibility: "private",
       gradingScheme: "letter",
       teacherId: user?.id || "", // Add teacherId to default values
@@ -106,8 +106,8 @@ export default function Courses() {
       semester: "Fall",
       year: new Date().getFullYear(),
       termType: "semester",
-      startDate: undefined,
-      endDate: undefined,
+      startDate: null,
+      endDate: null,
       visibility: "private",
       gradingScheme: "letter",
       teacherId: user?.id || "",
@@ -413,8 +413,8 @@ export default function Courses() {
       semester: course.semester,
       year: course.year,
       termType: course.termType || "semester",
-      startDate: course.startDate ? new Date(course.startDate) : undefined,
-      endDate: course.endDate ? new Date(course.endDate) : undefined,
+      startDate: course.startDate ? new Date(course.startDate) : null,
+      endDate: course.endDate ? new Date(course.endDate) : null,
       visibility: course.visibility || "private",
       gradingScheme: course.gradingScheme || "letter",
       teacherId: course.teacherId || user?.id,
@@ -750,7 +750,7 @@ export default function Courses() {
                         </Button>
                         <Button 
                           type="submit" 
-                          disabled={createCourseMutation.isPending || (codeValidation.message && !codeValidation.isValid)}
+                          disabled={createCourseMutation.isPending || (codeValidation.message !== "" && !codeValidation.isValid)}
                           onClick={(e) => {
                             console.log("Button clicked!");
                             console.log("Mutation pending:", createCourseMutation.isPending);
