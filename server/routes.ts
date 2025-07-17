@@ -13,6 +13,8 @@ import {
   insertMessageSchema
 } from "@shared/schema";
 import { z } from "zod";
+import { courseUpdateValidator } from "./courseUpdateValidator";
+import { courseUpdateCascade } from "./courseUpdateCascade";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -228,6 +230,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Course update validation endpoint
+  app.post("/api/courses/:id/validate-update", authMiddleware, async (req: any, res) => {
+    try {
+      const courseId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== "teacher") {
+        return res.status(403).json({ message: "Only teachers can update courses" });
+      }
+
+      const course = await storage.getCourseById(courseId);
+      if (!course || course.teacherId !== userId) {
+        return res.status(403).json({ message: "You can only update your own courses" });
+      }
+
+      const updates = req.body;
+      const validation = await courseUpdateValidator.validateCourseUpdate(courseId, updates, course);
+      const impact = await courseUpdateValidator.getUpdateImpact(courseId, updates, course);
+      
+      res.json({
+        validation,
+        impact,
+      });
+    } catch (error) {
+      console.error("Error validating course update:", error);
+      res.status(500).json({ message: "Failed to validate course update" });
+    }
+  });
+
   app.put("/api/courses/:id", authMiddleware, async (req: any, res) => {
     try {
       const courseId = parseInt(req.params.id);
@@ -243,9 +275,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You can only update your own courses" });
       }
 
+      // Parse and validate the request body
       const courseData = insertCourseSchema.partial().parse(req.body);
-      const updatedCourse = await storage.updateCourse(courseId, courseData);
-      res.json(updatedCourse);
+      
+      // Validate the update before proceeding
+      const validation = await courseUpdateValidator.validateCourseUpdate(courseId, courseData, course);
+      
+      if (!validation.canUpdate) {
+        return res.status(400).json({ 
+          message: "Course update validation failed",
+          errors: validation.errors,
+          warnings: validation.warnings,
+        });
+      }
+
+      // Perform cascade updates and course update in transaction
+      const cascadeResult = await courseUpdateCascade.performCascadeUpdates(
+        courseId,
+        courseData,
+        course,
+        userId
+      );
+
+      if (!cascadeResult.success) {
+        return res.status(500).json({
+          message: "Failed to perform cascade updates",
+          errors: cascadeResult.errors,
+        });
+      }
+
+      // Get the updated course data
+      const updatedCourse = await storage.getCourseById(courseId);
+      
+      res.json({
+        course: updatedCourse,
+        cascadeResult,
+        validation: {
+          warnings: validation.warnings,
+          affectedRecords: validation.affectedRecords,
+        },
+      });
     } catch (error) {
       console.error("Error updating course:", error);
       if (error instanceof Error && error.name === "SequelizeUniqueConstraintError") {

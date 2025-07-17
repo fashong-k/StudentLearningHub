@@ -69,6 +69,9 @@ export default function Courses() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("all");
   const [codeValidation, setCodeValidation] = useState<{ isValid: boolean; message: string }>({ isValid: true, message: "" });
+  const [validationWarnings, setValidationWarnings] = useState<string[]>([]);
+  const [showValidationDialog, setShowValidationDialog] = useState(false);
+  const [pendingUpdate, setPendingUpdate] = useState<any>(null);
   const queryClient = useQueryClient();
   const { isUsingFallback, failedEndpoints, showAlert, reportFailure, clearFailures } = useDataFallback();
   const [, setLocation] = useLocation();
@@ -168,14 +171,36 @@ export default function Courses() {
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
       return await apiRequest("PUT", `/api/courses/${id}`, data);
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      const warnings = result.validation?.warnings || [];
+      const cascadeInfo = result.cascadeResult?.updatedRecords || {};
+      
+      let description = "Course updated successfully";
+      if (cascadeInfo.assignments > 0 || cascadeInfo.calendarEvents > 0) {
+        description += `. Updated ${cascadeInfo.assignments} assignments and ${cascadeInfo.calendarEvents} calendar events.`;
+      }
+      
       toast({
         title: "Success",
-        description: "Course updated successfully",
+        description,
       });
+      
+      if (warnings.length > 0) {
+        setTimeout(() => {
+          toast({
+            title: "Important Notes",
+            description: warnings.join(" "),
+            variant: "default",
+          });
+        }, 1000);
+      }
+      
       setIsEditOpen(false);
       setEditingCourse(null);
       editForm.reset();
+      setShowValidationDialog(false);
+      setPendingUpdate(null);
+      setValidationWarnings([]);
       queryClient.invalidateQueries({ queryKey: ["/api/courses"] });
     },
     onError: (error: Error) => {
@@ -347,7 +372,7 @@ export default function Courses() {
     createCourseMutation.mutate(courseData);
   };
 
-  const onEditSubmit = (data: any) => {
+  const onEditSubmit = async (data: any) => {
     if (editingCourse) {
       // Clean up the data and ensure proper field values
       const courseData = {
@@ -358,7 +383,24 @@ export default function Courses() {
         endDate: data.termType === "term" ? data.endDate : null,
       };
       
-      updateCourseMutation.mutate({ id: editingCourse.id, data: courseData });
+      // First validate the update
+      try {
+        const validationResult = await apiRequest("POST", `/api/courses/${editingCourse.id}/validate-update`, courseData);
+        
+        if (validationResult.validation.warnings.length > 0) {
+          setValidationWarnings(validationResult.validation.warnings);
+          setPendingUpdate({ id: editingCourse.id, data: courseData });
+          setShowValidationDialog(true);
+          return;
+        }
+        
+        // If no warnings, proceed with update
+        updateCourseMutation.mutate({ id: editingCourse.id, data: courseData });
+      } catch (error) {
+        console.error("Validation error:", error);
+        // Fall back to direct update if validation fails
+        updateCourseMutation.mutate({ id: editingCourse.id, data: courseData });
+      }
     }
   };
 
@@ -762,8 +804,16 @@ export default function Courses() {
                     <FormItem>
                       <FormLabel>Course Code</FormLabel>
                       <FormControl>
-                        <Input placeholder="CS 101" {...field} />
+                        <Input 
+                          placeholder="CS 101" 
+                          {...field} 
+                          disabled 
+                          className="bg-gray-50 cursor-not-allowed"
+                        />
                       </FormControl>
+                      <p className="text-sm text-muted-foreground">
+                        Course code cannot be changed after creation to maintain data integrity
+                      </p>
                     </FormItem>
                   )}
                 />
@@ -1214,6 +1264,49 @@ export default function Courses() {
             </div>
           )}
         </main>
+
+        {/* Validation Warning Dialog */}
+        <AlertDialog open={showValidationDialog} onOpenChange={setShowValidationDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-yellow-500" />
+                Course Update Warnings
+              </AlertDialogTitle>
+              <AlertDialogDescription className="space-y-2">
+                The following warnings were identified for this course update:
+                <div className="mt-3 space-y-1">
+                  {validationWarnings.map((warning, index) => (
+                    <div key={index} className="flex items-start gap-2 p-2 bg-yellow-50 rounded border-l-4 border-yellow-400">
+                      <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm text-yellow-800">{warning}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-4 text-sm">
+                  Do you want to proceed with these changes? Related assignments and events will be automatically updated.
+                </p>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => {
+                setShowValidationDialog(false);
+                setPendingUpdate(null);
+                setValidationWarnings([]);
+              }}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction onClick={() => {
+                if (pendingUpdate) {
+                  updateCourseMutation.mutate(pendingUpdate);
+                }
+              }}>
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Proceed with Update
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
