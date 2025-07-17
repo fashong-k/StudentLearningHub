@@ -15,7 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/
 import { SimpleSelect, SimpleSelectItem } from "@/components/ui/simple-select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertCourseSchema } from "@shared/schema";
+import { insertCourseSchema, type Course } from "@shared/schema";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { 
   BookOpen, 
@@ -41,7 +41,7 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
   const queryClient = useQueryClient();
 
   // Fetch course data
-  const { data: course, isLoading } = useQuery({
+  const { data: course, isLoading } = useQuery<Course>({
     queryKey: ["/api/courses", courseId],
     enabled: !!courseId,
   });
@@ -59,9 +59,8 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
       endDate: undefined,
       visibility: "private",
       gradingScheme: "letter",
-      maxEnrollment: 50,
-      allowLateSubmissions: true,
-      syllabusUrl: "",
+      isActive: true,
+      teacherId: "",
     },
   });
 
@@ -79,9 +78,8 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
         endDate: course.endDate ? new Date(course.endDate) : undefined,
         visibility: course.visibility || "private",
         gradingScheme: course.gradingScheme || "letter",
-        maxEnrollment: course.maxEnrollment || 50,
-        allowLateSubmissions: course.allowLateSubmissions ?? true,
-        syllabusUrl: course.syllabusUrl || "",
+        isActive: course.isActive ?? true,
+        teacherId: course.teacherId || "",
       });
     }
   }, [course, form]);
@@ -119,7 +117,12 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
   });
 
   const onSubmit = (data: any) => {
-    updateCourseMutation.mutate(data);
+    // Make sure we include the teacherId in the update
+    const updateData = {
+      ...data,
+      teacherId: course?.teacherId || user?.id,
+    };
+    updateCourseMutation.mutate(updateData);
   };
 
   const handleCancel = () => {
@@ -505,50 +508,19 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
                 </CardContent>
               </Card>
 
-              {/* Enrollment and Policies */}
+              {/* Course Status */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <Users className="w-5 h-5 mr-2" />
-                    Enrollment and Policies
+                    <Settings className="w-5 h-5 mr-2" />
+                    Course Status
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="maxEnrollment"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Maximum Enrollment</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="number" 
-                              {...field} 
-                              onChange={(e) => field.onChange(parseInt(e.target.value))}
-                              placeholder="50" 
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="syllabusUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Syllabus URL (Optional)</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="https://example.com/syllabus.pdf" />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
                   <div className="flex items-center space-x-2">
                     <FormField
                       control={form.control}
-                      name="allowLateSubmissions"
+                      name="isActive"
                       render={({ field }) => (
                         <FormItem className="flex items-center space-x-2">
                           <FormControl>
@@ -560,7 +532,7 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
                             />
                           </FormControl>
                           <FormLabel className="text-sm font-normal">
-                            Allow late submissions with penalty
+                            Course is active and available to students
                           </FormLabel>
                         </FormItem>
                       )}
