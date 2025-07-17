@@ -30,6 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Link, useParams, useLocation } from "wouter";
+import Navigation from "@/components/Navigation";
 
 export default function CourseView() {
   const { courseId } = useParams<{ courseId: string }>();
@@ -146,11 +147,16 @@ export default function CourseView() {
 
   if (courseLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded mb-4"></div>
-          <div className="h-32 bg-gray-200 rounded"></div>
+      <div className="flex h-screen overflow-hidden lms-background">
+        <Navigation />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto bg-gray-50 p-8">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+              <div className="h-64 bg-gray-200 rounded mb-4"></div>
+              <div className="h-32 bg-gray-200 rounded"></div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -158,23 +164,31 @@ export default function CourseView() {
 
   if (!course) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Course Not Found</h1>
-          <p className="text-gray-600 mb-6">The course you're looking for doesn't exist.</p>
-          <Link href="/courses">
-            <Button>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Courses
-            </Button>
-          </Link>
+      <div className="flex h-screen overflow-hidden lms-background">
+        <Navigation />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto bg-gray-50 p-8">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold mb-4">Course Not Found</h1>
+              <p className="text-gray-600 mb-6">The course you're looking for doesn't exist.</p>
+              <Link href="/courses">
+                <Button>
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Courses
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="flex h-screen overflow-hidden lms-background">
+      <Navigation />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-y-auto bg-gray-50 p-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-4">
@@ -432,6 +446,8 @@ export default function CourseView() {
           </div>
         </TabsContent>
       </Tabs>
+        </div>
+      </div>
     </div>
   );
 }
