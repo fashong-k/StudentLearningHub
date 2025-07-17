@@ -52,8 +52,31 @@ export async function seedExtendedData() {
       }
     ];
 
-    // Insert additional courses
-    const insertedCourses = await db.insert(courses).values(additionalCourses).returning();
+    // Insert additional courses with conflict handling
+    const insertedCourses = [];
+    
+    for (const course of additionalCourses) {
+      try {
+        // Check if course with this code already exists
+        const existingCourse = await db.select().from(courses).where(eq(courses.courseCode, course.courseCode));
+        
+        if (existingCourse.length === 0) {
+          // Only insert if course doesn't exist
+          const [inserted] = await db.insert(courses).values(course).returning();
+          insertedCourses.push(inserted);
+        } else {
+          console.log(`📚 Course ${course.courseCode} already exists, skipping...`);
+          insertedCourses.push(existingCourse[0]);
+        }
+      } catch (error) {
+        console.error(`Error inserting course ${course.courseCode}:`, error);
+        // Try to find existing course
+        const existingCourse = await db.select().from(courses).where(eq(courses.courseCode, course.courseCode));
+        if (existingCourse.length > 0) {
+          insertedCourses.push(existingCourse[0]);
+        }
+      }
+    }
     console.log(`✅ Added ${insertedCourses.length} additional courses`);
 
     // Get all courses including existing ones
@@ -146,7 +169,41 @@ export async function seedExtendedData() {
       }
     ];
 
-    const insertedEnrollments = await db.insert(enrollments).values(additionalEnrollments).returning();
+    // Insert additional enrollments with conflict handling
+    const insertedEnrollments = [];
+    
+    for (const enrollment of additionalEnrollments) {
+      try {
+        // Check if enrollment already exists
+        const existingEnrollment = await db.select().from(enrollments).where(
+          and(
+            eq(enrollments.studentId, enrollment.studentId),
+            eq(enrollments.courseId, enrollment.courseId)
+          )
+        );
+        
+        if (existingEnrollment.length === 0) {
+          // Only insert if enrollment doesn't exist
+          const [inserted] = await db.insert(enrollments).values(enrollment).returning();
+          insertedEnrollments.push(inserted);
+        } else {
+          console.log(`📝 Enrollment for student ${enrollment.studentId} in course ${enrollment.courseId} already exists, skipping...`);
+          insertedEnrollments.push(existingEnrollment[0]);
+        }
+      } catch (error) {
+        console.error(`Error inserting enrollment:`, error);
+        // Try to find existing enrollment
+        const existingEnrollment = await db.select().from(enrollments).where(
+          and(
+            eq(enrollments.studentId, enrollment.studentId),
+            eq(enrollments.courseId, enrollment.courseId)
+          )
+        );
+        if (existingEnrollment.length > 0) {
+          insertedEnrollments.push(existingEnrollment[0]);
+        }
+      }
+    }
     console.log(`✅ Added ${insertedEnrollments.length} additional enrollments`);
 
     // Add submissions for the new assignments to test validation impact
