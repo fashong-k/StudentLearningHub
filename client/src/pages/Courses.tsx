@@ -24,7 +24,6 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { useDataFallback } from "@/hooks/useDataFallback";
 import { DataFallbackAlert } from "@/components/DataFallbackAlert";
 import { hasPermission } from "@/lib/roleUtils";
-import { DatePicker } from "@/components/DatePicker";
 import { 
   BookOpen, 
   Users, 
@@ -627,14 +626,14 @@ export default function Courses() {
                               <FormItem>
                                 <FormLabel>Start Date</FormLabel>
                                 <FormControl>
-                                  <DatePicker
-                                    value={field.value && isValidDate(field.value) ? new Date(field.value) : undefined}
-                                    onChange={(date) => {
-                                      console.log('Create form start date selected:', date);
-                                      field.onChange(date);
+                                  <Input
+                                    type="date"
+                                    value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                                    onChange={(e) => {
+                                      console.log('Create form start date selected:', e.target.value);
+                                      field.onChange(e.target.value ? new Date(e.target.value) : null);
                                     }}
-                                    placeholder="Pick a start date"
-                                    disabled={(date) => date < new Date()}
+                                    min={new Date().toISOString().split('T')[0]}
                                   />
                                 </FormControl>
                               </FormItem>
@@ -647,17 +646,14 @@ export default function Courses() {
                               <FormItem>
                                 <FormLabel>End Date</FormLabel>
                                 <FormControl>
-                                  <DatePicker
-                                    value={field.value && isValidDate(field.value) ? new Date(field.value) : undefined}
-                                    onChange={(date) => {
-                                      console.log('Create form end date selected:', date);
-                                      field.onChange(date);
+                                  <Input
+                                    type="date"
+                                    value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                                    onChange={(e) => {
+                                      console.log('Create form end date selected:', e.target.value);
+                                      field.onChange(e.target.value ? new Date(e.target.value) : null);
                                     }}
-                                    placeholder="Pick an end date"
-                                    disabled={(date) => {
-                                      const startDate = form.watch("startDate");
-                                      return date < new Date() || (startDate && isValidDate(startDate) ? date < new Date(startDate) : false);
-                                    }}
+                                    min={form.watch("startDate") ? new Date(form.watch("startDate")).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
                                   />
                                 </FormControl>
                               </FormItem>
@@ -864,14 +860,14 @@ export default function Courses() {
                         <FormItem>
                           <FormLabel>Start Date</FormLabel>
                           <FormControl>
-                            <DatePicker
-                              value={field.value && isValidDate(field.value) ? new Date(field.value) : undefined}
-                              onChange={(date) => {
-                                console.log('Edit form start date selected:', date);
-                                field.onChange(date);
+                            <Input
+                              type="date"
+                              value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                              onChange={(e) => {
+                                console.log('Edit form start date selected:', e.target.value);
+                                field.onChange(e.target.value ? new Date(e.target.value) : null);
                               }}
-                              placeholder="Pick a start date"
-                              disabled={(date) => date < new Date()}
+                              min={new Date().toISOString().split('T')[0]}
                             />
                           </FormControl>
                         </FormItem>
@@ -884,17 +880,14 @@ export default function Courses() {
                         <FormItem>
                           <FormLabel>End Date</FormLabel>
                           <FormControl>
-                            <DatePicker
-                              value={field.value && isValidDate(field.value) ? new Date(field.value) : undefined}
-                              onChange={(date) => {
-                                console.log('Edit form end date selected:', date);
-                                field.onChange(date);
+                            <Input
+                              type="date"
+                              value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
+                              onChange={(e) => {
+                                console.log('Edit form end date selected:', e.target.value);
+                                field.onChange(e.target.value ? new Date(e.target.value) : null);
                               }}
-                              placeholder="Pick an end date"
-                              disabled={(date) => {
-                                const startDate = editForm.watch("startDate");
-                                return date < new Date() || (startDate && isValidDate(startDate) ? date < new Date(startDate) : false);
-                              }}
+                              min={editForm.watch("startDate") ? new Date(editForm.watch("startDate")).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
                             />
                           </FormControl>
                         </FormItem>
