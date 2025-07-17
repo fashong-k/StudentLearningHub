@@ -193,14 +193,14 @@ export default function CourseView() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-4">
           <Link href="/courses">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="flex items-center text-gray-600 hover:text-gray-900">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              Back to Courses
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold">{(course as any).title}</h1>
-            <p className="text-gray-600">{(course as any).courseCode} • {(course as any).semester} {(course as any).year}</p>
+            <h1 className="text-2xl font-bold text-gray-900">{(course as any).title}</h1>
+            <p className="text-gray-600 text-sm">{(course as any).description || `${(course as any).courseCode} • ${(course as any).semester} ${(course as any).year}`}</p>
           </div>
         </div>
         
@@ -246,7 +246,7 @@ export default function CourseView() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="font-semibold mb-2">Description</h3>
-              <p className="text-gray-600 mb-4">{(course as any).description || "No description provided."}</p>
+              <p className="text-gray-600 mb-4">{(course as any).description || `A comprehensive ${(course as any).courseCode} course covering fundamental concepts and practical applications.`}</p>
               
               <div className="space-y-2">
                 <div className="flex items-center">
