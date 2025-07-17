@@ -35,28 +35,16 @@ export default function CourseView() {
   const { courseId } = useParams<{ courseId: string }>();
   const [, setLocation] = useLocation();
   const { user } = useAuth();
-  const { canManageCourses } = usePermissions();
+  const { can } = usePermissions();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isEnrolled, setIsEnrolled] = useState(false);
 
   // Fetch course details
-  const { data: course, isLoading: courseLoading } = useQuery({
+  const { data: course = {}, isLoading: courseLoading } = useQuery({
     queryKey: ["/api/courses", courseId],
     enabled: !!courseId,
     retry: false,
-    onError: (error: Error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/login";
-        }, 500);
-      }
-    },
   });
 
   // Fetch course assignments
@@ -76,7 +64,7 @@ export default function CourseView() {
   // Fetch course enrollments (for teachers)
   const { data: enrollments = [] } = useQuery({
     queryKey: ["/api/enrollments", courseId],
-    enabled: !!courseId && canManageCourses,
+    enabled: !!courseId && can('canCreateCourses'),
     retry: false,
   });
 
@@ -197,8 +185,8 @@ export default function CourseView() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold">{course.title}</h1>
-            <p className="text-gray-600">{course.courseCode} • {course.semester} {course.year}</p>
+            <h1 className="text-3xl font-bold">{(course as any).title}</h1>
+            <p className="text-gray-600">{(course as any).courseCode} • {(course as any).semester} {(course as any).year}</p>
           </div>
         </div>
         
@@ -223,7 +211,7 @@ export default function CourseView() {
             </Button>
           )}
           
-          {canManageCourses && course.teacherId === user?.id && (
+          {can('canCreateCourses') && (course as any).teacherId === user?.id && (
             <Button variant="outline" size="sm">
               <Edit className="w-4 h-4 mr-2" />
               Edit Course
@@ -244,16 +232,16 @@ export default function CourseView() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="font-semibold mb-2">Description</h3>
-              <p className="text-gray-600 mb-4">{course.description || "No description provided."}</p>
+              <p className="text-gray-600 mb-4">{(course as any).description || "No description provided."}</p>
               
               <div className="space-y-2">
                 <div className="flex items-center">
                   <Calendar className="w-4 h-4 mr-2 text-gray-500" />
-                  <span>{course.semester} {course.year}</span>
+                  <span>{(course as any).semester} {(course as any).year}</span>
                 </div>
                 <div className="flex items-center">
                   <User className="w-4 h-4 mr-2 text-gray-500" />
-                  <span>{course.teacher ? `${course.teacher.firstName} ${course.teacher.lastName}` : 'Unknown Teacher'}</span>
+                  <span>{(course as any).teacher ? `${(course as any).teacher.firstName} ${(course as any).teacher.lastName}` : 'Unknown Teacher'}</span>
                 </div>
               </div>
             </div>
@@ -262,20 +250,20 @@ export default function CourseView() {
               <h3 className="font-semibold mb-2">Quick Stats</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-gray-50 rounded">
-                  <div className="text-2xl font-bold text-blue-600">{assignments.length}</div>
+                  <div className="text-2xl font-bold text-blue-600">{Array.isArray(assignments) ? assignments.length : 0}</div>
                   <div className="text-sm text-gray-600">Assignments</div>
                 </div>
                 <div className="text-center p-3 bg-gray-50 rounded">
-                  <div className="text-2xl font-bold text-green-600">{enrollments.length}</div>
+                  <div className="text-2xl font-bold text-green-600">{Array.isArray(enrollments) ? enrollments.length : 0}</div>
                   <div className="text-sm text-gray-600">Students</div>
                 </div>
                 <div className="text-center p-3 bg-gray-50 rounded">
-                  <div className="text-2xl font-bold text-purple-600">{announcements.length}</div>
+                  <div className="text-2xl font-bold text-purple-600">{Array.isArray(announcements) ? announcements.length : 0}</div>
                   <div className="text-sm text-gray-600">Announcements</div>
                 </div>
                 <div className="text-center p-3 bg-gray-50 rounded">
                   <Badge variant="outline" className="text-xs">
-                    {course.isActive ? 'Active' : 'Inactive'}
+                    {(course as any).isActive ? 'Active' : 'Inactive'}
                   </Badge>
                 </div>
               </div>
@@ -297,7 +285,7 @@ export default function CourseView() {
         <TabsContent value="assignments" className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Assignments</h2>
-            {canManageCourses && course.teacherId === user?.id && (
+            {can('canCreateCourses') && (course as any).teacherId === user?.id && (
               <Button size="sm">
                 <Plus className="w-4 h-4 mr-2" />
                 New Assignment
@@ -305,7 +293,7 @@ export default function CourseView() {
             )}
           </div>
           
-          {assignments.length > 0 ? (
+          {Array.isArray(assignments) && assignments.length > 0 ? (
             <div className="grid gap-4">
               {assignments.map((assignment: any) => (
                 <Card key={assignment.id}>
@@ -344,7 +332,7 @@ export default function CourseView() {
         <TabsContent value="announcements" className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Announcements</h2>
-            {canManageCourses && course.teacherId === user?.id && (
+            {can('canCreateCourses') && (course as any).teacherId === user?.id && (
               <Button size="sm">
                 <Plus className="w-4 h-4 mr-2" />
                 New Announcement
@@ -352,7 +340,7 @@ export default function CourseView() {
             )}
           </div>
           
-          {announcements.length > 0 ? (
+          {Array.isArray(announcements) && announcements.length > 0 ? (
             <div className="space-y-4">
               {announcements.map((announcement: any) => (
                 <Card key={announcement.id}>
@@ -382,10 +370,10 @@ export default function CourseView() {
         <TabsContent value="students" className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Enrolled Students</h2>
-            <span className="text-sm text-gray-500">{enrollments.length} students</span>
+            <span className="text-sm text-gray-500">{Array.isArray(enrollments) ? enrollments.length : 0} students</span>
           </div>
           
-          {enrollments.length > 0 ? (
+          {Array.isArray(enrollments) && enrollments.length > 0 ? (
             <div className="grid gap-4">
               {enrollments.map((enrollment: any) => (
                 <Card key={enrollment.id}>
