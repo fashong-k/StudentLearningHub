@@ -7,13 +7,14 @@ interface CourseCardProps {
     id: number;
     title: string;
     description?: string;
-    courseCode: string;
+    courseCode?: string;
     semester?: string;
     year?: number;
   };
 }
 
-const getCourseIcon = (courseCode: string) => {
+const getCourseIcon = (courseCode: string | undefined) => {
+  if (!courseCode) return Code; // Default icon for undefined courseCode
   const code = courseCode.toLowerCase();
   if (code.includes('cs') || code.includes('csc') || code.includes('comp')) {
     return Code;
@@ -25,7 +26,8 @@ const getCourseIcon = (courseCode: string) => {
   return Code; // Default icon
 };
 
-const getStatusColor = (courseCode: string) => {
+const getStatusColor = (courseCode: string | undefined) => {
+  if (!courseCode) return 'info'; // Default status for undefined courseCode
   // Mock logic for course status
   const hash = courseCode.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const statuses = ['success', 'warning', 'info'];
@@ -61,7 +63,7 @@ export default function CourseCard({ course }: CourseCardProps) {
             <div>
               <h4 className="font-medium text-gray-800">{course.title}</h4>
               <p className="text-sm text-gray-600">
-                {course.courseCode} • {course.semester} {course.year}
+                {course.courseCode || 'No Code'} • {course.semester} {course.year}
               </p>
             </div>
           </div>
