@@ -44,6 +44,7 @@ import {
 import { format } from "date-fns";
 import { safeFormat, isValidDate } from "@/lib/dateUtils";
 import TestSelect from "@/components/TestSelect";
+import { SimpleSelect, SimpleSelectItem } from "@/components/ui/simple-select";
 
 export default function Courses() {
   const { toast } = useToast();
@@ -475,15 +476,14 @@ export default function Courses() {
                           <FormItem>
                             <FormLabel>Term Type</FormLabel>
                             <FormControl>
-                              <Select onValueChange={(value) => { console.log('Term type changed:', value); field.onChange(value); }} value={field.value}>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select term type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="semester">Semester</SelectItem>
-                                  <SelectItem value="term">Term</SelectItem>
-                                </SelectContent>
-                              </Select>
+                              <SimpleSelect 
+                                value={field.value} 
+                                onValueChange={(value) => { console.log('Term type changed:', value); field.onChange(value); }}
+                                placeholder="Select term type"
+                              >
+                                <SimpleSelectItem value="semester">Semester</SimpleSelectItem>
+                                <SimpleSelectItem value="term">Term</SimpleSelectItem>
+                              </SimpleSelect>
                             </FormControl>
                           </FormItem>
                         )}
@@ -498,17 +498,16 @@ export default function Courses() {
                               <FormItem>
                                 <FormLabel>Semester</FormLabel>
                                 <FormControl>
-                                  <Select onValueChange={field.onChange} value={field.value}>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select semester" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="Spring">Spring</SelectItem>
-                                      <SelectItem value="Summer">Summer</SelectItem>
-                                      <SelectItem value="Fall">Fall</SelectItem>
-                                      <SelectItem value="Winter">Winter</SelectItem>
-                                    </SelectContent>
-                                  </Select>
+                                  <SimpleSelect 
+                                    value={field.value} 
+                                    onValueChange={field.onChange}
+                                    placeholder="Select semester"
+                                  >
+                                    <SimpleSelectItem value="Spring">Spring</SimpleSelectItem>
+                                    <SimpleSelectItem value="Summer">Summer</SimpleSelectItem>
+                                    <SimpleSelectItem value="Fall">Fall</SimpleSelectItem>
+                                    <SimpleSelectItem value="Winter">Winter</SimpleSelectItem>
+                                  </SimpleSelect>
                                 </FormControl>
                               </FormItem>
                             )}
@@ -620,15 +619,14 @@ export default function Courses() {
                             <FormItem>
                               <FormLabel>Visibility</FormLabel>
                               <FormControl>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select visibility" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="private">Private (Enrolled only)</SelectItem>
-                                    <SelectItem value="institution">Institution (All users)</SelectItem>
-                                  </SelectContent>
-                                </Select>
+                                <SimpleSelect 
+                                  value={field.value} 
+                                  onValueChange={field.onChange}
+                                  placeholder="Select visibility"
+                                >
+                                  <SimpleSelectItem value="private">Private (Enrolled only)</SimpleSelectItem>
+                                  <SimpleSelectItem value="institution">Institution (All users)</SimpleSelectItem>
+                                </SimpleSelect>
                               </FormControl>
                             </FormItem>
                           )}
@@ -640,16 +638,15 @@ export default function Courses() {
                             <FormItem>
                               <FormLabel>Grading Scheme</FormLabel>
                               <FormControl>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select grading scheme" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="letter">Letter Grade (A-F)</SelectItem>
-                                    <SelectItem value="percentage">Percentage (0-100%)</SelectItem>
-                                    <SelectItem value="points">Points Based</SelectItem>
-                                  </SelectContent>
-                                </Select>
+                                <SimpleSelect 
+                                  value={field.value} 
+                                  onValueChange={field.onChange}
+                                  placeholder="Select grading scheme"
+                                >
+                                  <SimpleSelectItem value="letter">Letter Grade (A-F)</SimpleSelectItem>
+                                  <SimpleSelectItem value="percentage">Percentage (0-100%)</SimpleSelectItem>
+                                  <SimpleSelectItem value="points">Points Based</SimpleSelectItem>
+                                </SimpleSelect>
                               </FormControl>
                             </FormItem>
                           )}
