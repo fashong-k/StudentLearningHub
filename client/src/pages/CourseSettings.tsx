@@ -16,6 +16,7 @@ import { SimpleSelect, SimpleSelectItem } from "@/components/ui/simple-select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertCourseSchema, type Course } from "@shared/schema";
+import { z } from "zod";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { 
   BookOpen, 
@@ -34,6 +35,12 @@ interface CourseSettingsProps {
   courseId: string;
 }
 
+// Create a custom form schema that handles optional date fields properly
+const courseSettingsSchema = insertCourseSchema.extend({
+  startDate: z.date().optional(),
+  endDate: z.date().optional(),
+});
+
 export default function CourseSettings({ courseId }: CourseSettingsProps) {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -47,7 +54,7 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
   });
 
   const form = useForm({
-    resolver: zodResolver(insertCourseSchema),
+    resolver: zodResolver(courseSettingsSchema),
     defaultValues: {
       title: "",
       description: "",
@@ -67,20 +74,21 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
   // Update form when course data is loaded
   useEffect(() => {
     if (course) {
-      form.reset({
+      const formData = {
         title: course.title || "",
         description: course.description || "",
         courseCode: course.courseCode || "",
         semester: course.semester || "Fall",
         year: course.year || new Date().getFullYear(),
         termType: course.termType || "semester",
-        startDate: course.startDate ? new Date(course.startDate) : undefined,
-        endDate: course.endDate ? new Date(course.endDate) : undefined,
         visibility: course.visibility || "private",
         gradingScheme: course.gradingScheme || "letter",
         isActive: course.isActive ?? true,
         teacherId: course.teacherId || "",
-      });
+        ...(course.startDate && { startDate: new Date(course.startDate) }),
+        ...(course.endDate && { endDate: new Date(course.endDate) }),
+      };
+      form.reset(formData);
     }
   }, [course, form]);
 
