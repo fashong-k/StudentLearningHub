@@ -19,6 +19,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { initializeDatabase } from "./initializeDatabase";
+import { initializeExtendedDatabase } from "./initializeExtendedDatabase";
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -89,6 +90,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     // Initialize database tables
     await initializeDatabase();
+    
+    // Initialize extended database tables for course update validation
+    await initializeExtendedDatabase();
     
     // Create default users if they don't exist
     await createDefaultUsers();
