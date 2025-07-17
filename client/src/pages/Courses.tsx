@@ -583,7 +583,7 @@ export default function Courses() {
                                       onSelect={field.onChange}
                                       disabled={(date) => {
                                         const startDate = form.watch("startDate");
-                                        return date < new Date() || (startDate && isValidDate(startDate) && date < new Date(startDate));
+                                        return date < new Date() || (startDate && isValidDate(startDate) ? date < new Date(startDate) : false);
                                       }}
                                       initialFocus
                                     />
