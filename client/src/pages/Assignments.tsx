@@ -35,7 +35,9 @@ import {
   Calendar,
   Eye,
   Edit,
-  MoreVertical
+  MoreVertical,
+  Shield,
+  AlertTriangle
 } from "lucide-react";
 
 export default function Assignments() {
