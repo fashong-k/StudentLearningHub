@@ -20,6 +20,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertCourseSchema } from "@shared/schema";
+import { z } from "zod";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useDataFallback } from "@/hooks/useDataFallback";
 import { DataFallbackAlert } from "@/components/DataFallbackAlert";
@@ -73,7 +74,9 @@ export default function Courses() {
   const [, setLocation] = useLocation();
 
   const form = useForm({
-    resolver: zodResolver(insertCourseSchema),
+    resolver: zodResolver(insertCourseSchema.extend({
+      teacherId: z.string().min(1, "Teacher ID is required"),
+    })),
     defaultValues: {
       title: "",
       description: "",
@@ -85,6 +88,7 @@ export default function Courses() {
       endDate: undefined,
       visibility: "private",
       gradingScheme: "letter",
+      teacherId: user?.id || "", // Add teacherId to default values
     },
   });
 
@@ -327,10 +331,13 @@ export default function Courses() {
     console.log("Form validation state:", JSON.stringify(form.formState.errors, null, 2));
     console.log("Code validation state:", codeValidation);
     
-    // Add teacherId to the data
+    // Clean up the data and ensure proper field values
     const courseData = {
       ...data,
       teacherId: user?.id, // Add the current user's ID as teacherId
+      // Ensure dates are properly handled
+      startDate: data.termType === "term" ? data.startDate : null,
+      endDate: data.termType === "term" ? data.endDate : null,
     };
     
     console.log("Final course data with teacherId:", courseData);
@@ -495,7 +502,15 @@ export default function Courses() {
                             <FormControl>
                               <SimpleSelect 
                                 value={field.value} 
-                                onValueChange={(value) => { console.log('Term type changed:', value); field.onChange(value); }}
+                                onValueChange={(value) => { 
+                                  console.log('Term type changed:', value); 
+                                  field.onChange(value);
+                                  // Clear date fields when switching to semester mode
+                                  if (value === "semester") {
+                                    form.setValue("startDate", undefined);
+                                    form.setValue("endDate", undefined);
+                                  }
+                                }}
                                 placeholder="Select term type"
                               >
                                 <SimpleSelectItem value="semester">Semester</SimpleSelectItem>
