@@ -96,10 +96,11 @@ export default function Analytics() {
 
   // Calculate real analytics from database data
   const calculateAnalytics = () => {
-    const grades = gradesData || [];
-    const courses = coursesData || [];
-    const assignments = assignmentsData || [];
-    const announcements = announcementsData || [];
+    // Ensure all data is arrays, fallback to empty arrays if undefined or not arrays
+    const grades = Array.isArray(gradesData) ? gradesData : [];
+    const courses = Array.isArray(coursesData) ? coursesData : [];
+    const assignments = Array.isArray(assignmentsData) ? assignmentsData : [];
+    const announcements = Array.isArray(announcementsData) ? announcementsData : [];
 
     // Calculate grade distribution
     const gradeDistribution = { A: 0, B: 0, C: 0, D: 0, F: 0 };
@@ -477,7 +478,7 @@ export default function Analytics() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {courseComparisonData.map((course) => (
+                    {courseComparisonData.map((course: any) => (
                       <div key={course.course} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center space-x-4">
                           <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
