@@ -167,6 +167,12 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
   const isTeacher = userRole === "teacher";
   const isAdmin = userRole === "admin";
 
+  // Debug logging
+  console.log("CourseSettings - User object:", user);
+  console.log("CourseSettings - User role:", userRole);
+  console.log("CourseSettings - isTeacher:", isTeacher);
+  console.log("CourseSettings - isAdmin:", isAdmin);
+
   if (!isTeacher && !isAdmin) {
     return (
       <div className="min-h-screen bg-gray-50">
