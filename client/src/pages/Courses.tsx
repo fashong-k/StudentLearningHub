@@ -473,7 +473,7 @@ export default function Courses() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Term Type</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select term type" />
@@ -496,7 +496,7 @@ export default function Courses() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Semester</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <Select onValueChange={field.onChange} value={field.value}>
                                   <FormControl>
                                     <SelectTrigger>
                                       <SelectValue placeholder="Select semester" />
@@ -618,7 +618,7 @@ export default function Courses() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Visibility</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select visibility" />
@@ -638,7 +638,7 @@ export default function Courses() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Grading Scheme</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select grading scheme" />
