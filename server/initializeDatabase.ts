@@ -259,7 +259,7 @@ export async function initializeDatabase() {
     if (process.env.DB_INIT === 'true') {
       console.log('🌱 DB_INIT=true detected. Starting comprehensive data seeding...');
       try {
-        const { seedAllData } = await import('./seedData');
+        const { seedAllData } = await import('./seedData-drizzle');
         await seedAllData();
       } catch (error) {
         console.error('❌ Error during comprehensive data seeding:', error);

@@ -1,5 +1,5 @@
-import { User, Course, Assignment, Enrollment, Announcement, Message, Submission } from './models/models';
-import { sequelize } from './db';
+import { db } from './db-drizzle';
+import { users, courses, assignments, enrollments, announcements, messages, submissions } from '../shared/schema';
 
 export async function shouldSeedData(): Promise<boolean> {
   const environment = process.env.ENVIRONMENT || 'development';
@@ -19,9 +19,9 @@ export async function shouldSeedData(): Promise<boolean> {
 
 export async function checkIfDataExists(): Promise<boolean> {
   try {
-    const userCount = await User.count();
-    const courseCount = await Course.count();
-    const assignmentCount = await Assignment.count();
+    const userCount = await db.select().from(users).then(rows => rows.length);
+    const courseCount = await db.select().from(courses).then(rows => rows.length);
+    const assignmentCount = await db.select().from(assignments).then(rows => rows.length);
     
     // If we have any substantial data, don't seed
     return userCount > 3 || courseCount > 0 || assignmentCount > 0;
