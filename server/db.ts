@@ -60,7 +60,7 @@ const dbSchema = process.env.DB_SCHEMA;
 let sequelize: Sequelize;
 
 // Check if we have DATABASE_URL or individual database variables
-if (databaseUrl && databaseUrl.trim() !== '') {
+if (databaseUrl && databaseUrl.trim() !== '' && databaseUrl !== '""') {
   // Use DATABASE_URL if available (for production/Replit)
   sequelize = new Sequelize(databaseUrl, {
     dialect: 'postgres',
