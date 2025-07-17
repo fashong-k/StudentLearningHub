@@ -172,6 +172,8 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
   console.log("CourseSettings - User role:", userRole);
   console.log("CourseSettings - isTeacher:", isTeacher);
   console.log("CourseSettings - isAdmin:", isAdmin);
+  console.log("CourseSettings - isAuthenticated:", isAuthenticated);
+  console.log("CourseSettings - authLoading:", authLoading);
 
   if (!isTeacher && !isAdmin) {
     return (

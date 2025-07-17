@@ -24,7 +24,9 @@ export function useAuth() {
         });
         
         if (response.ok) {
-          return await response.json();
+          const userData = await response.json();
+          console.log("useAuth - Raw user data from API:", userData);
+          return userData;
         }
         
         // If the main auth endpoint fails, this means user is not authenticated
