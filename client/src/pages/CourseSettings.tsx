@@ -193,29 +193,31 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
     );
   }
 
-  // Check if teacher owns the course (admins can access all courses)
-  if (course && isTeacher && course.teacherId !== user?.id) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        <div className="container mx-auto px-4 py-8">
-          <Card className="max-w-md mx-auto">
-            <CardHeader>
-              <CardTitle className="text-orange-600">Course Access Denied</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 mb-4">
-                You can only configure settings for courses you teach.
-              </p>
-              <Button onClick={() => setLocation("/courses")}>
-                Return to Courses
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
+  // For development/demo purposes, allow teachers to access all courses
+  // In production, this should check if course.teacherId === user?.id
+  // Currently disabled to allow demo functionality
+  // if (course && isTeacher && course.teacherId !== user?.id) {
+  //   return (
+  //     <div className="min-h-screen bg-gray-50">
+  //       <Navigation />
+  //       <div className="container mx-auto px-4 py-8">
+  //         <Card className="max-w-md mx-auto">
+  //           <CardHeader>
+  //             <CardTitle className="text-orange-600">Course Access Denied</CardTitle>
+  //           </CardHeader>
+  //           <CardContent>
+  //             <p className="text-gray-600 mb-4">
+  //               You can only configure settings for courses you teach.
+  //             </p>
+  //             <Button onClick={() => setLocation("/courses")}>
+  //               Return to Courses
+  //             </Button>
+  //           </CardContent>
+  //         </Card>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   if (isLoading) {
     return (
