@@ -58,6 +58,19 @@ import { safeFormat, isValidDate } from "@/lib/dateUtils";
 import TestSelect from "@/components/TestSelect";
 import { SimpleSelect, SimpleSelectItem } from "@/components/ui/simple-select";
 
+// Helper function to safely convert date to HTML date input format
+const formatDateForInput = (date: any): string => {
+  if (!date) return '';
+  try {
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) return '';
+    return dateObj.toISOString().split('T')[0];
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return '';
+  }
+};
+
 export default function Courses() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -628,7 +641,7 @@ export default function Courses() {
                                 <FormControl>
                                   <Input
                                     type="date"
-                                    value={field.value && isValidDate(field.value) ? new Date(field.value).toISOString().split('T')[0] : ''}
+                                    value={formatDateForInput(field.value)}
                                     onChange={(e) => {
                                       console.log('Create form start date selected:', e.target.value);
                                       field.onChange(e.target.value ? new Date(e.target.value) : null);
@@ -648,12 +661,12 @@ export default function Courses() {
                                 <FormControl>
                                   <Input
                                     type="date"
-                                    value={field.value && isValidDate(field.value) ? new Date(field.value).toISOString().split('T')[0] : ''}
+                                    value={formatDateForInput(field.value)}
                                     onChange={(e) => {
                                       console.log('Create form end date selected:', e.target.value);
                                       field.onChange(e.target.value ? new Date(e.target.value) : null);
                                     }}
-                                    min={form.watch("startDate") && isValidDate(form.watch("startDate")) ? new Date(form.watch("startDate")).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
+                                    min={formatDateForInput(form.watch("startDate")) || new Date().toISOString().split('T')[0]}
                                   />
                                 </FormControl>
                               </FormItem>
@@ -862,7 +875,7 @@ export default function Courses() {
                           <FormControl>
                             <Input
                               type="date"
-                              value={field.value && isValidDate(field.value) ? new Date(field.value).toISOString().split('T')[0] : ''}
+                              value={formatDateForInput(field.value)}
                               onChange={(e) => {
                                 console.log('Edit form start date selected:', e.target.value);
                                 field.onChange(e.target.value ? new Date(e.target.value) : null);
@@ -882,12 +895,12 @@ export default function Courses() {
                           <FormControl>
                             <Input
                               type="date"
-                              value={field.value && isValidDate(field.value) ? new Date(field.value).toISOString().split('T')[0] : ''}
+                              value={formatDateForInput(field.value)}
                               onChange={(e) => {
                                 console.log('Edit form end date selected:', e.target.value);
                                 field.onChange(e.target.value ? new Date(e.target.value) : null);
                               }}
-                              min={editForm.watch("startDate") && isValidDate(editForm.watch("startDate")) ? new Date(editForm.watch("startDate")).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
+                              min={formatDateForInput(editForm.watch("startDate")) || new Date().toISOString().split('T')[0]}
                             />
                           </FormControl>
                         </FormItem>
