@@ -49,7 +49,7 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
 
   // Fetch course data
   const { data: course, isLoading } = useQuery<Course>({
-    queryKey: ["/api/courses", courseId],
+    queryKey: [`/api/courses/${courseId}`],
     enabled: !!courseId,
   });
 
@@ -101,6 +101,7 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
         title: "Course Updated",
         description: "Course settings have been saved successfully.",
       });
+      queryClient.invalidateQueries({ queryKey: [`/api/courses/${courseId}`] });
       queryClient.invalidateQueries({ queryKey: ["/api/courses"] });
       setLocation("/courses");
     },
@@ -203,6 +204,17 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
       </div>
     );
   }
+
+  // Debug logging
+  console.log("CourseSettings Debug:", {
+    courseId,
+    course,
+    courseTeacherId: course?.teacherId,
+    userId: user?.id,
+    userRole: user?.role,
+    isTeacher,
+    isAdmin
+  });
 
   // Check if teacher owns the course (admins can access all courses)
   if (course && isTeacher && String(course.teacherId) !== String(user?.id)) {
