@@ -25,7 +25,6 @@ export function useAuth() {
         
         if (response.ok) {
           const userData = await response.json();
-          console.log("useAuth - Raw user data from API:", userData);
           return userData;
         }
         

@@ -35,7 +35,6 @@ interface CourseSettingsProps {
 }
 
 export default function CourseSettings({ courseId }: CourseSettingsProps) {
-  console.log("CourseSettings component called with courseId:", courseId);
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [, setLocation] = useLocation();
@@ -143,7 +142,6 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
   }
 
   if (!isAuthenticated) {
-    console.log("CourseSettings - Not authenticated, showing login screen");
     return (
       <div className="min-h-screen bg-gray-50">
         <Navigation />
@@ -169,17 +167,7 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
   const isTeacher = userRole === "teacher";
   const isAdmin = userRole === "admin";
 
-  // Debug logging
-  console.log("CourseSettings - User object:", user);
-  console.log("CourseSettings - User role:", userRole);
-  console.log("CourseSettings - isTeacher:", isTeacher);
-  console.log("CourseSettings - isAdmin:", isAdmin);
-  console.log("CourseSettings - isAuthenticated:", isAuthenticated);
-  console.log("CourseSettings - authLoading:", authLoading);
-
   if (!isTeacher && !isAdmin) {
-    console.log("CourseSettings - Role check failed, showing access restricted");
-    console.log("CourseSettings - !isTeacher && !isAdmin = ", !isTeacher && !isAdmin);
     return (
       <div className="min-h-screen bg-gray-50">
         <Navigation />
@@ -205,33 +193,29 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
     );
   }
 
-  // Temporarily comment out teacher ownership check for debugging
-  // if (course && isTeacher && course.teacherId !== user?.id) {
-  //   console.log("CourseSettings - Course ownership check failed:");
-  //   console.log("CourseSettings - Course teacherId:", course.teacherId);
-  //   console.log("CourseSettings - User id:", user?.id);
-  //   console.log("CourseSettings - Course data:", course);
-  //   return (
-  //     <div className="min-h-screen bg-gray-50">
-  //       <Navigation />
-  //       <div className="container mx-auto px-4 py-8">
-  //         <Card className="max-w-md mx-auto">
-  //           <CardHeader>
-  //             <CardTitle className="text-orange-600">Course Access Denied</CardTitle>
-  //           </CardHeader>
-  //           <CardContent>
-  //             <p className="text-gray-600 mb-4">
-  //               You can only configure settings for courses you teach.
-  //             </p>
-  //             <Button onClick={() => setLocation("/courses")}>
-  //               Return to Courses
-  //             </Button>
-  //           </CardContent>
-  //         </Card>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  // Check if teacher owns the course (admins can access all courses)
+  if (course && isTeacher && course.teacherId !== user?.id) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="container mx-auto px-4 py-8">
+          <Card className="max-w-md mx-auto">
+            <CardHeader>
+              <CardTitle className="text-orange-600">Course Access Denied</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">
+                You can only configure settings for courses you teach.
+              </p>
+              <Button onClick={() => setLocation("/courses")}>
+                Return to Courses
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
