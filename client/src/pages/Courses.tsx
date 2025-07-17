@@ -323,8 +323,8 @@ export default function Courses() {
   };
 
   const onSubmit = (data: any) => {
-    console.log("Form submission data:", data);
-    console.log("Form validation state:", form.formState.errors);
+    console.log("Form submission reached!", data);
+    console.log("Form validation state:", JSON.stringify(form.formState.errors, null, 2));
     console.log("Code validation state:", codeValidation);
     
     // Add teacherId to the data
@@ -676,12 +676,19 @@ export default function Courses() {
                         <Button 
                           type="submit" 
                           disabled={createCourseMutation.isPending || (codeValidation.message && !codeValidation.isValid)}
-                          onClick={() => {
+                          onClick={(e) => {
                             console.log("Button clicked!");
                             console.log("Mutation pending:", createCourseMutation.isPending);
                             console.log("Code validation:", codeValidation);
                             console.log("Form valid:", form.formState.isValid);
-                            console.log("Form errors:", form.formState.errors);
+                            console.log("Form errors:", JSON.stringify(form.formState.errors, null, 2));
+                            console.log("Form values:", JSON.stringify(form.getValues(), null, 2));
+                            
+                            // Force form submission if validation passes
+                            if (form.formState.isValid && codeValidation.isValid) {
+                              console.log("Manually triggering form submission...");
+                              form.handleSubmit(onSubmit)();
+                            }
                           }}
                         >
                           {createCourseMutation.isPending ? "Creating..." : "Create Course"}
