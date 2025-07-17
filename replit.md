@@ -27,16 +27,18 @@ EduPortal is a comprehensive Learning Management System (LMS) built with modern 
 ## Key Components
 
 ### Database Schema
-The system uses a comprehensive PostgreSQL schema with the following core entities:
-- **Users**: Stores user profiles with role-based access (student, teacher, admin)
-- **Courses**: Course information with teacher assignments
-- **Enrollments**: Student-course relationships
-- **Assignments**: Course assignments with due dates and requirements
-- **Submissions**: Student assignment submissions with grading
-- **Announcements**: Course-wide announcements
-- **Messages**: Direct messaging between users
-- **Discussions**: Course discussion boards with replies
-- **Sessions**: Session storage for authentication
+The system uses a comprehensive PostgreSQL schema with 11 core tables in the `student_learning_hub` schema:
+- **users**: User profiles with role-based access (student, teacher, admin)
+- **courses**: Course information with teacher assignments
+- **enrollments**: Student-course relationships
+- **assignments**: Course assignments with due dates and requirements
+- **submissions**: Student assignment submissions with grading
+- **announcements**: Course-wide announcements
+- **messages**: Direct messaging between users
+- **discussions**: Course discussion boards
+- **discussion_replies**: Replies to course discussions
+- **plagiarism_results**: Plagiarism detection results
+- **sessions**: Session storage for authentication
 
 ### Authentication System
 - **Provider**: Replit Auth with OpenID Connect
@@ -337,6 +339,14 @@ Preferred communication style: Simple, everyday language.
   - Messages API now fully functional with proper course-based message support
   - All core API endpoints confirmed working: courses, assignments, announcements, messages, authentication
   - Database schema now completely aligned with application requirements
+
+- July 17, 2025: Completed database schema system with 11 core tables
+  - Successfully resolved all database schema conflicts between Drizzle definitions and PostgreSQL tables
+  - Fixed column naming consistency (snake_case) across all database operations
+  - Achieved complete automatic database initialization with zero manual setup required
+  - All 11 core tables working perfectly: users, courses, enrollments, assignments, submissions, announcements, messages, discussions, discussion_replies, plagiarism_results, sessions
+  - User confirmed satisfaction with current 11-table core functionality (no need for extended 22-table system)
+  - Database system now production-ready with comprehensive API coverage and proper schema management
 - July 16, 2025: Enhanced course creation with comprehensive configuration system
   - Added semester/term selection with interactive date pickers for custom course durations
   - Implemented visibility settings (Private vs Institution) with clear access control descriptions
