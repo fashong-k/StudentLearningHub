@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { SimpleDropdown, SimpleDropdownItem, SimpleDropdownSeparator } from "@/components/ui/simple-dropdown";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -1033,100 +1033,100 @@ export default function Courses() {
                         </div>
                       </div>
                       {user?.role === "teacher" && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
+                        <SimpleDropdown
+                          trigger={
                             <Button variant="ghost" size="sm">
                               <MoreVertical className="w-4 h-4" />
                             </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48">
-                            {/* Course Management */}
-                            <DropdownMenuItem onClick={() => handleEditCourse(course)}>
-                              <Edit className="w-4 h-4 mr-2" />
-                              Edit Course
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleConfigureCourse(course)}>
-                              <Settings className="w-4 h-4 mr-2" />
-                              Configure Settings
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setLocation(`/courses/${course.id}`)}>
-                              <Eye className="w-4 h-4 mr-2" />
-                              View Course
-                            </DropdownMenuItem>
-                            
-                            <DropdownMenuSeparator />
-                            
-                            {/* User Management */}
-                            <DropdownMenuItem onClick={() => toast({ title: "Feature Coming Soon", description: "Student management will be available soon" })}>
-                              <Users className="w-4 h-4 mr-2" />
-                              Manage Students
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => toast({ title: "Feature Coming Soon", description: "Instructor management will be available soon" })}>
-                              <UserPlus className="w-4 h-4 mr-2" />
-                              Add Instructors
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => toast({ title: "Feature Coming Soon", description: "Grade management will be available soon" })}>
-                              <GraduationCap className="w-4 h-4 mr-2" />
-                              Manage Grades
-                            </DropdownMenuItem>
-                            
-                            <DropdownMenuSeparator />
-                            
-                            {/* Content & Analytics */}
-                            <DropdownMenuItem onClick={() => toast({ title: "Feature Coming Soon", description: "Course analytics will be available soon" })}>
-                              <BarChart3 className="w-4 h-4 mr-2" />
-                              View Analytics
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => toast({ title: "Feature Coming Soon", description: "Content management will be available soon" })}>
-                              <FileText className="w-4 h-4 mr-2" />
-                              Course Materials
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => toast({ title: "Feature Coming Soon", description: "Announcement management will be available soon" })}>
-                              <Bell className="w-4 h-4 mr-2" />
-                              Send Announcement
-                            </DropdownMenuItem>
-                            
-                            <DropdownMenuSeparator />
-                            
-                            {/* Export & Share */}
-                            <DropdownMenuItem onClick={() => toast({ title: "Feature Coming Soon", description: "Export functionality will be available soon" })}>
-                              <Download className="w-4 h-4 mr-2" />
-                              Export Data
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {
-                              const shareUrl = `${window.location.origin}/courses/${course.id}`;
-                              navigator.clipboard.writeText(shareUrl);
-                              toast({ title: "Link Copied", description: "Course link copied to clipboard" });
-                            }}>
-                              <Link className="w-4 h-4 mr-2" />
-                              Share Course Link
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(course.courseCode)}>
-                              <Copy className="w-4 h-4 mr-2" />
-                              Copy Course Code
-                            </DropdownMenuItem>
-                            
-                            <DropdownMenuSeparator />
-                            
-                            {/* Course Status */}
-                            <DropdownMenuItem onClick={() => toast({ title: "Feature Coming Soon", description: "Archive functionality will be available soon" })}>
-                              <Archive className="w-4 h-4 mr-2" />
-                              Archive Course
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => toast({ title: "Feature Coming Soon", description: "Duplicate functionality will be available soon" })}>
-                              <Clipboard className="w-4 h-4 mr-2" />
-                              Duplicate Course
-                            </DropdownMenuItem>
-                            
-                            <DropdownMenuSeparator />
-                            
-                            {/* Dangerous Actions */}
-                            <DropdownMenuItem onClick={() => handleDeleteCourse(course)} className="text-red-600 focus:text-red-600">
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Delete Course
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                          }
+                          align="end"
+                        >
+                          {/* Course Management */}
+                          <SimpleDropdownItem onClick={() => handleEditCourse(course)}>
+                            <Edit className="w-4 h-4 mr-2" />
+                            Edit Course
+                          </SimpleDropdownItem>
+                          <SimpleDropdownItem onClick={() => handleConfigureCourse(course)}>
+                            <Settings className="w-4 h-4 mr-2" />
+                            Configure Settings
+                          </SimpleDropdownItem>
+                          <SimpleDropdownItem onClick={() => setLocation(`/courses/${course.id}`)}>
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Course
+                          </SimpleDropdownItem>
+                          
+                          <SimpleDropdownSeparator />
+                          
+                          {/* User Management */}
+                          <SimpleDropdownItem onClick={() => toast({ title: "Feature Coming Soon", description: "Student management will be available soon" })}>
+                            <Users className="w-4 h-4 mr-2" />
+                            Manage Students
+                          </SimpleDropdownItem>
+                          <SimpleDropdownItem onClick={() => toast({ title: "Feature Coming Soon", description: "Instructor management will be available soon" })}>
+                            <UserPlus className="w-4 h-4 mr-2" />
+                            Add Instructors
+                          </SimpleDropdownItem>
+                          <SimpleDropdownItem onClick={() => toast({ title: "Feature Coming Soon", description: "Grade management will be available soon" })}>
+                            <GraduationCap className="w-4 h-4 mr-2" />
+                            Manage Grades
+                          </SimpleDropdownItem>
+                          
+                          <SimpleDropdownSeparator />
+                          
+                          {/* Content & Analytics */}
+                          <SimpleDropdownItem onClick={() => toast({ title: "Feature Coming Soon", description: "Course analytics will be available soon" })}>
+                            <BarChart3 className="w-4 h-4 mr-2" />
+                            View Analytics
+                          </SimpleDropdownItem>
+                          <SimpleDropdownItem onClick={() => toast({ title: "Feature Coming Soon", description: "Content management will be available soon" })}>
+                            <FileText className="w-4 h-4 mr-2" />
+                            Course Materials
+                          </SimpleDropdownItem>
+                          <SimpleDropdownItem onClick={() => toast({ title: "Feature Coming Soon", description: "Announcement management will be available soon" })}>
+                            <Bell className="w-4 h-4 mr-2" />
+                            Send Announcement
+                          </SimpleDropdownItem>
+                          
+                          <SimpleDropdownSeparator />
+                          
+                          {/* Export & Share */}
+                          <SimpleDropdownItem onClick={() => toast({ title: "Feature Coming Soon", description: "Export functionality will be available soon" })}>
+                            <Download className="w-4 h-4 mr-2" />
+                            Export Data
+                          </SimpleDropdownItem>
+                          <SimpleDropdownItem onClick={() => {
+                            const shareUrl = `${window.location.origin}/courses/${course.id}`;
+                            navigator.clipboard.writeText(shareUrl);
+                            toast({ title: "Link Copied", description: "Course link copied to clipboard" });
+                          }}>
+                            <Link className="w-4 h-4 mr-2" />
+                            Share Course Link
+                          </SimpleDropdownItem>
+                          <SimpleDropdownItem onClick={() => navigator.clipboard.writeText(course.courseCode)}>
+                            <Copy className="w-4 h-4 mr-2" />
+                            Copy Course Code
+                          </SimpleDropdownItem>
+                          
+                          <SimpleDropdownSeparator />
+                          
+                          {/* Course Status */}
+                          <SimpleDropdownItem onClick={() => toast({ title: "Feature Coming Soon", description: "Archive functionality will be available soon" })}>
+                            <Archive className="w-4 h-4 mr-2" />
+                            Archive Course
+                          </SimpleDropdownItem>
+                          <SimpleDropdownItem onClick={() => toast({ title: "Feature Coming Soon", description: "Duplicate functionality will be available soon" })}>
+                            <Clipboard className="w-4 h-4 mr-2" />
+                            Duplicate Course
+                          </SimpleDropdownItem>
+                          
+                          <SimpleDropdownSeparator />
+                          
+                          {/* Dangerous Actions */}
+                          <SimpleDropdownItem onClick={() => handleDeleteCourse(course)} className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete Course
+                          </SimpleDropdownItem>
+                        </SimpleDropdown>
                       )}
                     </div>
                   </CardHeader>
