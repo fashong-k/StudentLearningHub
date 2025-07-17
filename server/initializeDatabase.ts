@@ -255,6 +255,7 @@ export async function initializeDatabase() {
     console.log('✓ Database tables initialized successfully');
     
     // Check if we should seed comprehensive data
+    console.log('Debug: DB_INIT environment variable:', process.env.DB_INIT);
     if (process.env.DB_INIT === 'true') {
       console.log('🌱 DB_INIT=true detected. Starting comprehensive data seeding...');
       try {
@@ -263,6 +264,8 @@ export async function initializeDatabase() {
       } catch (error) {
         console.error('❌ Error during comprehensive data seeding:', error);
       }
+    } else {
+      console.log('🚫 DB_INIT not set to true, skipping comprehensive data seeding');
     }
     
   } catch (error) {
