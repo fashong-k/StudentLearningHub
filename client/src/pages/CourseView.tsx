@@ -42,10 +42,19 @@ export default function CourseView() {
   const [isEnrolled, setIsEnrolled] = useState(false);
 
   // Fetch course details
-  const { data: course = {}, isLoading: courseLoading } = useQuery({
-    queryKey: ["/api/courses", courseId],
+  const { data: course = {}, isLoading: courseLoading, error: courseError } = useQuery({
+    queryKey: [`/api/courses/${courseId}`],
     enabled: !!courseId,
     retry: false,
+  });
+
+  // Debug logging
+  console.log('CourseView Debug:', {
+    courseId,
+    course,
+    courseLoading,
+    courseError,
+    queryKey: [`/api/courses/${courseId}`]
   });
 
   // Fetch course assignments
@@ -199,8 +208,11 @@ export default function CourseView() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{(course as any).title}</h1>
-            <p className="text-gray-600 text-sm">{(course as any).description || `${(course as any).courseCode} • ${(course as any).semester} ${(course as any).year}`}</p>
+            <h1 className="text-2xl font-bold text-gray-900">{(course as any).title || 'Course Title'}</h1>
+            <p className="text-gray-600 text-sm">
+              {(course as any).description || 
+               `${(course as any).courseCode || 'Course Code'} • ${(course as any).semester || 'Semester'} ${(course as any).year || new Date().getFullYear()}`}
+            </p>
           </div>
         </div>
         
@@ -246,7 +258,10 @@ export default function CourseView() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="font-semibold mb-2">Description</h3>
-              <p className="text-gray-600 mb-4">{(course as any).description || `A comprehensive ${(course as any).courseCode} course covering fundamental concepts and practical applications.`}</p>
+              <p className="text-gray-600 mb-4">
+                {(course as any).description || 
+                 `A comprehensive ${(course as any).courseCode || 'course'} covering fundamental concepts and practical applications.`}
+              </p>
               
               <div className="space-y-2">
                 <div className="flex items-center">
