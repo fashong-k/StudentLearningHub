@@ -75,8 +75,8 @@ export const courses = pgTable("courses", {
   semester: varchar("semester", { length: 50 }),
   year: integer("year"),
   termType: varchar("term_type", { length: 20 }).default("semester"), // "semester" or "term"
-  startDate: timestamp("start_date"),
-  endDate: timestamp("end_date"),
+  startDate: timestamp("start_date", { mode: "date" }),
+  endDate: timestamp("end_date", { mode: "date" }),
   visibility: courseVisibilityEnum("visibility").default("private"),
   gradingScheme: gradingSchemeEnum("grading_scheme").default("letter"),
   isActive: boolean("is_active").default(true),

@@ -1,6 +1,6 @@
 import { users, courses, enrollments, assignments, submissions, announcements, messages, plagiarismChecks, plagiarismDatabase } from "@shared/schema";
 import { db } from "./db-drizzle";
-import { eq, and, desc, asc } from "drizzle-orm";
+import { eq, and, desc, asc, sql } from "drizzle-orm";
 import type { 
   User as UserAttributes, 
   Course as CourseAttributes, 
@@ -102,19 +102,17 @@ export class DrizzleStorage implements IStorage {
       teacherId: courses.teacherId,
       semester: courses.semester,
       year: courses.year,
+      termType: courses.termType,
+      startDate: courses.startDate,
+      endDate: courses.endDate,
+      visibility: courses.visibility,
+      gradingScheme: courses.gradingScheme,
       isActive: courses.isActive,
       createdAt: courses.createdAt,
       updatedAt: courses.updatedAt,
     }).from(courses).orderBy(asc(courses.title));
     
-    return result.map(course => ({
-      ...course,
-      termType: "semester", // Default values for missing columns
-      startDate: null,
-      endDate: null,
-      visibility: "private",
-      gradingScheme: "letter",
-    }));
+    return result;
   }
 
   async getCourseById(id: number): Promise<CourseAttributes | undefined> {
@@ -126,21 +124,17 @@ export class DrizzleStorage implements IStorage {
       teacherId: courses.teacherId,
       semester: courses.semester,
       year: courses.year,
+      termType: courses.termType,
+      startDate: courses.startDate,
+      endDate: courses.endDate,
+      visibility: courses.visibility,
+      gradingScheme: courses.gradingScheme,
       isActive: courses.isActive,
       createdAt: courses.createdAt,
       updatedAt: courses.updatedAt,
     }).from(courses).where(eq(courses.id, id));
     
-    if (!course) return undefined;
-    
-    return {
-      ...course,
-      termType: "semester", // Default values for missing columns
-      startDate: null,
-      endDate: null,
-      visibility: "private",
-      gradingScheme: "letter",
-    };
+    return course;
   }
 
   async getTeacherCourses(teacherId: string): Promise<CourseAttributes[]> {
@@ -152,19 +146,17 @@ export class DrizzleStorage implements IStorage {
       teacherId: courses.teacherId,
       semester: courses.semester,
       year: courses.year,
+      termType: courses.termType,
+      startDate: courses.startDate,
+      endDate: courses.endDate,
+      visibility: courses.visibility,
+      gradingScheme: courses.gradingScheme,
       isActive: courses.isActive,
       createdAt: courses.createdAt,
       updatedAt: courses.updatedAt,
     }).from(courses).where(eq(courses.teacherId, teacherId));
     
-    return result.map(course => ({
-      ...course,
-      termType: "semester", // Default values for missing columns
-      startDate: null,
-      endDate: null,
-      visibility: "private",
-      gradingScheme: "letter",
-    }));
+    return result;
   }
 
   async getStudentCourses(studentId: string): Promise<CourseAttributes[]> {
@@ -177,6 +169,11 @@ export class DrizzleStorage implements IStorage {
         teacherId: courses.teacherId,
         semester: courses.semester,
         year: courses.year,
+        termType: courses.termType,
+        startDate: courses.startDate,
+        endDate: courses.endDate,
+        visibility: courses.visibility,
+        gradingScheme: courses.gradingScheme,
         isActive: courses.isActive,
         createdAt: courses.createdAt,
         updatedAt: courses.updatedAt,
@@ -185,14 +182,7 @@ export class DrizzleStorage implements IStorage {
       .innerJoin(enrollments, eq(enrollments.courseId, courses.id))
       .where(eq(enrollments.studentId, studentId));
     
-    return result.map(course => ({
-      ...course,
-      termType: "semester", // Default values for missing columns
-      startDate: null,
-      endDate: null,
-      visibility: "private",
-      gradingScheme: "letter",
-    }));
+    return result;
   }
 
   async createCourse(course: Omit<CourseAttributes, 'id' | 'createdAt' | 'updatedAt'>): Promise<CourseAttributes> {
@@ -203,18 +193,43 @@ export class DrizzleStorage implements IStorage {
       teacherId: course.teacherId,
       semester: course.semester,
       year: course.year,
-      isActive: course.isActive || true,
+      termType: course.termType || "semester",
+      startDate: course.startDate || null,
+      endDate: course.endDate || null,
+      visibility: course.visibility || "private",
+      gradingScheme: course.gradingScheme || "letter",
+      isActive: course.isActive !== undefined ? course.isActive : true,
     };
     
-    const [newCourse] = await db.insert(courses).values(courseData).returning();
-    return {
-      ...newCourse,
-      termType: "semester", // Default values for missing columns
-      startDate: null,
-      endDate: null,
-      visibility: "private",
-      gradingScheme: "letter",
-    };
+    // Test the database connection first
+    try {
+      console.log('Testing database connection...');
+      await db.execute(sql`SELECT 1`);
+      console.log('Database connection successful');
+    } catch (error) {
+      console.error('Database connection failed:', error);
+      throw new Error('Database connection failed');
+    }
+    
+    // Use Drizzle ORM directly (now that schema is properly configured)
+    try {
+      console.log('Attempting Drizzle insert with data:', courseData);
+      const result = await db.insert(courses).values(courseData).returning();
+      console.log('Drizzle insert result:', result);
+      
+      if (!result || result.length === 0) {
+        throw new Error('No course returned from insert operation');
+      }
+      
+      const newCourse = result[0];
+      console.log('Successfully created course:', newCourse);
+      return newCourse;
+    } catch (error) {
+      console.error('Drizzle insert failed:', error);
+      console.error('Error details:', error.message);
+      console.error('Error stack:', error.stack);
+      throw error;
+    }
   }
 
   async updateCourse(id: number, course: Partial<CourseAttributes>): Promise<CourseAttributes> {
@@ -225,6 +240,11 @@ export class DrizzleStorage implements IStorage {
       teacherId: course.teacherId,
       semester: course.semester,
       year: course.year,
+      termType: course.termType,
+      startDate: course.startDate,
+      endDate: course.endDate,
+      visibility: course.visibility,
+      gradingScheme: course.gradingScheme,
       isActive: course.isActive,
       updatedAt: new Date(),
     };
@@ -242,14 +262,7 @@ export class DrizzleStorage implements IStorage {
       .where(eq(courses.id, id))
       .returning();
     
-    return {
-      ...updatedCourse,
-      termType: "semester", // Default values for missing columns
-      startDate: null,
-      endDate: null,
-      visibility: "private",
-      gradingScheme: "letter",
-    };
+    return updatedCourse;
   }
 
   async deleteCourse(id: number): Promise<boolean> {

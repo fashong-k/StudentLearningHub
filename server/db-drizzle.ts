@@ -40,9 +40,11 @@ if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '""' && process.env
     password: process.env.DB_PASS,
     database: process.env.DB_NAME,
     ssl: false,
-    options: process.env.DB_SCHEMA ? `-c search_path=${process.env.DB_SCHEMA},public` : undefined,
+    options: `-c search_path=student_learning_hub,public`,
   });
-  db = drizzleNode(pool, { schema });
+  db = drizzleNode(pool, { 
+    schema
+  });
 } else {
   throw new Error(
     "Either DATABASE_URL or local database configuration (DB_HOST, DB_USER, etc.) must be set"
