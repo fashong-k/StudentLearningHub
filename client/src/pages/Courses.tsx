@@ -57,6 +57,7 @@ import { format } from "date-fns";
 import { safeFormat, isValidDate } from "@/lib/dateUtils";
 import TestSelect from "@/components/TestSelect";
 import { SimpleSelect, SimpleSelectItem } from "@/components/ui/simple-select";
+import { CustomDatePicker } from "@/components/CustomDatePicker";
 
 // Helper function to safely convert date to HTML date input format
 const formatDateForInput = (date: any): string => {
@@ -645,13 +646,13 @@ export default function Courses() {
                               <FormItem>
                                 <FormLabel>Start Date</FormLabel>
                                 <FormControl>
-                                  <Input
-                                    type="date"
-                                    value={formatDateForInput(field.value)}
-                                    onChange={(e) => {
-                                      console.log('Create form start date selected:', e.target.value);
-                                      field.onChange(e.target.value);
+                                  <CustomDatePicker
+                                    value={field.value}
+                                    onChange={(date) => {
+                                      console.log('Create form start date selected:', date);
+                                      field.onChange(date);
                                     }}
+                                    placeholder="Select start date"
                                     min={new Date().toISOString().split('T')[0]}
                                   />
                                 </FormControl>
@@ -665,14 +666,14 @@ export default function Courses() {
                               <FormItem>
                                 <FormLabel>End Date</FormLabel>
                                 <FormControl>
-                                  <Input
-                                    type="date"
-                                    value={formatDateForInput(field.value)}
-                                    onChange={(e) => {
-                                      console.log('Create form end date selected:', e.target.value);
-                                      field.onChange(e.target.value);
+                                  <CustomDatePicker
+                                    value={field.value}
+                                    onChange={(date) => {
+                                      console.log('Create form end date selected:', date);
+                                      field.onChange(date);
                                     }}
-                                    min={formatDateForInput(form.watch("startDate")) || new Date().toISOString().split('T')[0]}
+                                    placeholder="Select end date"
+                                    min={form.watch("startDate") || new Date().toISOString().split('T')[0]}
                                   />
                                 </FormControl>
                               </FormItem>
@@ -879,13 +880,13 @@ export default function Courses() {
                         <FormItem>
                           <FormLabel>Start Date</FormLabel>
                           <FormControl>
-                            <Input
-                              type="date"
-                              value={formatDateForInput(field.value)}
-                              onChange={(e) => {
-                                console.log('Edit form start date selected:', e.target.value);
-                                field.onChange(e.target.value);
+                            <CustomDatePicker
+                              value={field.value}
+                              onChange={(date) => {
+                                console.log('Edit form start date selected:', date);
+                                field.onChange(date);
                               }}
+                              placeholder="Select start date"
                               min={new Date().toISOString().split('T')[0]}
                             />
                           </FormControl>
@@ -899,14 +900,14 @@ export default function Courses() {
                         <FormItem>
                           <FormLabel>End Date</FormLabel>
                           <FormControl>
-                            <Input
-                              type="date"
-                              value={formatDateForInput(field.value)}
-                              onChange={(e) => {
-                                console.log('Edit form end date selected:', e.target.value);
-                                field.onChange(e.target.value);
+                            <CustomDatePicker
+                              value={field.value}
+                              onChange={(date) => {
+                                console.log('Edit form end date selected:', date);
+                                field.onChange(date);
                               }}
-                              min={formatDateForInput(editForm.watch("startDate")) || new Date().toISOString().split('T')[0]}
+                              placeholder="Select end date"
+                              min={editForm.watch("startDate") || new Date().toISOString().split('T')[0]}
                             />
                           </FormControl>
                         </FormItem>
