@@ -17,7 +17,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertCourseSchema } from "@shared/schema";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import ProtectedRoute from "@/components/ProtectedRoute";
 import { 
   BookOpen, 
   Calendar as CalendarIcon, 
@@ -37,7 +36,7 @@ interface CourseSettingsProps {
 
 export default function CourseSettings({ courseId }: CourseSettingsProps) {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
 
@@ -127,6 +126,97 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
     setLocation("/courses");
   };
 
+  // Authentication checks
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="container mx-auto px-4 py-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+            <div className="h-64 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="container mx-auto px-4 py-8">
+          <Card className="max-w-md mx-auto">
+            <CardHeader>
+              <CardTitle className="text-red-600">Access Denied</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">You must be logged in to access course settings.</p>
+              <Button onClick={() => setLocation("/login")}>
+                Sign In
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if user is teacher or admin
+  const userRole = user?.role;
+  const isTeacher = userRole === "teacher";
+  const isAdmin = userRole === "admin";
+
+  if (!isTeacher && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="container mx-auto px-4 py-8">
+          <Card className="max-w-md mx-auto">
+            <CardHeader>
+              <CardTitle className="text-orange-600">Access Restricted</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">
+                Only teachers and administrators can access course settings.
+              </p>
+              <p className="text-sm text-gray-500 mb-4">
+                Your role: <span className="font-semibold capitalize">{userRole}</span>
+              </p>
+              <Button onClick={() => setLocation("/courses")}>
+                Return to Courses
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // If teacher, check if they own the course (after course data is loaded)
+  if (course && isTeacher && course.teacherId !== user?.id) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="container mx-auto px-4 py-8">
+          <Card className="max-w-md mx-auto">
+            <CardHeader>
+              <CardTitle className="text-orange-600">Course Access Denied</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">
+                You can only configure settings for courses you teach.
+              </p>
+              <Button onClick={() => setLocation("/courses")}>
+                Return to Courses
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -159,8 +249,7 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
   }
 
   return (
-    <ProtectedRoute route="/courses/:courseId/settings">
-      <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
         <Navigation />
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
@@ -492,6 +581,5 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
           </Form>
         </div>
       </div>
-    </ProtectedRoute>
   );
 }
