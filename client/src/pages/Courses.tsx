@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { safeFormat, isValidDate } from "@/lib/dateUtils";
+import TestSelect from "@/components/TestSelect";
 
 export default function Courses() {
   const { toast } = useToast();
@@ -474,7 +475,7 @@ export default function Courses() {
                           <FormItem>
                             <FormLabel>Term Type</FormLabel>
                             <FormControl>
-                              <Select onValueChange={field.onChange} value={field.value}>
+                              <Select onValueChange={(value) => { console.log('Term type changed:', value); field.onChange(value); }} value={field.value}>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select term type" />
                                 </SelectTrigger>

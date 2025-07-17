@@ -228,6 +228,21 @@
   display: none !important;
 }
 
+/* Fix Select component z-index and pointer events */
+[data-radix-select-content] {
+  z-index: 999 !important;
+  pointer-events: auto !important;
+}
+
+[data-radix-select-viewport] {
+  pointer-events: auto !important;
+}
+
+[data-radix-select-item] {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
 /* Fix any calendar components that might be showing inappropriately */
 .course-card .rdp {
   display: none !important;
