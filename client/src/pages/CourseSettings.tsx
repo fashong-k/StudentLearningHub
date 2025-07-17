@@ -74,7 +74,7 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
   // Update form when course data is loaded
   useEffect(() => {
     if (course) {
-      const formData = {
+      const formData: any = {
         title: course.title || "",
         description: course.description || "",
         courseCode: course.courseCode || "",
@@ -85,8 +85,8 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
         gradingScheme: course.gradingScheme || "letter",
         isActive: course.isActive ?? true,
         teacherId: course.teacherId || "",
-        ...(course.startDate && { startDate: new Date(course.startDate) }),
-        ...(course.endDate && { endDate: new Date(course.endDate) }),
+        startDate: course.startDate ? new Date(course.startDate) : undefined,
+        endDate: course.endDate ? new Date(course.endDate) : undefined,
       };
       form.reset(formData);
     }

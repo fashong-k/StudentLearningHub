@@ -1,0 +1,13 @@
+[{
+	"resource": "/c:/Users/fashong/source/repos/lms-platform/StudentLearningHub/client/src/pages/CourseSettings.tsx",
+	"owner": "typescript",
+	"code": "2345",
+	"severity": 8,
+	"message": "Argument of type '{ endDate?: Date | undefined; startDate?: Date | undefined; title: string; description: string; courseCode: string; semester: string; year: number; termType: string; visibility: \"private\" | \"institution\"; gradingScheme: \"letter\" | ... 1 more ... | \"points\"; isActive: boolean; teacherId: string; }' is not assignable to parameter of type '{ title: string; description: string; courseCode: string; semester: string; year: number; termType: string; startDate: undefined; endDate: undefined; visibility: string; gradingScheme: string; isActive: boolean; teacherId: string; } | { ...; } | ResetAction<...> | undefined'.\n  Type '{ endDate?: Date | undefined; startDate?: Date | undefined; title: string; description: string; courseCode: string; semester: string; year: number; termType: string; visibility: \"private\" | \"institution\"; gradingScheme: \"letter\" | ... 1 more ... | \"points\"; isActive: boolean; teacherId: string; }' is not assignable to type '{ title: string; description: string; courseCode: string; semester: string; year: number; termType: string; startDate: undefined; endDate: undefined; visibility: string; gradingScheme: string; isActive: boolean; teacherId: string; } | { ...; }'.\n    Type '{ endDate?: Date | undefined; startDate?: Date | undefined; title: string; description: string; courseCode: string; semester: string; year: number; termType: string; visibility: \"private\" | \"institution\"; gradingScheme: \"letter\" | ... 1 more ... | \"points\"; isActive: boolean; teacherId: string; }' is not assignable to type '{ title?: string | undefined; description?: string | undefined; courseCode?: string | undefined; semester?: string | undefined; year?: number | undefined; termType?: string | undefined; ... 5 more ...; teacherId?: string | undefined; }'.\n      Types of property 'startDate' are incompatible.\n        Type 'Date | undefined' is not assignable to type 'undefined'.\n          Type 'Date' is not assignable to type 'undefined'.",
+	"source": "ts",
+	"startLineNumber": 91,
+	"startColumn": 18,
+	"endLineNumber": 91,
+	"endColumn": 26,
+	"origin": "extHost1"
+}]
