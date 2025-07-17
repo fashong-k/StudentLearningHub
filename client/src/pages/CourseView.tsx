@@ -209,10 +209,6 @@ export default function CourseView() {
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{(course as any).title || 'Course Title'}</h1>
-            <p className="text-gray-600 text-sm">
-              {(course as any).description || 
-               `${(course as any).courseCode || 'Course Code'} • ${(course as any).semester || 'Semester'} ${(course as any).year || new Date().getFullYear()}`}
-            </p>
           </div>
         </div>
         
