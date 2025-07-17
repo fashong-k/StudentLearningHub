@@ -279,7 +279,7 @@ export default function Courses() {
 
   // Course code validation and suggestion
   const validateCourseCode = (code: string) => {
-    if (!code) {
+    if (!code || code.trim() === "") {
       setCodeValidation({ isValid: true, message: "" });
       return;
     }
@@ -323,6 +323,9 @@ export default function Courses() {
   };
 
   const onSubmit = (data: any) => {
+    console.log("Form submission data:", data);
+    console.log("Form validation state:", form.formState.errors);
+    console.log("Code validation state:", codeValidation);
     createCourseMutation.mutate(data);
   };
 
@@ -662,7 +665,7 @@ export default function Courses() {
                         <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
                           Cancel
                         </Button>
-                        <Button type="submit" disabled={createCourseMutation.isPending || !codeValidation.isValid}>
+                        <Button type="submit" disabled={createCourseMutation.isPending || (codeValidation.message && !codeValidation.isValid)}>
                           {createCourseMutation.isPending ? "Creating..." : "Create Course"}
                         </Button>
                       </div>
