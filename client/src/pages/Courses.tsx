@@ -28,7 +28,8 @@ import { DatePicker } from "@/components/DatePicker";
 import { 
   BookOpen, 
   Users, 
-  Calendar as CalendarIcon, 
+  Calendar as CalendarIcon,
+  Calendar, 
   Plus, 
   Search, 
   Filter,
