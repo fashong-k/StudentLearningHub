@@ -5,6 +5,7 @@ import { storage } from "./storage-drizzle";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { setupLocalAuth, isLocallyAuthenticated } from "./localAuth";
 import { db } from "./db-drizzle";
+import { sql } from "drizzle-orm";
 import {
   insertCourseSchema,
   insertAssignmentSchema,
@@ -112,6 +113,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Determine which auth middleware to use
   const authMiddleware = isLocallyAuthenticated;
   // const authMiddleware = process.env.DATABASE_URL ? isAuthenticated : isLocallyAuthenticated;
+
+  // Test database connection
+  app.get("/api/test-db-connection", async (req: any, res) => {
+    try {
+      const result = await db.execute(sql`SELECT 1 as test`);
+      res.json({ status: "success", message: "Database connection working", result: result.rows });
+    } catch (error) {
+      res.status(500).json({ status: "error", message: "Database connection failed", error: error.message });
+    }
+  });
 
   // Course routes
   app.get("/api/courses", authMiddleware, async (req: any, res) => {

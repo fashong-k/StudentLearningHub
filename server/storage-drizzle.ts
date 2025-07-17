@@ -73,116 +73,68 @@ export interface IStorage {
 export class DrizzleStorage implements IStorage {
   // User operations
   async getUser(id: string): Promise<UserAttributes | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+    const result = await db.execute(sql`
+      SELECT id, email, first_name, last_name, profile_image_url, role, created_at, updated_at
+      FROM student_learning_hub.users
+      WHERE id = ${id}
+    `);
+    return result.rows[0] as UserAttributes;
   }
 
   async upsertUser(userData: Partial<UserAttributes> & { id: string }): Promise<UserAttributes> {
-    const [user] = await db
-      .insert(users)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
-      })
-      .returning();
-    return user;
+    const result = await db.execute(sql`
+      INSERT INTO student_learning_hub.users (id, email, first_name, last_name, profile_image_url, role, created_at, updated_at)
+      VALUES (${userData.id}, ${userData.email}, ${userData.firstName}, ${userData.lastName}, ${userData.profileImageUrl}, ${userData.role}, NOW(), NOW())
+      ON CONFLICT (id) DO UPDATE SET
+        email = EXCLUDED.email,
+        first_name = EXCLUDED.first_name,
+        last_name = EXCLUDED.last_name,
+        profile_image_url = EXCLUDED.profile_image_url,
+        role = EXCLUDED.role,
+        updated_at = NOW()
+      RETURNING id, email, first_name, last_name, profile_image_url, role, created_at, updated_at
+    `);
+    return result.rows[0] as UserAttributes;
   }
 
   // Course operations
   async getCourses(): Promise<CourseAttributes[]> {
-    const result = await db.select({
-      id: courses.id,
-      title: courses.title,
-      description: courses.description,
-      courseCode: courses.courseCode,
-      teacherId: courses.teacherId,
-      semester: courses.semester,
-      year: courses.year,
-      termType: courses.termType,
-      startDate: courses.startDate,
-      endDate: courses.endDate,
-      visibility: courses.visibility,
-      gradingScheme: courses.gradingScheme,
-      isActive: courses.isActive,
-      createdAt: courses.createdAt,
-      updatedAt: courses.updatedAt,
-    }).from(courses).orderBy(asc(courses.title));
-    
-    return result;
+    const result = await db.execute(sql`
+      SELECT id, title, description, course_code, teacher_id, semester, year, term_type, start_date, end_date, visibility, grading_scheme, is_active, created_at, updated_at
+      FROM student_learning_hub.courses
+      ORDER BY title ASC
+    `);
+    return result.rows as CourseAttributes[];
   }
 
   async getCourseById(id: number): Promise<CourseAttributes | undefined> {
-    const [course] = await db.select({
-      id: courses.id,
-      title: courses.title,
-      description: courses.description,
-      courseCode: courses.courseCode,
-      teacherId: courses.teacherId,
-      semester: courses.semester,
-      year: courses.year,
-      termType: courses.termType,
-      startDate: courses.startDate,
-      endDate: courses.endDate,
-      visibility: courses.visibility,
-      gradingScheme: courses.gradingScheme,
-      isActive: courses.isActive,
-      createdAt: courses.createdAt,
-      updatedAt: courses.updatedAt,
-    }).from(courses).where(eq(courses.id, id));
-    
-    return course;
+    const result = await db.execute(sql`
+      SELECT id, title, description, course_code, teacher_id, semester, year, term_type, start_date, end_date, visibility, grading_scheme, is_active, created_at, updated_at
+      FROM student_learning_hub.courses
+      WHERE id = ${id}
+    `);
+    return result.rows[0] as CourseAttributes;
   }
 
   async getTeacherCourses(teacherId: string): Promise<CourseAttributes[]> {
-    const result = await db.select({
-      id: courses.id,
-      title: courses.title,
-      description: courses.description,
-      courseCode: courses.courseCode,
-      teacherId: courses.teacherId,
-      semester: courses.semester,
-      year: courses.year,
-      termType: courses.termType,
-      startDate: courses.startDate,
-      endDate: courses.endDate,
-      visibility: courses.visibility,
-      gradingScheme: courses.gradingScheme,
-      isActive: courses.isActive,
-      createdAt: courses.createdAt,
-      updatedAt: courses.updatedAt,
-    }).from(courses).where(eq(courses.teacherId, teacherId));
-    
-    return result;
+    const result = await db.execute(sql`
+      SELECT id, title, description, course_code, teacher_id, semester, year, term_type, start_date, end_date, visibility, grading_scheme, is_active, created_at, updated_at
+      FROM student_learning_hub.courses
+      WHERE teacher_id = ${teacherId}
+      ORDER BY title ASC
+    `);
+    return result.rows as CourseAttributes[];
   }
 
   async getStudentCourses(studentId: string): Promise<CourseAttributes[]> {
-    const result = await db
-      .select({
-        id: courses.id,
-        title: courses.title,
-        description: courses.description,
-        courseCode: courses.courseCode,
-        teacherId: courses.teacherId,
-        semester: courses.semester,
-        year: courses.year,
-        termType: courses.termType,
-        startDate: courses.startDate,
-        endDate: courses.endDate,
-        visibility: courses.visibility,
-        gradingScheme: courses.gradingScheme,
-        isActive: courses.isActive,
-        createdAt: courses.createdAt,
-        updatedAt: courses.updatedAt,
-      })
-      .from(courses)
-      .innerJoin(enrollments, eq(enrollments.courseId, courses.id))
-      .where(eq(enrollments.studentId, studentId));
-    
-    return result;
+    const result = await db.execute(sql`
+      SELECT c.id, c.title, c.description, c.course_code, c.teacher_id, c.semester, c.year, c.term_type, c.start_date, c.end_date, c.visibility, c.grading_scheme, c.is_active, c.created_at, c.updated_at
+      FROM student_learning_hub.courses c
+      INNER JOIN student_learning_hub.enrollments e ON e.course_id = c.id
+      WHERE e.student_id = ${studentId}
+      ORDER BY c.title ASC
+    `);
+    return result.rows as CourseAttributes[];
   }
 
   async createCourse(course: Omit<CourseAttributes, 'id' | 'createdAt' | 'updatedAt'>): Promise<CourseAttributes> {
@@ -201,33 +153,27 @@ export class DrizzleStorage implements IStorage {
       isActive: course.isActive !== undefined ? course.isActive : true,
     };
     
-    // Test the database connection first
+    // Use raw SQL to ensure proper schema and enum handling
     try {
-      console.log('Testing database connection...');
-      await db.execute(sql`SELECT 1`);
-      console.log('Database connection successful');
-    } catch (error) {
-      console.error('Database connection failed:', error);
-      throw new Error('Database connection failed');
-    }
-    
-    // Use Drizzle ORM directly (now that schema is properly configured)
-    try {
-      console.log('Attempting Drizzle insert with data:', courseData);
-      const result = await db.insert(courses).values(courseData).returning();
-      console.log('Drizzle insert result:', result);
+      const result = await db.execute(sql`
+        INSERT INTO student_learning_hub.courses 
+        (title, description, course_code, teacher_id, semester, year, term_type, start_date, end_date, visibility, grading_scheme, is_active)
+        VALUES 
+        (${courseData.title}, ${courseData.description}, ${courseData.courseCode}, ${courseData.teacherId}, 
+         ${courseData.semester}, ${courseData.year}, ${courseData.termType}, ${courseData.startDate}, ${courseData.endDate}, 
+         ${courseData.visibility}::student_learning_hub.course_visibility, ${courseData.gradingScheme}::student_learning_hub.grading_scheme, ${courseData.isActive})
+        RETURNING id, title, description, course_code, teacher_id, semester, year, term_type, start_date, end_date, visibility, grading_scheme, is_active, created_at, updated_at
+      `);
       
-      if (!result || result.length === 0) {
+      if (!result.rows || result.rows.length === 0) {
         throw new Error('No course returned from insert operation');
       }
       
-      const newCourse = result[0];
+      const newCourse = result.rows[0];
       console.log('Successfully created course:', newCourse);
-      return newCourse;
+      return newCourse as CourseAttributes;
     } catch (error) {
-      console.error('Drizzle insert failed:', error);
-      console.error('Error details:', error.message);
-      console.error('Error stack:', error.stack);
+      console.error('Course creation failed:', error);
       throw error;
     }
   }

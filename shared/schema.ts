@@ -41,10 +41,10 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Define course visibility enum
+// Define course visibility enum in student_learning_hub schema
 export const courseVisibilityEnum = pgEnum("course_visibility", ["private", "institution"]);
 
-// Define grading scheme enum
+// Define grading scheme enum in student_learning_hub schema
 export const gradingSchemeEnum = pgEnum("grading_scheme", ["letter", "percentage", "points"]);
 
 // Define assignment status enum
@@ -65,7 +65,7 @@ export const attendanceStatusEnum = pgEnum("attendance_status", ["present", "abs
 // Define plagiarism check status enum
 export const plagiarismStatusEnum = pgEnum("plagiarism_status", ["pending", "processing", "completed", "failed"]);
 
-// Courses table
+// Courses table (student_learning_hub schema)
 export const courses = pgTable("courses", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
