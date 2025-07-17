@@ -631,24 +631,20 @@ export default function Courses() {
                                       <Button
                                         variant="outline"
                                         className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                                        type="button"
                                       >
                                         {field.value && isValidDate(field.value) ? safeFormat(field.value, "PPP") : <span>Pick a date</span>}
                                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                       </Button>
                                     </FormControl>
                                   </PopoverTrigger>
-                                  <PopoverContent className="w-auto p-0 z-50 popover-content" align="start">
+                                  <PopoverContent className="w-auto p-0 z-[9999]" align="start">
                                     <Calendar
                                       mode="single"
                                       selected={field.value && isValidDate(field.value) ? new Date(field.value) : undefined}
                                       onSelect={(date) => {
+                                        console.log('Create form start date selected:', date);
                                         field.onChange(date);
-                                        // Close popover after selection
-                                        const popover = document.querySelector('[data-state="open"]');
-                                        if (popover) {
-                                          const closeButton = popover.querySelector('[data-testid="close-button"]');
-                                          if (closeButton) (closeButton as HTMLElement).click();
-                                        }
                                       }}
                                       disabled={(date) => date < new Date()}
                                       initialFocus
@@ -670,24 +666,20 @@ export default function Courses() {
                                       <Button
                                         variant="outline"
                                         className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                                        type="button"
                                       >
                                         {field.value && isValidDate(field.value) ? safeFormat(field.value, "PPP") : <span>Pick a date</span>}
                                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                       </Button>
                                     </FormControl>
                                   </PopoverTrigger>
-                                  <PopoverContent className="w-auto p-0 z-50 popover-content" align="start">
+                                  <PopoverContent className="w-auto p-0 z-[9999]" align="start">
                                     <Calendar
                                       mode="single"
                                       selected={field.value && isValidDate(field.value) ? new Date(field.value) : undefined}
                                       onSelect={(date) => {
+                                        console.log('Create form end date selected:', date);
                                         field.onChange(date);
-                                        // Close popover after selection
-                                        const popover = document.querySelector('[data-state="open"]');
-                                        if (popover) {
-                                          const closeButton = popover.querySelector('[data-testid="close-button"]');
-                                          if (closeButton) (closeButton as HTMLElement).click();
-                                        }
                                       }}
                                       disabled={(date) => {
                                         const startDate = form.watch("startDate");
@@ -906,17 +898,21 @@ export default function Courses() {
                                 <Button
                                   variant="outline"
                                   className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                                  type="button"
                                 >
                                   {field.value && isValidDate(field.value) ? safeFormat(field.value, "PPP") : <span>Pick a date</span>}
                                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>
                               </FormControl>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0 z-50 popover-content" align="start">
+                            <PopoverContent className="w-auto p-0 z-[9999]" align="start">
                               <Calendar
                                 mode="single"
                                 selected={field.value && isValidDate(field.value) ? new Date(field.value) : undefined}
-                                onSelect={(date) => field.onChange(date)}
+                                onSelect={(date) => {
+                                  console.log('Edit form start date selected:', date);
+                                  field.onChange(date);
+                                }}
                                 disabled={(date) => date < new Date()}
                                 initialFocus
                               />
@@ -937,17 +933,21 @@ export default function Courses() {
                                 <Button
                                   variant="outline"
                                   className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                                  type="button"
                                 >
                                   {field.value && isValidDate(field.value) ? safeFormat(field.value, "PPP") : <span>Pick a date</span>}
                                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>
                               </FormControl>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0 z-50 popover-content" align="start">
+                            <PopoverContent className="w-auto p-0 z-[9999]" align="start">
                               <Calendar
                                 mode="single"
                                 selected={field.value && isValidDate(field.value) ? new Date(field.value) : undefined}
-                                onSelect={(date) => field.onChange(date)}
+                                onSelect={(date) => {
+                                  console.log('Edit form end date selected:', date);
+                                  field.onChange(date);
+                                }}
                                 disabled={(date) => {
                                   const startDate = editForm.watch("startDate");
                                   return date < new Date() || (startDate && isValidDate(startDate) ? date < new Date(startDate) : false);
