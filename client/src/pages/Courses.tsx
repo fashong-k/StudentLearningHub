@@ -545,11 +545,19 @@ export default function Courses() {
                                       </Button>
                                     </FormControl>
                                   </PopoverTrigger>
-                                  <PopoverContent className="w-auto p-0" align="start">
+                                  <PopoverContent className="w-auto p-0 z-50 popover-content" align="start">
                                     <Calendar
                                       mode="single"
                                       selected={field.value && isValidDate(field.value) ? new Date(field.value) : undefined}
-                                      onSelect={field.onChange}
+                                      onSelect={(date) => {
+                                        field.onChange(date);
+                                        // Close popover after selection
+                                        const popover = document.querySelector('[data-state="open"]');
+                                        if (popover) {
+                                          const closeButton = popover.querySelector('[data-testid="close-button"]');
+                                          if (closeButton) (closeButton as HTMLElement).click();
+                                        }
+                                      }}
                                       disabled={(date) => date < new Date()}
                                       initialFocus
                                     />
@@ -576,11 +584,19 @@ export default function Courses() {
                                       </Button>
                                     </FormControl>
                                   </PopoverTrigger>
-                                  <PopoverContent className="w-auto p-0" align="start">
+                                  <PopoverContent className="w-auto p-0 z-50 popover-content" align="start">
                                     <Calendar
                                       mode="single"
                                       selected={field.value && isValidDate(field.value) ? new Date(field.value) : undefined}
-                                      onSelect={field.onChange}
+                                      onSelect={(date) => {
+                                        field.onChange(date);
+                                        // Close popover after selection
+                                        const popover = document.querySelector('[data-state="open"]');
+                                        if (popover) {
+                                          const closeButton = popover.querySelector('[data-testid="close-button"]');
+                                          if (closeButton) (closeButton as HTMLElement).click();
+                                        }
+                                      }}
                                       disabled={(date) => {
                                         const startDate = form.watch("startDate");
                                         return date < new Date() || (startDate && isValidDate(startDate) ? date < new Date(startDate) : false);
@@ -824,7 +840,7 @@ export default function Courses() {
                             {configuringCourse.startDate ? format(new Date(configuringCourse.startDate), "PPP") : "Pick a date"}
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
+                        <PopoverContent className="w-auto p-0 z-50 popover-content">
                           <Calendar
                             mode="single"
                             selected={configuringCourse.startDate ? new Date(configuringCourse.startDate) : undefined}
@@ -845,7 +861,7 @@ export default function Courses() {
                             {configuringCourse.endDate ? format(new Date(configuringCourse.endDate), "PPP") : "Pick a date"}
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
+                        <PopoverContent className="w-auto p-0 z-50 popover-content">
                           <Calendar
                             mode="single"
                             selected={configuringCourse.endDate ? new Date(configuringCourse.endDate) : undefined}

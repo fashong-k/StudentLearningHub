@@ -201,3 +201,24 @@
     @apply translate-x-0;
   }
 }
+
+/* Date picker popover styling */
+[data-radix-popper-content-wrapper] {
+  z-index: 50 !important;
+}
+
+.date-picker-popover {
+  z-index: 50 !important;
+  position: relative;
+}
+
+/* Calendar styling in popover */
+[data-radix-popper-content-wrapper] .rdp {
+  margin: 0;
+  padding: 12px;
+}
+
+/* Ensure popover stays above other content */
+.popover-content {
+  z-index: 50 !important;
+}
