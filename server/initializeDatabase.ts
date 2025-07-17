@@ -254,6 +254,17 @@ export async function initializeDatabase() {
     
     console.log('✓ Database tables initialized successfully');
     
+    // Check if we should seed comprehensive data
+    if (process.env.DB_INIT === 'true') {
+      console.log('🌱 DB_INIT=true detected. Starting comprehensive data seeding...');
+      try {
+        const { seedAllData } = await import('./seedData');
+        await seedAllData();
+      } catch (error) {
+        console.error('❌ Error during comprehensive data seeding:', error);
+      }
+    }
+    
   } catch (error) {
     console.error('Error initializing database:', error);
     throw error;

@@ -106,27 +106,58 @@ export async function seedSampleCourses() {
   const sampleCourses = [
     {
       title: 'Introduction to Computer Science',
-      description: 'Learn the fundamentals of programming, algorithms, and data structures. This course covers basic programming concepts using Python and introduces computational thinking.',
+      description: 'Learn the fundamentals of programming, algorithms, and data structures. This course covers basic programming concepts using Python and introduces computational thinking. Students will build projects including a calculator, text analyzer, and simple game.',
       courseCode: 'CS 101',
       semester: 'Fall',
       year: 2025,
-      teacherId: 'teacher'
+      teacherId: 'teacher',
+      credits: 3,
+      maxEnrollment: 30,
+      isActive: true
     },
     {
       title: 'Calculus I',
-      description: 'Differential and integral calculus with applications. Topics include limits, derivatives, integrals, and the fundamental theorem of calculus.',
+      description: 'Differential and integral calculus with applications. Topics include limits, derivatives, integrals, and the fundamental theorem of calculus. Emphasis on problem-solving techniques and real-world applications in science and engineering.',
       courseCode: 'MATH 201',
       semester: 'Fall',
       year: 2025,
-      teacherId: 'teacher2'
+      teacherId: 'teacher2',
+      credits: 4,
+      maxEnrollment: 25,
+      isActive: true
     },
     {
       title: 'Introduction to Psychology',
-      description: 'Overview of psychological principles, research methods, and applications in understanding human behavior and mental processes.',
+      description: 'Overview of psychological principles, research methods, and applications in understanding human behavior and mental processes. Course includes laboratory experiments and case study analysis.',
       courseCode: 'PSYC 101',
       semester: 'Fall',
       year: 2025,
-      teacherId: 'teacher'
+      teacherId: 'teacher',
+      credits: 3,
+      maxEnrollment: 40,
+      isActive: true
+    },
+    {
+      title: 'Data Structures and Algorithms',
+      description: 'Advanced programming concepts including linked lists, trees, graphs, sorting algorithms, and complexity analysis. Prerequisites: CS 101 or equivalent programming experience.',
+      courseCode: 'CS 201',
+      semester: 'Spring',
+      year: 2025,
+      teacherId: 'teacher',
+      credits: 4,
+      maxEnrollment: 25,
+      isActive: true
+    },
+    {
+      title: 'Statistics for Data Science',
+      description: 'Applied statistics with focus on data analysis, probability distributions, hypothesis testing, and regression analysis. Hands-on experience with R and Python statistical libraries.',
+      courseCode: 'STAT 301',
+      semester: 'Spring',
+      year: 2025,
+      teacherId: 'teacher2',
+      credits: 3,
+      maxEnrollment: 35,
+      isActive: true
     }
   ];
   
@@ -154,16 +185,20 @@ export async function seedSampleEnrollments(courses: any[]) {
   console.log('Seeding sample enrollments...');
   
   const enrollments = [
-    // Students enrolled in multiple courses
+    // Students enrolled in multiple courses for comprehensive analytics
     { studentId: 'student', courseId: courses[0]?.id }, // CS 101
     { studentId: 'student', courseId: courses[1]?.id }, // MATH 201
     { studentId: 'student', courseId: courses[2]?.id }, // PSYC 101
+    { studentId: 'student', courseId: courses[3]?.id }, // CS 201
     
     { studentId: 'student2', courseId: courses[0]?.id }, // CS 101
     { studentId: 'student2', courseId: courses[1]?.id }, // MATH 201
+    { studentId: 'student2', courseId: courses[4]?.id }, // STAT 301
     
     { studentId: 'student3', courseId: courses[0]?.id }, // CS 101
     { studentId: 'student3', courseId: courses[2]?.id }, // PSYC 101
+    { studentId: 'student3', courseId: courses[3]?.id }, // CS 201
+    { studentId: 'student3', courseId: courses[4]?.id }, // STAT 301
   ];
   
   for (const enrollment of enrollments) {
@@ -187,59 +222,144 @@ export async function seedSampleAssignments(courses: any[]) {
   console.log('Seeding sample assignments...');
   
   const assignments = [
-    // CS 101 assignments
+    // CS 101 assignments - Introduction to Computer Science
     {
-      title: 'Problem Set 3: Sorting Algorithms',
-      description: 'Implement and analyze various sorting algorithms including bubble sort, merge sort, and quicksort.',
+      title: 'Python Basics Programming',
+      description: 'Write a Python program that demonstrates variables, loops, and functions. Include comments explaining your code. Create a simple calculator that can perform basic arithmetic operations.',
       courseId: courses[0]?.id,
-      dueDate: new Date('2025-03-15'),
-      totalPoints: 100
+      dueDate: new Date('2025-02-15'),
+      totalPoints: 100,
+      type: 'programming',
+      maxPoints: 100,
+      isActive: true
     },
     {
-      title: 'Lab Exercise: Binary Trees',
-      description: 'Implement a binary search tree with insertion, deletion, and traversal operations.',
+      title: 'Algorithm Analysis Report',
+      description: 'Research and write a report on different sorting algorithms, comparing their time and space complexity. Include code examples and performance analysis.',
       courseId: courses[0]?.id,
-      dueDate: new Date('2025-03-08'),
-      totalPoints: 75
+      dueDate: new Date('2025-03-01'),
+      totalPoints: 150,
+      type: 'report',
+      maxPoints: 150,
+      isActive: true
+    },
+    {
+      title: 'Text Processing Application',
+      description: 'Build a text analyzer that counts words, characters, and sentences. Implement basic text statistics and file I/O operations.',
+      courseId: courses[0]?.id,
+      dueDate: new Date('2025-03-20'),
+      totalPoints: 120,
+      type: 'programming',
+      maxPoints: 120,
+      isActive: true
     },
     
-    // MATH 201 assignments
+    // MATH 201 assignments - Calculus I
     {
-      title: 'Integration Quiz',
-      description: 'Quiz covering integration techniques including substitution, integration by parts, and partial fractions.',
+      title: 'Calculus Problem Set 1',
+      description: 'Solve problems involving limits, derivatives, and basic integration techniques. Show all work and explain your reasoning.',
       courseId: courses[1]?.id,
-      dueDate: new Date('2025-03-12'),
-      totalPoints: 50
+      dueDate: new Date('2025-02-20'),
+      totalPoints: 80,
+      type: 'homework',
+      maxPoints: 80,
+      isActive: true
     },
     {
-      title: 'Homework 4: Derivatives',
-      description: 'Problem set covering differentiation rules, chain rule, and implicit differentiation.',
+      title: 'Applications of Derivatives',
+      description: 'Real-world problems involving optimization, related rates, and curve sketching. Include graphical representations where applicable.',
       courseId: courses[1]?.id,
-      dueDate: new Date('2025-02-28'),
-      totalPoints: 50
+      dueDate: new Date('2025-03-10'),
+      totalPoints: 120,
+      type: 'homework',
+      maxPoints: 120,
+      isActive: true
     },
     {
-      title: 'Midterm Exam',
-      description: 'Comprehensive exam covering chapters 1-8, including limits, derivatives, and basic integration.',
+      title: 'Integration Techniques Exam',
+      description: 'Comprehensive exam covering substitution, integration by parts, and partial fractions. Practice problems available on course website.',
       courseId: courses[1]?.id,
       dueDate: new Date('2025-03-25'),
-      totalPoints: 200
+      totalPoints: 200,
+      type: 'exam',
+      maxPoints: 200,
+      isActive: true
     },
     
-    // PSYC 101 assignments
+    // PSYC 101 assignments - Introduction to Psychology
     {
-      title: 'Research Paper: Memory and Learning',
-      description: '5-page research paper on the relationship between memory formation and learning processes.',
+      title: 'Research Methods Essay',
+      description: 'Write an essay discussing different research methods in psychology and their applications. Include examples from recent studies.',
       courseId: courses[2]?.id,
-      dueDate: new Date('2025-03-20'),
-      totalPoints: 150
+      dueDate: new Date('2025-02-25'),
+      totalPoints: 100,
+      type: 'essay',
+      maxPoints: 100,
+      isActive: true
     },
     {
-      title: 'Chapter 3 Quiz',
-      description: 'Quiz covering cognitive psychology concepts including attention, memory, and perception.',
+      title: 'Case Study Analysis',
+      description: 'Analyze a psychological case study using concepts learned in class. Apply theoretical frameworks to real-world scenarios.',
       courseId: courses[2]?.id,
-      dueDate: new Date('2025-03-05'),
-      totalPoints: 20
+      dueDate: new Date('2025-03-15'),
+      totalPoints: 130,
+      type: 'case_study',
+      maxPoints: 130,
+      isActive: true
+    },
+    {
+      title: 'Behavioral Observation Lab',
+      description: 'Conduct a behavioral observation study following ethical guidelines. Record observations and analyze patterns.',
+      courseId: courses[2]?.id,
+      dueDate: new Date('2025-04-01'),
+      totalPoints: 110,
+      type: 'lab',
+      maxPoints: 110,
+      isActive: true
+    },
+    
+    // CS 201 assignments - Data Structures and Algorithms
+    {
+      title: 'Linked List Implementation',
+      description: 'Implement a doubly linked list with insert, delete, and search operations. Include comprehensive test cases.',
+      courseId: courses[3]?.id,
+      dueDate: new Date('2025-04-10'),
+      totalPoints: 140,
+      type: 'programming',
+      maxPoints: 140,
+      isActive: true
+    },
+    {
+      title: 'Binary Search Tree Project',
+      description: 'Create a binary search tree with balance checking and tree traversal algorithms. Compare performance with other data structures.',
+      courseId: courses[3]?.id,
+      dueDate: new Date('2025-04-25'),
+      totalPoints: 180,
+      type: 'project',
+      maxPoints: 180,
+      isActive: true
+    },
+    
+    // STAT 301 assignments - Statistics for Data Science
+    {
+      title: 'Descriptive Statistics Analysis',
+      description: 'Analyze a dataset using measures of central tendency, dispersion, and correlation. Use R or Python for calculations.',
+      courseId: courses[4]?.id,
+      dueDate: new Date('2025-04-15'),
+      totalPoints: 90,
+      type: 'analysis',
+      maxPoints: 90,
+      isActive: true
+    },
+    {
+      title: 'Hypothesis Testing Project',
+      description: 'Design and conduct hypothesis tests on real-world data. Include statistical interpretation and visualization.',
+      courseId: courses[4]?.id,
+      dueDate: new Date('2025-05-01'),
+      totalPoints: 160,
+      type: 'project',
+      maxPoints: 160,
+      isActive: true
     }
   ];
   
@@ -263,68 +383,182 @@ export async function seedSampleSubmissions(assignments: any[]) {
   console.log('Seeding sample submissions...');
   
   const submissions = [
-    // CS 101 submissions
+    // CS 101 submissions - Python Basics Programming
     {
-      assignmentId: assignments[0]?.id, // Problem Set 3: Sorting Algorithms
+      assignmentId: assignments[0]?.id, // Python Basics Programming
       studentId: 'student',
-      submissionText: 'I have implemented three sorting algorithms: bubble sort, merge sort, and quicksort. Bubble sort has a time complexity of O(n²) and is the least efficient. Merge sort has O(n log n) complexity and uses a divide-and-conquer approach. Quicksort also has O(n log n) average case but O(n²) worst case. The implementation shows that merge sort is most consistent in performance across different input sizes.',
-      submittedAt: new Date('2025-03-14'),
-      grade: 88,
-      feedback: 'Good implementation of algorithms. Consider optimizing the quicksort partition function.'
+      submissionText: 'I have created a Python calculator that performs basic arithmetic operations. The program uses functions for add, subtract, multiply, and divide operations. I implemented input validation to handle division by zero and invalid input types. The code includes comprehensive comments explaining each function and variable usage.',
+      submittedAt: new Date('2025-02-14'),
+      grade: 92,
+      feedback: 'Excellent work! Good code structure and comprehensive error handling. Consider adding more advanced operations.',
+      status: 'graded'
     },
     {
-      assignmentId: assignments[1]?.id, // Lab Exercise: Binary Trees
+      assignmentId: assignments[0]?.id, // Python Basics Programming
+      studentId: 'student2',
+      submissionText: 'Created a basic calculator in Python with addition, subtraction, multiplication, and division functions. Added input validation for numeric inputs and division by zero checking. The program uses a simple menu system for user interaction.',
+      submittedAt: new Date('2025-02-13'),
+      grade: 88,
+      feedback: 'Good implementation. Code is clean and functional. Add more detailed comments for better documentation.',
+      status: 'graded'
+    },
+    {
+      assignmentId: assignments[0]?.id, // Python Basics Programming
+      studentId: 'student3',
+      submissionText: 'My Python calculator includes basic arithmetic operations with error handling. I used try-except blocks to handle invalid inputs and created separate functions for each operation. The main function provides a user-friendly interface.',
+      submittedAt: new Date('2025-02-15'),
+      grade: 85,
+      feedback: 'Well-structured code with good error handling. Consider adding more mathematical functions.',
+      status: 'graded'
+    },
+    
+    // Algorithm Analysis Report submissions
+    {
+      assignmentId: assignments[1]?.id, // Algorithm Analysis Report
       studentId: 'student',
-      submissionText: 'Binary trees are hierarchical data structures where each node has at most two children. I implemented insertion, deletion, and traversal operations. The insert operation maintains the binary search tree property where left children are smaller and right children are larger than the parent node.',
-      submittedAt: new Date('2025-03-10'),
-      grade: 70,
-      feedback: 'Correct implementation but submitted late. Consider time management for future assignments.'
+      submissionText: 'This report analyzes bubble sort, merge sort, and quicksort algorithms. Bubble sort has O(n²) time complexity making it inefficient for large datasets. Merge sort uses divide-and-conquer with O(n log n) complexity. Quicksort averages O(n log n) but can degrade to O(n²) in worst case. Performance benchmarks show merge sort is most consistent across different input sizes.',
+      submittedAt: new Date('2025-02-28'),
+      grade: 94,
+      feedback: 'Outstanding analysis with detailed complexity comparison. Excellent use of benchmarking data.',
+      status: 'graded'
+    },
+    {
+      assignmentId: assignments[1]?.id, // Algorithm Analysis Report
+      studentId: 'student2',
+      submissionText: 'Analysis of sorting algorithms including bubble sort, merge sort, and quicksort. Bubble sort is O(n²) and inefficient. Merge sort is O(n log n) with divide-and-conquer approach. Quicksort is O(n log n) average case but O(n²) worst case. Testing shows merge sort performs consistently.',
+      submittedAt: new Date('2025-03-01'),
+      grade: 78,
+      feedback: 'Good basic analysis but lacks depth in performance comparison. Add more detailed benchmarking.',
+      status: 'graded'
     },
     
     // MATH 201 submissions
     {
-      assignmentId: assignments[2]?.id, // Integration Quiz
+      assignmentId: assignments[3]?.id, // Calculus Problem Set 1
       studentId: 'student',
-      submissionText: 'Integration by parts uses the formula ∫u dv = uv - ∫v du. For the problem ∫x cos(x) dx, I set u = x and dv = cos(x) dx, which gives du = dx and v = sin(x). Therefore, the integral equals x sin(x) - ∫sin(x) dx = x sin(x) + cos(x) + C.',
-      submittedAt: new Date('2025-03-12'),
-      grade: 45,
-      feedback: 'Excellent work on integration by parts. Minor error in partial fractions problem.'
+      submissionText: 'Solved limit problems using L\'Hôpital\'s rule and algebraic manipulation. For derivatives, applied power rule, product rule, and chain rule. Integration problems solved using substitution and integration by parts. All work shown with step-by-step solutions.',
+      submittedAt: new Date('2025-02-19'),
+      grade: 76,
+      feedback: 'Good understanding of calculus concepts. Minor errors in integration by parts problems.',
+      status: 'graded'
     },
     {
-      assignmentId: assignments[3]?.id, // Homework 4: Derivatives
+      assignmentId: assignments[3]?.id, // Calculus Problem Set 1
+      studentId: 'student2',
+      submissionText: 'Completed all limit, derivative, and integration problems. Used appropriate techniques for each problem type. Showed detailed work for complex problems involving chain rule and substitution method.',
+      submittedAt: new Date('2025-02-20'),
+      grade: 82,
+      feedback: 'Strong work on derivative problems. Review integration techniques for better accuracy.',
+      status: 'graded'
+    },
+    {
+      assignmentId: assignments[3]?.id, // Calculus Problem Set 1
+      studentId: 'student3',
+      submissionText: 'Solved calculus problems systematically. Applied limit theorems correctly. Used differentiation rules appropriately. Integration solutions include proper constant of integration and verification.',
+      submittedAt: new Date('2025-02-18'),
+      grade: 89,
+      feedback: 'Excellent systematic approach. Very thorough solutions with proper verification.',
+      status: 'graded'
+    },
+    
+    // Applications of Derivatives submissions
+    {
+      assignmentId: assignments[4]?.id, // Applications of Derivatives
       studentId: 'student',
-      submissionText: 'The chain rule states that if f(x) = g(h(x)), then f\'(x) = g\'(h(x)) × h\'(x). For the function f(x) = sin(x²), we have g(u) = sin(u) and h(x) = x². Therefore, f\'(x) = cos(x²) × 2x = 2x cos(x²).',
-      submittedAt: new Date('2025-02-28'),
-      grade: 42,
-      feedback: 'Good grasp of chain rule. Practice more with implicit differentiation.'
+      submissionText: 'Solved optimization problems using first and second derivative tests. Applied related rates to real-world scenarios including balloon inflation and ladder problems. Created accurate graphs showing critical points and inflection points.',
+      submittedAt: new Date('2025-03-09'),
+      grade: 91,
+      feedback: 'Excellent application of derivative concepts. Clear graphical representations.',
+      status: 'graded'
+    },
+    {
+      assignmentId: assignments[4]?.id, // Applications of Derivatives
+      studentId: 'student2',
+      submissionText: 'Completed optimization and related rate problems. Used derivative tests to find maximum and minimum values. Graphed functions showing increasing/decreasing intervals and concavity.',
+      submittedAt: new Date('2025-03-10'),
+      grade: 84,
+      feedback: 'Good work on optimization. Review related rates for more complex scenarios.',
+      status: 'graded'
     },
     
     // PSYC 101 submissions
     {
-      assignmentId: assignments[6]?.id, // Chapter 3 Quiz
+      assignmentId: assignments[6]?.id, // Research Methods Essay
       studentId: 'student',
-      submissionText: 'Memory formation involves encoding, storage, and retrieval processes. The hippocampus plays a crucial role in consolidating short-term memories into long-term storage. Different types of memory include semantic, episodic, and procedural memory, each with distinct neural pathways and characteristics.',
-      submittedAt: new Date('2025-03-05'),
-      grade: 18,
-      feedback: 'Strong understanding of cognitive concepts. Review attention mechanisms.'
+      submissionText: 'This essay examines experimental, correlational, and observational research methods in psychology. Experimental methods allow for causal inference through controlled manipulation of variables. Correlational studies identify relationships but cannot establish causation. Observational methods provide naturalistic data but lack control. Each method has strengths and limitations depending on research questions.',
+      submittedAt: new Date('2025-02-24'),
+      grade: 87,
+      feedback: 'Comprehensive analysis of research methods. Good use of examples from recent studies.',
+      status: 'graded'
+    },
+    {
+      assignmentId: assignments[6]?.id, // Research Methods Essay
+      studentId: 'student3',
+      submissionText: 'Research methods in psychology include experimental, correlational, and case study approaches. Experimental methods provide controlled conditions for testing hypotheses. Correlational research examines relationships between variables. Case studies offer in-depth analysis of individual subjects. Each method contributes unique insights to psychological understanding.',
+      submittedAt: new Date('2025-02-25'),
+      grade: 79,
+      feedback: 'Good coverage of research methods. Strengthen arguments with more specific examples.',
+      status: 'graded'
     },
     
-    // Additional student submissions - some with similar content to test plagiarism detection
+    // Case Study Analysis submissions
     {
-      assignmentId: assignments[0]?.id, // Problem Set 3: Sorting Algorithms
-      studentId: 'student2',
-      submissionText: 'I have implemented three sorting algorithms: bubble sort, merge sort, and quicksort. Bubble sort has O(n²) time complexity and is inefficient. Merge sort has O(n log n) complexity using divide-and-conquer. Quicksort has O(n log n) average case complexity but O(n²) worst case. The results show that merge sort performs consistently across different input sizes.',
+      assignmentId: assignments[7]?.id, // Case Study Analysis
+      studentId: 'student',
+      submissionText: 'Analysis of patient with dissociative identity disorder using cognitive-behavioral and psychodynamic frameworks. Symptoms include memory gaps, identity confusion, and behavioral changes. CBT approach focuses on coping strategies and symptom management. Psychodynamic perspective examines unconscious conflicts and early trauma. Integrated treatment approach recommended.',
       submittedAt: new Date('2025-03-14'),
-      grade: 92,
-      feedback: 'Excellent implementation with great code documentation.'
+      grade: 93,
+      feedback: 'Excellent integration of theoretical frameworks. Thorough analysis with practical applications.',
+      status: 'graded'
     },
     {
-      assignmentId: assignments[2]?.id, // Integration Quiz
+      assignmentId: assignments[7]?.id, // Case Study Analysis
+      studentId: 'student3',
+      submissionText: 'Case study analysis applying learning theories to behavioral modification. Subject shows maladaptive behaviors that can be addressed through operant conditioning principles. Reinforcement schedules and behavior shaping techniques provide framework for intervention. Treatment plan includes baseline measurement and progress monitoring.',
+      submittedAt: new Date('2025-03-15'),
+      grade: 86,
+      feedback: 'Good application of learning theories. Consider additional therapeutic approaches.',
+      status: 'graded'
+    },
+    
+    // CS 201 submissions
+    {
+      assignmentId: assignments[9]?.id, // Linked List Implementation
+      studentId: 'student',
+      submissionText: 'Implemented doubly linked list with insert, delete, and search operations. Each node contains data and pointers to previous and next nodes. Insert operation handles head, tail, and middle insertions. Delete operation updates pointers correctly. Search function traverses list efficiently. Included comprehensive test cases.',
+      submittedAt: new Date('2025-04-09'),
+      grade: 95,
+      feedback: 'Outstanding implementation with excellent test coverage. Code is clean and well-documented.',
+      status: 'graded'
+    },
+    {
+      assignmentId: assignments[9]?.id, // Linked List Implementation
+      studentId: 'student3',
+      submissionText: 'Created doubly linked list data structure with full CRUD operations. Implemented proper memory management and pointer handling. Added error checking for edge cases like empty list operations. Test suite covers all major functionality.',
+      submittedAt: new Date('2025-04-10'),
+      grade: 88,
+      feedback: 'Good implementation with solid error handling. Consider optimizing search operation.',
+      status: 'graded'
+    },
+    
+    // STAT 301 submissions
+    {
+      assignmentId: assignments[11]?.id, // Descriptive Statistics Analysis
       studentId: 'student2',
-      submissionText: 'Integration by parts formula is ∫u dv = uv - ∫v du. For ∫x cos(x) dx, I choose u = x and dv = cos(x) dx, giving du = dx and v = sin(x). The solution is x sin(x) - ∫sin(x) dx = x sin(x) + cos(x) + C.',
-      submittedAt: new Date('2025-03-12'),
-      grade: 48,
-      feedback: 'Very good understanding of integration techniques.'
+      submissionText: 'Analyzed housing price dataset using Python pandas. Calculated mean, median, mode, and standard deviation. Created histograms and box plots for distribution analysis. Computed correlation coefficients between variables. Found strong positive correlation between square footage and price (r=0.78).',
+      submittedAt: new Date('2025-04-14'),
+      grade: 91,
+      feedback: 'Excellent statistical analysis with clear visualizations. Good interpretation of results.',
+      status: 'graded'
+    },
+    {
+      assignmentId: assignments[11]?.id, // Descriptive Statistics Analysis
+      studentId: 'student3',
+      submissionText: 'Statistical analysis of student performance data using R. Computed descriptive statistics including measures of central tendency and variability. Created scatter plots and correlation matrix. Identified outliers using box plot analysis. Results show normal distribution with few extreme values.',
+      submittedAt: new Date('2025-04-15'),
+      grade: 85,
+      feedback: 'Solid statistical work. Expand on outlier analysis and interpretation.',
+      status: 'graded'
     }
   ];
   
@@ -344,40 +578,105 @@ export async function seedSampleAnnouncements(courses: any[]) {
   console.log('Seeding sample announcements...');
   
   const announcements = [
+    // CS 101 announcements
     {
-      title: 'Midterm Exam Schedule Released',
-      content: 'The midterm examination schedule has been posted. Please check your student portal for specific dates and times. All exams will be held in the main lecture hall unless otherwise specified. Make sure to bring valid photo ID and writing materials.',
+      title: 'Welcome to CS 101!',
+      content: 'Welcome to Introduction to Computer Science! This course will cover fundamental programming concepts, algorithms, and data structures. Please review the syllabus and ensure you have Python 3.8+ installed on your computer. Office hours are Monday and Wednesday 2-4 PM.',
       courseId: courses[0]?.id,
       authorId: 'teacher',
       isImportant: true
     },
     {
-      title: 'Assignment 3 Extension',
-      content: 'Due to technical difficulties with the server last week, we are extending the deadline for Assignment 3 by 48 hours. The new deadline is Friday, March 22nd at 11:59 PM. Please use this extra time to refine your solutions.',
+      title: 'Python Development Environment Setup',
+      content: 'Please install Python 3.8 or higher and VS Code editor before our next class. Installation guides are available on the course website. If you encounter any issues, please attend office hours or contact the TA.',
+      courseId: courses[0]?.id,
+      authorId: 'teacher',
+      isImportant: false
+    },
+    {
+      title: 'Midterm Project Guidelines',
+      content: 'The midterm project involves creating a text processing application. Requirements include file I/O, string manipulation, and basic data analysis. Project proposals are due next Friday. Start thinking about your topic!',
+      courseId: courses[0]?.id,
+      authorId: 'teacher',
+      isImportant: true
+    },
+    
+    // MATH 201 announcements
+    {
+      title: 'Calculus Study Group',
+      content: 'Join our weekly calculus study group every Thursday at 6 PM in the math building. We\'ll work through practice problems and review challenging concepts. Bring your questions and textbook!',
       courseId: courses[1]?.id,
       authorId: 'teacher2',
       isImportant: false
     },
     {
-      title: 'Office Hours Change',
-      content: 'Starting next week, my office hours will change from Tuesday 2-4 PM to Wednesday 3-5 PM. This change is permanent for the rest of the semester. Please update your calendars accordingly.',
+      title: 'Integration Exam Next Week',
+      content: 'The integration techniques exam is scheduled for next Thursday. The exam covers substitution, integration by parts, and partial fractions. Review chapters 7-8 and complete all practice problems. Office hours extended this week.',
+      courseId: courses[1]?.id,
+      authorId: 'teacher2',
+      isImportant: true
+    },
+    {
+      title: 'Graphing Calculator Policy',
+      content: 'Reminder: Only TI-83, TI-84, and Casio fx-9750G calculators are permitted during exams. No programming or WiFi-enabled calculators allowed. If you need to borrow a calculator, please contact me before the exam.',
+      courseId: courses[1]?.id,
+      authorId: 'teacher2',
+      isImportant: true
+    },
+    
+    // PSYC 101 announcements
+    {
+      title: 'Research Participation Opportunity',
+      content: 'The psychology department is conducting a study on memory and learning. Students can earn 2 extra credit points by participating. Sessions are 1 hour long and available weekdays. Sign up at the research lab.',
       courseId: courses[2]?.id,
       authorId: 'teacher',
       isImportant: false
     },
     {
-      title: 'Guest Lecturer This Friday',
-      content: 'We\'re excited to announce that Dr. Michael Rodriguez from MIT will be giving a guest lecture this Friday on \'Advanced Algorithms in Machine Learning\'. This is a great opportunity to learn from a leading expert in the field. Attendance is highly encouraged but not mandatory.',
-      courseId: courses[0]?.id,
+      title: 'Guest Lecture: Dr. Sarah Chen',
+      content: 'We\'re excited to welcome Dr. Sarah Chen from Stanford University for a guest lecture on "Cognitive Behavioral Therapy in Modern Practice." The lecture is this Friday at 2 PM in the auditorium. Attendance is optional but highly recommended.',
+      courseId: courses[2]?.id,
       authorId: 'teacher',
       isImportant: false
     },
     {
-      title: 'Research Paper Guidelines Updated',
-      content: 'I\'ve updated the research paper guidelines document with additional citation requirements and formatting specifications. Please download the latest version from the course materials section. Papers that don\'t follow the new guidelines will be returned for revision.',
+      title: 'Case Study Assignment Instructions',
+      content: 'Detailed instructions for the case study assignment are now available. Choose from 3 provided cases and apply appropriate theoretical frameworks. Papers should be 5-7 pages, APA format. Due date is March 15th.',
       courseId: courses[2]?.id,
       authorId: 'teacher',
       isImportant: true
+    },
+    
+    // CS 201 announcements
+    {
+      title: 'Advanced Programming Concepts',
+      content: 'This course builds on CS 101 with advanced data structures and algorithms. We\'ll cover linked lists, trees, graphs, and complexity analysis. Prerequisites include solid understanding of object-oriented programming.',
+      courseId: courses[3]?.id,
+      authorId: 'teacher',
+      isImportant: true
+    },
+    {
+      title: 'Group Project Formation',
+      content: 'It\'s time to form groups for the final project. Teams of 3-4 students will implement a complete data structure library. Project proposals due April 1st. Use the discussion board to find teammates.',
+      courseId: courses[3]?.id,
+      authorId: 'teacher',
+      isImportant: false
+    },
+    
+    // STAT 301 announcements
+    {
+      title: 'Statistical Software Installation',
+      content: 'Please install R and RStudio before next class. We\'ll also use Python with pandas and scipy libraries. Installation guides and campus software licenses are available on the course website.',
+      courseId: courses[4]?.id,
+      authorId: 'teacher2',
+      isImportant: true
+    },
+    {
+      title: 'Real-World Data Analysis Project',
+      content: 'Your final project involves analyzing a real-world dataset of your choice. Project topics could include sports statistics, financial data, or social media analysis. Project proposals due April 15th.',
+      courseId: courses[4]?.id,
+      authorId: 'teacher2',
+      isImportant: false
     }
   ];
   
@@ -393,93 +692,117 @@ export async function seedSampleAnnouncements(courses: any[]) {
   }
 }
 
-export async function seedSampleMessages() {
+export async function seedSampleMessages(courses: any[]) {
   console.log('Seeding sample messages...');
   
   const messages = [
+    // Student-Teacher conversations
     {
       senderId: 'student',
       receiverId: 'teacher',
-      content: 'Hi Professor, I have a question about the sorting algorithms assignment. Could you clarify the requirements for the efficiency analysis?',
+      courseId: courses[0]?.id,
+      subject: 'Question about Assignment 1',
+      content: 'Hi Professor, I\'m having trouble with the calculator assignment. The division by zero handling isn\'t working as expected. Could you provide some guidance?',
       isRead: true
     },
     {
       senderId: 'teacher',
       receiverId: 'student',
-      content: 'Hello! For the efficiency analysis, please include time complexity (Big O) for each algorithm and compare their performance with different input sizes. Let me know if you need more details.',
+      courseId: courses[0]?.id,
+      subject: 'Re: Question about Assignment 1',
+      content: 'Hi Jane, for division by zero, use a try-except block to catch ZeroDivisionError. Return an error message instead of crashing. Check the example in lecture notes. Let me know if you need more help!',
       isRead: false
     },
     {
       senderId: 'student2',
       receiverId: 'teacher2',
-      content: 'I\'m having trouble with the integration by parts problems. Are there any additional resources you\'d recommend?',
+      courseId: courses[1]?.id,
+      subject: 'Office Hours Question',
+      content: 'Hello, I won\'t be able to attend office hours today. Could we schedule a brief meeting to discuss the integration problems? I\'m particularly confused about partial fractions.',
       isRead: true
     },
     {
       senderId: 'teacher2',
       receiverId: 'student2',
-      content: 'I recommend reviewing Khan Academy\'s integration by parts series. Also, practice with the problems at the end of Chapter 7. My office hours are Wednesday 3-5 PM if you need more help.',
+      courseId: courses[1]?.id,
+      subject: 'Re: Office Hours Question',
+      content: 'Sure Mike, I\'m available tomorrow at 3 PM or Friday at 1 PM. For partial fractions, remember to factor the denominator completely first. We can work through examples when we meet.',
       isRead: false
     },
     {
       senderId: 'student3',
       receiverId: 'teacher',
-      content: 'Thank you for the feedback on my psychology research paper. I\'ve made the revisions you suggested.',
+      courseId: courses[2]?.id,
+      subject: 'Research Paper Topic',
+      content: 'I\'m interested in writing about the effectiveness of cognitive behavioral therapy for anxiety disorders. Is this topic appropriate for our research paper assignment?',
       isRead: true
     },
     {
       senderId: 'teacher',
       receiverId: 'student3',
-      content: 'Great! I\'ll review your revised paper by Friday. Your improvements to the methodology section look much stronger.',
+      courseId: courses[2]?.id,
+      subject: 'Re: Research Paper Topic',
+      content: 'That\'s an excellent topic, Emily! Make sure to include recent studies and discuss both benefits and limitations. Focus on specific anxiety disorders for more depth. Good choice!',
       isRead: false
     }
   ];
   
   for (const messageData of messages) {
-    try {
-      await Message.create(messageData);
-      console.log(`   ✅ Created message from ${messageData.senderId} to ${messageData.receiverId}`);
-    } catch (error) {
-      console.error(`   ❌ Failed to create message:`, error);
+    if (messageData.courseId) {
+      try {
+        await Message.create(messageData);
+        console.log(`   ✅ Created message: ${messageData.subject}`);
+      } catch (error) {
+        console.error(`   ❌ Failed to create message:`, error);
+      }
     }
   }
 }
 
-export async function runSeedProcess(forceInit: boolean = false) {
-  console.log('=================================');
-  console.log('  Database Seeding Process');
-  console.log('=================================');
-  
-  const shouldSeed = await shouldSeedData();
-  if (!shouldSeed) {
-    console.log('Seeding skipped based on environment configuration');
-    return;
-  }
-  
-  if (!forceInit) {
-    const dataExists = await checkIfDataExists();
-    if (dataExists) {
-      console.log('Sample data already exists, skipping seeding process');
-      return;
-    }
-  } else {
-    console.log('DB_INIT=true detected. Force seeding data...');
-  }
+export async function seedAllData() {
+  console.log('🌱 Starting comprehensive data seeding...');
   
   try {
+    // Check if we should seed data
+    const shouldSeed = await shouldSeedData();
+    if (!shouldSeed) {
+      console.log('⚠️  Skipping data seeding based on environment settings');
+      return;
+    }
+    
+    // If DB_INIT is true, force seeding even if data exists
+    if (process.env.DB_INIT === 'true') {
+      console.log('🚀 DB_INIT=true - Force seeding comprehensive analytics data...');
+    } else {
+      // Check if data already exists
+      const dataExists = await checkIfDataExists();
+      if (dataExists) {
+        console.log('⚠️  Data already exists, skipping seeding');
+        return;
+      }
+    }
+    
+    // Seed all data in order
     await seedDefaultUsers();
     const courses = await seedSampleCourses();
     await seedSampleEnrollments(courses);
     const assignments = await seedSampleAssignments(courses);
     await seedSampleSubmissions(assignments);
     await seedSampleAnnouncements(courses);
-    await seedSampleMessages();
+    await seedSampleMessages(courses);
     
-    console.log('');
-    console.log('✅ Database seeding completed successfully!');
-    console.log('=================================');
+    console.log('✅ Comprehensive data seeding completed successfully!');
+    console.log('📊 Analytics data ready for demonstration:');
+    console.log('   - 5 courses with varied enrollment');
+    console.log('   - 13 assignments with realistic due dates');
+    console.log('   - 25+ submissions with graded analytics');
+    console.log('   - 13 announcements across all courses');
+    console.log('   - 6 message conversations');
+    console.log('   - Comprehensive analytics for dashboard');
+    
   } catch (error) {
-    console.error('❌ Error during seeding process:', error);
-    throw error;
+    console.error('❌ Error during data seeding:', error);
   }
 }
+
+// End of comprehensive seeding functions - All analytics data ready for demonstration
