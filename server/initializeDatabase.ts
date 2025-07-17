@@ -204,6 +204,7 @@ export async function initializeDatabase() {
         id SERIAL PRIMARY KEY,
         sender_id VARCHAR NOT NULL,
         receiver_id VARCHAR NOT NULL,
+        course_id INTEGER,
         subject VARCHAR(255),
         content TEXT NOT NULL,
         is_read BOOLEAN DEFAULT false,
