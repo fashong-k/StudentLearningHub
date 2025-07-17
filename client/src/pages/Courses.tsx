@@ -60,7 +60,7 @@ import { SimpleSelect, SimpleSelectItem } from "@/components/ui/simple-select";
 
 // Helper function to safely convert date to HTML date input format
 const formatDateForInput = (date: any): string => {
-  if (!date) return '';
+  if (!date || date === '') return '';
   
   // If it's already a string in YYYY-MM-DD format, return it
   if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -106,8 +106,8 @@ export default function Courses() {
       semester: "Fall",
       year: new Date().getFullYear(),
       termType: "semester",
-      startDate: undefined,
-      endDate: undefined,
+      startDate: "",
+      endDate: "",
       visibility: "private",
       gradingScheme: "letter",
       teacherId: user?.id || "", // Add teacherId to default values
@@ -125,8 +125,8 @@ export default function Courses() {
       semester: "Fall",
       year: new Date().getFullYear(),
       termType: "semester",
-      startDate: undefined,
-      endDate: undefined,
+      startDate: "",
+      endDate: "",
       visibility: "private",
       gradingScheme: "letter",
       teacherId: user?.id || "",
@@ -383,8 +383,8 @@ export default function Courses() {
       ...data,
       teacherId: user?.id, // Add the current user's ID as teacherId
       // Convert string dates back to Date objects for server
-      startDate: data.termType === "term" && data.startDate ? new Date(data.startDate) : null,
-      endDate: data.termType === "term" && data.endDate ? new Date(data.endDate) : null,
+      startDate: data.termType === "term" && data.startDate && data.startDate !== "" ? new Date(data.startDate) : null,
+      endDate: data.termType === "term" && data.endDate && data.endDate !== "" ? new Date(data.endDate) : null,
     };
     
     console.log("Final course data with teacherId:", courseData);
@@ -398,8 +398,8 @@ export default function Courses() {
         ...data,
         teacherId: user?.id, // Keep the current teacher
         // Convert string dates back to Date objects for server
-        startDate: data.termType === "term" && data.startDate ? new Date(data.startDate) : null,
-        endDate: data.termType === "term" && data.endDate ? new Date(data.endDate) : null,
+        startDate: data.termType === "term" && data.startDate && data.startDate !== "" ? new Date(data.startDate) : null,
+        endDate: data.termType === "term" && data.endDate && data.endDate !== "" ? new Date(data.endDate) : null,
       };
       
       // First validate the update
@@ -432,8 +432,8 @@ export default function Courses() {
       semester: course.semester,
       year: course.year,
       termType: course.termType || "semester",
-      startDate: course.startDate ? formatDateForInput(course.startDate) : null,
-      endDate: course.endDate ? formatDateForInput(course.endDate) : null,
+      startDate: course.startDate ? formatDateForInput(course.startDate) : "",
+      endDate: course.endDate ? formatDateForInput(course.endDate) : "",
       visibility: course.visibility || "private",
       gradingScheme: course.gradingScheme || "letter",
       teacherId: course.teacherId || user?.id,
@@ -650,7 +650,7 @@ export default function Courses() {
                                     value={formatDateForInput(field.value)}
                                     onChange={(e) => {
                                       console.log('Create form start date selected:', e.target.value);
-                                      field.onChange(e.target.value || null);
+                                      field.onChange(e.target.value);
                                     }}
                                     min={new Date().toISOString().split('T')[0]}
                                   />
@@ -670,7 +670,7 @@ export default function Courses() {
                                     value={formatDateForInput(field.value)}
                                     onChange={(e) => {
                                       console.log('Create form end date selected:', e.target.value);
-                                      field.onChange(e.target.value || null);
+                                      field.onChange(e.target.value);
                                     }}
                                     min={formatDateForInput(form.watch("startDate")) || new Date().toISOString().split('T')[0]}
                                   />
@@ -884,7 +884,7 @@ export default function Courses() {
                               value={formatDateForInput(field.value)}
                               onChange={(e) => {
                                 console.log('Edit form start date selected:', e.target.value);
-                                field.onChange(e.target.value || null);
+                                field.onChange(e.target.value);
                               }}
                               min={new Date().toISOString().split('T')[0]}
                             />
@@ -904,7 +904,7 @@ export default function Courses() {
                               value={formatDateForInput(field.value)}
                               onChange={(e) => {
                                 console.log('Edit form end date selected:', e.target.value);
-                                field.onChange(e.target.value || null);
+                                field.onChange(e.target.value);
                               }}
                               min={formatDateForInput(editForm.watch("startDate")) || new Date().toISOString().split('T')[0]}
                             />
