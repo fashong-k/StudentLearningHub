@@ -71,6 +71,27 @@ export interface IStorage {
 }
 
 export class DrizzleStorage implements IStorage {
+  // Helper method to map database fields to camelCase
+  private mapCourseFromDb(dbCourse: any): CourseAttributes {
+    return {
+      id: dbCourse.id,
+      title: dbCourse.title,
+      description: dbCourse.description,
+      courseCode: dbCourse.course_code,
+      teacherId: dbCourse.teacher_id,
+      semester: dbCourse.semester,
+      year: dbCourse.year,
+      termType: dbCourse.term_type,
+      startDate: dbCourse.start_date,
+      endDate: dbCourse.end_date,
+      visibility: dbCourse.visibility,
+      gradingScheme: dbCourse.grading_scheme,
+      isActive: dbCourse.is_active,
+      createdAt: dbCourse.created_at,
+      updatedAt: dbCourse.updated_at,
+    };
+  }
+
   // User operations
   async getUser(id: string): Promise<UserAttributes | undefined> {
     const result = await db.execute(sql`
@@ -104,7 +125,7 @@ export class DrizzleStorage implements IStorage {
       FROM ${sql.identifier(dbSchema)}.courses
       ORDER BY title ASC
     `);
-    return result.rows as CourseAttributes[];
+    return result.rows.map(this.mapCourseFromDb) as CourseAttributes[];
   }
 
   async getCourseById(id: number): Promise<CourseAttributes | undefined> {
@@ -113,7 +134,7 @@ export class DrizzleStorage implements IStorage {
       FROM ${sql.identifier(dbSchema)}.courses
       WHERE id = ${id}
     `);
-    return result.rows[0] as CourseAttributes;
+    return result.rows[0] ? this.mapCourseFromDb(result.rows[0]) : undefined;
   }
 
   async getTeacherCourses(teacherId: string): Promise<CourseAttributes[]> {
@@ -123,7 +144,7 @@ export class DrizzleStorage implements IStorage {
       WHERE teacher_id = ${teacherId}
       ORDER BY title ASC
     `);
-    return result.rows as CourseAttributes[];
+    return result.rows.map(this.mapCourseFromDb) as CourseAttributes[];
   }
 
   async getStudentCourses(studentId: string): Promise<CourseAttributes[]> {
@@ -134,7 +155,7 @@ export class DrizzleStorage implements IStorage {
       WHERE e.student_id = ${studentId}
       ORDER BY c.title ASC
     `);
-    return result.rows as CourseAttributes[];
+    return result.rows.map(this.mapCourseFromDb) as CourseAttributes[];
   }
 
   async createCourse(course: Omit<CourseAttributes, 'id' | 'createdAt' | 'updatedAt'>): Promise<CourseAttributes> {
@@ -171,7 +192,7 @@ export class DrizzleStorage implements IStorage {
       
       const newCourse = result.rows[0];
       console.log('Successfully created course:', newCourse);
-      return newCourse as CourseAttributes;
+      return this.mapCourseFromDb(newCourse);
     } catch (error) {
       console.error('Course creation failed:', error);
       throw error;
