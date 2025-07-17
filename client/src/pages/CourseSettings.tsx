@@ -142,6 +142,7 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
   }
 
   if (!isAuthenticated) {
+    console.log("CourseSettings - Not authenticated, showing login screen");
     return (
       <div className="min-h-screen bg-gray-50">
         <Navigation />
@@ -176,6 +177,8 @@ export default function CourseSettings({ courseId }: CourseSettingsProps) {
   console.log("CourseSettings - authLoading:", authLoading);
 
   if (!isTeacher && !isAdmin) {
+    console.log("CourseSettings - Role check failed, showing access restricted");
+    console.log("CourseSettings - !isTeacher && !isAdmin = ", !isTeacher && !isAdmin);
     return (
       <div className="min-h-screen bg-gray-50">
         <Navigation />
