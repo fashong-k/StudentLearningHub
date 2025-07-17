@@ -218,7 +218,28 @@
   padding: 12px;
 }
 
-/* Ensure popover stays above other content */
+/* Ensure popover stays above other content and is properly hidden by default */
 .popover-content {
   z-index: 50 !important;
+}
+
+/* Ensure popovers are hidden by default and only shown when triggered */
+[data-radix-popper-content-wrapper]:not([data-state="open"]) {
+  display: none !important;
+}
+
+/* Fix any calendar components that might be showing inappropriately */
+.course-card .rdp {
+  display: none !important;
+}
+
+.course-card [data-radix-popper-content-wrapper] {
+  display: none !important;
+}
+
+/* Ensure no calendar components leak into course card areas */
+.course-card .rdp-month,
+.course-card .rdp-table,
+.course-card .rdp-day {
+  display: none !important;
 }

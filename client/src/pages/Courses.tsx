@@ -1009,7 +1009,7 @@ export default function Courses() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {displayCourses.map((course: any) => (
-                <Card key={course.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                <Card key={course.id} className="course-card hover:shadow-lg transition-shadow cursor-pointer">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center">
