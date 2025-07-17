@@ -39,7 +39,18 @@ import {
   CheckCircle,
   Copy,
   Settings,
-  Eye
+  Eye,
+  Download,
+  Upload,
+  Link,
+  BarChart3,
+  FileText,
+  Bell,
+  Shield,
+  Clipboard,
+  Archive,
+  Clock,
+  GraduationCap
 } from "lucide-react";
 import { format } from "date-fns";
 import { safeFormat, isValidDate } from "@/lib/dateUtils";
@@ -1028,7 +1039,8 @@ export default function Courses() {
                               <MoreVertical className="w-4 h-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                          <DropdownMenuContent align="end" className="w-48">
+                            {/* Course Management */}
                             <DropdownMenuItem onClick={() => handleEditCourse(course)}>
                               <Edit className="w-4 h-4 mr-2" />
                               Edit Course
@@ -1037,12 +1049,79 @@ export default function Courses() {
                               <Settings className="w-4 h-4 mr-2" />
                               Configure Settings
                             </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setLocation(`/courses/${course.id}`)}>
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Course
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuSeparator />
+                            
+                            {/* User Management */}
+                            <DropdownMenuItem onClick={() => toast({ title: "Feature Coming Soon", description: "Student management will be available soon" })}>
+                              <Users className="w-4 h-4 mr-2" />
+                              Manage Students
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => toast({ title: "Feature Coming Soon", description: "Instructor management will be available soon" })}>
+                              <UserPlus className="w-4 h-4 mr-2" />
+                              Add Instructors
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => toast({ title: "Feature Coming Soon", description: "Grade management will be available soon" })}>
+                              <GraduationCap className="w-4 h-4 mr-2" />
+                              Manage Grades
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuSeparator />
+                            
+                            {/* Content & Analytics */}
+                            <DropdownMenuItem onClick={() => toast({ title: "Feature Coming Soon", description: "Course analytics will be available soon" })}>
+                              <BarChart3 className="w-4 h-4 mr-2" />
+                              View Analytics
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => toast({ title: "Feature Coming Soon", description: "Content management will be available soon" })}>
+                              <FileText className="w-4 h-4 mr-2" />
+                              Course Materials
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => toast({ title: "Feature Coming Soon", description: "Announcement management will be available soon" })}>
+                              <Bell className="w-4 h-4 mr-2" />
+                              Send Announcement
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuSeparator />
+                            
+                            {/* Export & Share */}
+                            <DropdownMenuItem onClick={() => toast({ title: "Feature Coming Soon", description: "Export functionality will be available soon" })}>
+                              <Download className="w-4 h-4 mr-2" />
+                              Export Data
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              const shareUrl = `${window.location.origin}/courses/${course.id}`;
+                              navigator.clipboard.writeText(shareUrl);
+                              toast({ title: "Link Copied", description: "Course link copied to clipboard" });
+                            }}>
+                              <Link className="w-4 h-4 mr-2" />
+                              Share Course Link
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => navigator.clipboard.writeText(course.courseCode)}>
                               <Copy className="w-4 h-4 mr-2" />
                               Copy Course Code
                             </DropdownMenuItem>
+                            
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleDeleteCourse(course)} className="text-red-600">
+                            
+                            {/* Course Status */}
+                            <DropdownMenuItem onClick={() => toast({ title: "Feature Coming Soon", description: "Archive functionality will be available soon" })}>
+                              <Archive className="w-4 h-4 mr-2" />
+                              Archive Course
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => toast({ title: "Feature Coming Soon", description: "Duplicate functionality will be available soon" })}>
+                              <Clipboard className="w-4 h-4 mr-2" />
+                              Duplicate Course
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuSeparator />
+                            
+                            {/* Dangerous Actions */}
+                            <DropdownMenuItem onClick={() => handleDeleteCourse(course)} className="text-red-600 focus:text-red-600">
                               <Trash2 className="w-4 h-4 mr-2" />
                               Delete Course
                             </DropdownMenuItem>
