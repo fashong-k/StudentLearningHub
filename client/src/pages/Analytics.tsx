@@ -519,7 +519,7 @@ function OverviewTab({ analytics, engagementMetrics, chartType, onChartTypeChang
                     <p className="text-sm text-gray-600">{course.enrolledStudents} students</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-blue-600">{course.engagementRate}%</p>
+                    <p className="font-bold text-blue-600">{course.engagementRate.toFixed(1)}%</p>
                     <p className="text-sm text-gray-600">engagement</p>
                   </div>
                 </div>
