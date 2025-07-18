@@ -92,6 +92,7 @@ export default function Courses() {
   const [validationWarnings, setValidationWarnings] = useState<string[]>([]);
   const [showValidationDialog, setShowValidationDialog] = useState(false);
   const [pendingUpdate, setPendingUpdate] = useState<any>(null);
+  const [editYearDisplayValue, setEditYearDisplayValue] = useState('');
   const queryClient = useQueryClient();
   const { isUsingFallback, failedEndpoints, showAlert, reportFailure, clearFailures } = useDataFallback();
   const [, setLocation] = useLocation();
@@ -451,12 +452,14 @@ export default function Courses() {
 
   const handleEditCourse = (course: any) => {
     setEditingCourse(course);
+    const yearValue = course.year || new Date().getFullYear();
+    setEditYearDisplayValue(yearValue.toString());
     editForm.reset({
       title: course.title,
       description: course.description,
       courseCode: course.courseCode,
       semester: course.semester,
-      year: course.year || new Date().getFullYear(),
+      year: yearValue,
       termType: course.termType || "semester",
       startDate: course.startDate ? formatDateForInput(course.startDate) : "",
       endDate: course.endDate ? formatDateForInput(course.endDate) : "",
@@ -900,38 +903,29 @@ export default function Courses() {
                     <FormField
                       control={editForm.control}
                       name="year"
-                      render={({ field }) => {
-                        const [displayValue, setDisplayValue] = useState(field.value?.toString() || '');
-                        
-                        // Update display value when field value changes
-                        useEffect(() => {
-                          setDisplayValue(field.value?.toString() || '');
-                        }, [field.value]);
-                        
-                        return (
-                          <FormItem>
-                            <FormLabel>Year</FormLabel>
-                            <FormControl>
-                              <input
-                                type="number" 
-                                placeholder="2025"
-                                min="2020"
-                                max="2030"
-                                value={displayValue} 
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  console.log('Edit form year input changed:', value);
-                                  setDisplayValue(value);
-                                  const numValue = value === '' ? undefined : parseInt(value);
-                                  field.onChange(numValue);
-                                  console.log('Edit form year field updated to:', numValue);
-                                }}
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                              />
-                            </FormControl>
-                          </FormItem>
-                        );
-                      }}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Year</FormLabel>
+                          <FormControl>
+                            <input
+                              type="number" 
+                              placeholder="2025"
+                              min="2020"
+                              max="2030"
+                              value={editYearDisplayValue || field.value || ''} 
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                console.log('Edit form year input changed:', value);
+                                setEditYearDisplayValue(value);
+                                const numValue = value === '' ? undefined : parseInt(value);
+                                field.onChange(numValue);
+                                console.log('Edit form year field updated to:', numValue);
+                              }}
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
                     />
                   </div>
                 ) : (
