@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -900,27 +900,38 @@ export default function Courses() {
                     <FormField
                       control={editForm.control}
                       name="year"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Year</FormLabel>
-                          <FormControl>
-                            <input
-                              type="number" 
-                              placeholder="2025"
-                              min="2020"
-                              max="2030"
-                              value={field.value || ''} 
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                console.log('Edit form year input changed:', value, 'field.value before:', field.value);
-                                field.onChange(value === '' ? undefined : parseInt(value));
-                                console.log('Edit form year field updated to:', value === '' ? undefined : parseInt(value));
-                              }}
-                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
+                      render={({ field }) => {
+                        const [displayValue, setDisplayValue] = useState(field.value?.toString() || '');
+                        
+                        // Update display value when field value changes
+                        useEffect(() => {
+                          setDisplayValue(field.value?.toString() || '');
+                        }, [field.value]);
+                        
+                        return (
+                          <FormItem>
+                            <FormLabel>Year</FormLabel>
+                            <FormControl>
+                              <input
+                                type="number" 
+                                placeholder="2025"
+                                min="2020"
+                                max="2030"
+                                value={displayValue} 
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  console.log('Edit form year input changed:', value);
+                                  setDisplayValue(value);
+                                  const numValue = value === '' ? undefined : parseInt(value);
+                                  field.onChange(numValue);
+                                  console.log('Edit form year field updated to:', numValue);
+                                }}
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                              />
+                            </FormControl>
+                          </FormItem>
+                        );
+                      }}
                     />
                   </div>
                 ) : (
