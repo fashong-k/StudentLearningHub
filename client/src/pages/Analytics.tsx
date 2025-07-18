@@ -239,6 +239,8 @@ export default function Analytics() {
                   engagementMetrics={engagementMetrics || []}
                   chartType={chartType}
                   onChartTypeChange={setChartType}
+                  selectedCourse={selectedCourse}
+                  coursesData={coursesData || []}
                 />
               </TabsContent>
               
@@ -373,8 +375,22 @@ function StudentAnalytics({ performanceTrends, courseFilter, courses, onCourseCh
   );
 }
 
-function OverviewTab({ analytics, engagementMetrics, chartType, onChartTypeChange }: any) {
+function OverviewTab({ analytics, engagementMetrics, chartType, onChartTypeChange, selectedCourse, coursesData }: any) {
   if (!analytics) return <div>No analytics data available</div>;
+
+  // Filter engagement metrics based on selected course
+  const filteredEngagementMetrics = selectedCourse === "all" 
+    ? engagementMetrics 
+    : engagementMetrics.filter((course: any) => course.courseId === parseInt(selectedCourse));
+
+  // Update Course Engagement Overview title based on selection
+  const selectedCourseInfo = selectedCourse === "all" 
+    ? null 
+    : coursesData.find((course: any) => course.id === parseInt(selectedCourse));
+    
+  const engagementTitle = selectedCourse === "all" 
+    ? "Course Engagement Overview" 
+    : `${selectedCourseInfo?.courseCode || 'Selected Course'} Engagement Overview`;
 
   const gradeDistributionData = [
     { grade: 'A', count: analytics.gradeDistribution.A, color: '#10B981' },
@@ -508,22 +524,30 @@ function OverviewTab({ analytics, engagementMetrics, chartType, onChartTypeChang
 
         <Card>
           <CardHeader>
-            <CardTitle>Course Engagement Overview</CardTitle>
+            <CardTitle>{engagementTitle}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {engagementMetrics.slice(0, 5).map((course: any, index: number) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{course.courseTitle}</p>
-                    <p className="text-sm text-gray-600">{course.enrolledStudents} students</p>
+              {filteredEngagementMetrics.length > 0 ? (
+                filteredEngagementMetrics.slice(0, 5).map((course: any, index: number) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">{course.courseTitle}</p>
+                      <p className="text-sm text-gray-600">{course.enrolledStudents} students</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-blue-600">{course.engagementRate.toFixed(1)}%</p>
+                      <p className="text-sm text-gray-600">engagement</p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-bold text-blue-600">{course.engagementRate.toFixed(1)}%</p>
-                    <p className="text-sm text-gray-600">engagement</p>
-                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  {selectedCourse === "all" 
+                    ? "No engagement data available" 
+                    : `No engagement data available for ${selectedCourseInfo?.courseCode || 'selected course'}`}
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
