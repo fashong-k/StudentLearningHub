@@ -1,8 +1,11 @@
 import { Express } from 'express';
 import { assignmentService, createAssignmentSchema, updateAssignmentSchema } from './assignment-crud-service';
-import { authMiddleware } from './middleware/authMiddleware';
+import { db } from './db-drizzle';
+import { users } from '../shared/schema';
+import { eq } from 'drizzle-orm';
 
-export function setupAssignmentRoutes(app: Express) {
+// Note: authMiddleware should be imported from the main routes file
+export function setupAssignmentRoutes(app: Express, authMiddleware: any) {
   
   // GET /api/assignments/:courseId - Get all assignments for a course
   app.get('/api/assignments/:courseId', authMiddleware, async (req: any, res) => {

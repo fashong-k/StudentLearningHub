@@ -401,7 +401,7 @@ export class AssignmentCRUDService {
     }
   }
 
-  private async checkCoursePermissions(courseId: number, userId: string): Promise<PermissionResult> {
+  async checkCoursePermissions(courseId: number, userId: string): Promise<PermissionResult> {
     try {
       // Get user role and course info
       const userResult = await db

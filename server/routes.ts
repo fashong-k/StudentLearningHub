@@ -22,6 +22,7 @@ import fs from "fs";
 import { initializeDatabase } from "./initializeDatabase";
 import { initializeExtendedDatabase } from "./initializeExtendedDatabase";
 import { analyzeCourseDeletionImpact, simulateCourseDeletion } from "./courseDeletionAnalyzer";
+import { assignmentService } from './assignment-crud-service';
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -472,48 +473,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  // Assignment routes
-  app.get("/api/assignments", authMiddleware, async (req: any, res) => {
+  // Assignment routes using new CRUD service
+  app.get("/api/assignments/:courseId", authMiddleware, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      const courseId = parseInt(req.params.courseId);
+      const userId = req.user?.claims?.sub || req.user?.id;
       
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
       }
 
-      let assignments = [];
-      
-      if (user.role === "student") {
-        // Students see assignments from their enrolled courses
-        const courses = await storage.getStudentCourses(userId);
-        for (const course of courses) {
-          const courseAssignments = await storage.getAssignments(course.id);
-          assignments.push(...courseAssignments);
-        }
-      } else if (user.role === "teacher") {
-        // Teachers see assignments from their courses
-        const courses = await storage.getTeacherCourses(userId);
-        for (const course of courses) {
-          const courseAssignments = await storage.getAssignments(course.id);
-          assignments.push(...courseAssignments);
-        }
-      } else {
-        // Admin sees all assignments
-        const courses = await storage.getCourses();
-        for (const course of courses) {
-          const courseAssignments = await storage.getAssignments(course.id);
-          assignments.push(...courseAssignments);
-        }
+      // Check permissions
+      const permissions = await assignmentService.checkCoursePermissions(courseId, userId);
+      if (!permissions.canRead) {
+        return res.status(403).json({
+          success: false,
+          message: `Access denied: ${permissions.reason || 'Insufficient permissions'}`
+        });
       }
+
+      // Get assignments with optional filters
+      const filters = {
+        isActive: req.query.isActive === 'true' ? true : req.query.isActive === 'false' ? false : undefined,
+        assignmentType: req.query.assignmentType as string,
+        dueDateFrom: req.query.dueDateFrom ? new Date(req.query.dueDateFrom as string) : undefined,
+        dueDateTo: req.query.dueDateTo ? new Date(req.query.dueDateTo as string) : undefined,
+      };
+
+      const assignments = await assignmentService.getAssignments(courseId, filters);
       
       res.json(assignments);
     } catch (error) {
-      console.error("Error fetching assignments:", error);
-      res.status(500).json({ message: "Failed to fetch assignments" });
+      console.error('Error in GET /api/assignments/:courseId:', error);
+      res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to fetch assignments',
+        errors: [error instanceof Error ? error.message : 'Unknown error']
+      });
     }
   });
 
+  // Legacy route for backward compatibility
   app.get("/api/courses/:id/assignments", authMiddleware, async (req: any, res) => {
     try {
       const courseId = parseInt(req.params.id);
@@ -525,6 +528,172 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create assignment using new CRUD service
+  app.post("/api/assignments", authMiddleware, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub || req.user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+      }
+
+      // Create assignment with enhanced validation
+      const assignment = await assignmentService.createAssignment(req.body, userId);
+      
+      res.status(201).json({
+        success: true,
+        data: assignment,
+        message: 'Assignment created successfully'
+      });
+    } catch (error) {
+      console.error('Error creating assignment:', error);
+      
+      if (error instanceof Error && error.message.includes('Permission denied')) {
+        return res.status(403).json({
+          success: false,
+          message: error.message,
+          errors: [error.message]
+        });
+      }
+      
+      if (error instanceof Error && error.message.includes('Validation')) {
+        return res.status(400).json({
+          success: false,
+          message: error.message,
+          errors: [error.message]
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to create assignment',
+        errors: [error instanceof Error ? error.message : 'Unknown error']
+      });
+    }
+  });
+
+  // Update assignment using new CRUD service
+  app.put("/api/assignments/:id", authMiddleware, async (req: any, res) => {
+    try {
+      const assignmentId = parseInt(req.params.id);
+      const userId = req.user?.claims?.sub || req.user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+      }
+
+      const assignment = await assignmentService.updateAssignment(assignmentId, req.body, userId);
+      
+      res.json({
+        success: true,
+        data: assignment,
+        message: 'Assignment updated successfully'
+      });
+    } catch (error) {
+      console.error('Error updating assignment:', error);
+      
+      if (error instanceof Error && error.message.includes('not found')) {
+        return res.status(404).json({
+          success: false,
+          message: error.message,
+          errors: [error.message]
+        });
+      }
+      
+      if (error instanceof Error && error.message.includes('Permission denied')) {
+        return res.status(403).json({
+          success: false,
+          message: error.message,
+          errors: [error.message]
+        });
+      }
+      
+      if (error instanceof Error && error.message.includes('Validation')) {
+        return res.status(400).json({
+          success: false,
+          message: error.message,
+          errors: [error.message]
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to update assignment',
+        errors: [error instanceof Error ? error.message : 'Unknown error']
+      });
+    }
+  });
+
+  // Delete assignment using new CRUD service
+  app.delete("/api/assignments/:id", authMiddleware, async (req: any, res) => {
+    try {
+      const assignmentId = parseInt(req.params.id);
+      const userId = req.user?.claims?.sub || req.user?.id;
+      const hardDelete = req.query.hard === 'true';
+      
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+      }
+
+      const success = await assignmentService.deleteAssignment(assignmentId, userId, !hardDelete);
+      
+      if (success) {
+        res.json({
+          success: true,
+          data: { deleted: true, type: hardDelete ? 'permanent' : 'soft' },
+          message: `Assignment ${hardDelete ? 'permanently deleted' : 'deactivated'} successfully`
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: 'Assignment not found or already deleted'
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting assignment:', error);
+      
+      if (error instanceof Error && error.message.includes('not found')) {
+        return res.status(404).json({
+          success: false,
+          message: error.message,
+          errors: [error.message]
+        });
+      }
+      
+      if (error instanceof Error && error.message.includes('Permission denied')) {
+        return res.status(403).json({
+          success: false,
+          message: error.message,
+          errors: [error.message]
+        });
+      }
+      
+      if (error instanceof Error && error.message.includes('Cannot delete')) {
+        return res.status(409).json({
+          success: false,
+          message: error.message,
+          errors: [error.message]
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to delete assignment',
+        errors: [error instanceof Error ? error.message : 'Unknown error']
+      });
+    }
+  });
+
+  // Legacy route for backward compatibility
   app.post("/api/courses/:id/assignments", authMiddleware, async (req: any, res) => {
     try {
       const courseId = parseInt(req.params.id);
