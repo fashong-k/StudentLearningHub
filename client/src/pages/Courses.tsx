@@ -668,7 +668,16 @@ export default function Courses() {
                                     value={field.value || ''} 
                                     onChange={(e) => {
                                       const value = e.target.value;
-                                      field.onChange(value === '' ? undefined : parseInt(value));
+                                      console.log('Create form year input changed:', value);
+                                      // Allow empty string or valid numbers
+                                      if (value === '') {
+                                        field.onChange(undefined);
+                                      } else {
+                                        const numValue = parseInt(value);
+                                        if (!isNaN(numValue)) {
+                                          field.onChange(numValue);
+                                        }
+                                      }
                                     }} 
                                   />
                                 </FormControl>
@@ -902,7 +911,16 @@ export default function Courses() {
                               value={field.value || ''} 
                               onChange={(e) => {
                                 const value = e.target.value;
-                                field.onChange(value === '' ? undefined : parseInt(value));
+                                console.log('Edit form year input changed:', value);
+                                // Allow empty string or valid numbers
+                                if (value === '') {
+                                  field.onChange(undefined);
+                                } else {
+                                  const numValue = parseInt(value);
+                                  if (!isNaN(numValue)) {
+                                    field.onChange(numValue);
+                                  }
+                                }
                               }} 
                             />
                           </FormControl>
