@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { safeFormat, safeFormatDistanceToNow } from "@/lib/dateUtils";
+import { useLocation } from "wouter";
 
 interface Student {
   id: string;
@@ -36,17 +37,34 @@ interface StudentStats {
 
 export default function Students() {
   const { user } = useAuth();
+  const [location] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("name");
 
+  // Extract courseId from URL parameters
+  const urlParams = new URLSearchParams(location.split('?')[1] || '');
+  const courseId = urlParams.get('courseId');
+
   const { data: students, isLoading: studentsLoading, error: studentsError } = useQuery<Student[]>({
-    queryKey: ['/api/students'],
+    queryKey: courseId ? ['/api/students', courseId] : ['/api/students'],
+    queryFn: async () => {
+      const url = courseId ? `/api/students?courseId=${courseId}` : '/api/students';
+      const response = await fetch(url, { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch students');
+      return response.json();
+    },
     enabled: !!user && (user.role === 'teacher' || user.role === 'admin'),
   });
 
   const { data: stats, isLoading: statsLoading } = useQuery<StudentStats>({
-    queryKey: ['/api/students/stats'],
+    queryKey: courseId ? ['/api/students/stats', courseId] : ['/api/students/stats'],
+    queryFn: async () => {
+      const url = courseId ? `/api/students/stats?courseId=${courseId}` : '/api/students/stats';
+      const response = await fetch(url, { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch stats');
+      return response.json();
+    },
     enabled: !!user && (user.role === 'teacher' || user.role === 'admin'),
   });
 
@@ -100,11 +118,15 @@ export default function Students() {
     <ProtectedRoute route="/students">
       <div className="container mx-auto p-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Student Management</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            {courseId ? "Course Students" : "Student Management"}
+          </h1>
           <p className="text-gray-600">
-            {user?.role === 'admin' 
-              ? "Manage all students in the system" 
-              : "Manage students enrolled in your courses"}
+            {courseId 
+              ? "Manage students enrolled in this course"
+              : user?.role === 'admin' 
+                ? "Manage all students in the system" 
+                : "Manage students enrolled in your courses"}
           </p>
         </div>
 

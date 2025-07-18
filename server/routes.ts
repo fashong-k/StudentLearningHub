@@ -1083,6 +1083,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.id; // Use local auth user structure
       const user = await storage.getUser(userId);
+      const courseId = req.query.courseId;
       
       if (!user || (user.role !== "teacher" && user.role !== "admin")) {
         return res.status(403).json({ message: "Only teachers and admins can view student management" });
@@ -1090,12 +1091,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       let students = [];
       
-      if (user.role === "admin") {
-        // Admins can see all students
-        students = await storage.getAllStudents();
-      } else if (user.role === "teacher") {
-        // Teachers can see students from their courses
-        students = await storage.getStudentsFromTeacherCourses(userId);
+      if (courseId) {
+        // Course-specific students
+        if (user.role === "admin") {
+          students = await storage.getCourseStudents(parseInt(courseId));
+        } else if (user.role === "teacher") {
+          // Check if teacher owns the course
+          const course = await storage.getCourseById(parseInt(courseId));
+          if (course && course.teacherId === userId) {
+            students = await storage.getCourseStudents(parseInt(courseId));
+          } else {
+            return res.status(403).json({ message: "You can only view students from your own courses" });
+          }
+        }
+      } else {
+        // All students based on role
+        if (user.role === "admin") {
+          students = await storage.getAllStudents();
+        } else if (user.role === "teacher") {
+          students = await storage.getStudentsFromTeacherCourses(userId);
+        }
       }
 
       res.json(students);
@@ -1109,6 +1124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.id; // Use local auth user structure
       const user = await storage.getUser(userId);
+      const courseId = req.query.courseId;
       
       if (!user || (user.role !== "teacher" && user.role !== "admin")) {
         return res.status(403).json({ message: "Only teachers and admins can view student statistics" });
@@ -1116,12 +1132,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       let stats = {};
       
-      if (user.role === "admin") {
-        // Admins can see all student statistics
-        stats = await storage.getAllStudentStats();
-      } else if (user.role === "teacher") {
-        // Teachers can see statistics for students in their courses
-        stats = await storage.getTeacherStudentStats(userId);
+      if (courseId) {
+        // Course-specific statistics
+        if (user.role === "admin") {
+          stats = await storage.getCourseStudentStats(parseInt(courseId));
+        } else if (user.role === "teacher") {
+          // Check if teacher owns the course
+          const course = await storage.getCourseById(parseInt(courseId));
+          if (course && course.teacherId === userId) {
+            stats = await storage.getCourseStudentStats(parseInt(courseId));
+          } else {
+            return res.status(403).json({ message: "You can only view statistics for your own courses" });
+          }
+        }
+      } else {
+        // General statistics based on role
+        if (user.role === "admin") {
+          stats = await storage.getAllStudentStats();
+        } else if (user.role === "teacher") {
+          stats = await storage.getTeacherStudentStats(userId);
+        }
       }
 
       res.json(stats);

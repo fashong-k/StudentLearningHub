@@ -1186,7 +1186,7 @@ export default function Courses() {
                           <SimpleDropdownSeparator />
                           
                           {/* User Management */}
-                          <SimpleDropdownItem onClick={() => toast({ title: "Feature Coming Soon", description: "Student management will be available soon" })}>
+                          <SimpleDropdownItem onClick={() => setLocation(`/students?courseId=${course.id}`)}>
                             <Users className="w-4 h-4 mr-2" />
                             Manage Students
                           </SimpleDropdownItem>

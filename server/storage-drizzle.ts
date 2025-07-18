@@ -796,6 +796,57 @@ export class DrizzleStorage implements IStorage {
     })) as UserAttributes[];
   }
 
+  async getCourseStudents(courseId: number): Promise<UserAttributes[]> {
+    const result = await db.execute(sql`
+      SELECT 
+        u.id, u.email, u.first_name, u.last_name, u.role, u.profile_image_url, u.created_at,
+        COALESCE(course_counts.enrolled_courses, 0) as enrolled_courses,
+        COALESCE(assignment_counts.completed_assignments, 0) as completed_assignments,
+        COALESCE(grade_averages.average_grade, 0) as average_grade,
+        COALESCE(activity.last_activity, NULL) as last_activity
+      FROM ${sql.identifier(dbSchema)}.users u
+      INNER JOIN ${sql.identifier(dbSchema)}.enrollments e ON u.id = e.student_id
+      LEFT JOIN (
+        SELECT student_id, COUNT(*) as enrolled_courses
+        FROM ${sql.identifier(dbSchema)}.enrollments
+        WHERE is_active = true
+        GROUP BY student_id
+      ) course_counts ON u.id = course_counts.student_id
+      LEFT JOIN (
+        SELECT student_id, COUNT(*) as completed_assignments
+        FROM ${sql.identifier(dbSchema)}.submissions s
+        INNER JOIN ${sql.identifier(dbSchema)}.assignments a ON s.assignment_id = a.id
+        WHERE s.grade IS NOT NULL AND a.course_id = ${courseId}
+        GROUP BY student_id
+      ) assignment_counts ON u.id = assignment_counts.student_id
+      LEFT JOIN (
+        SELECT student_id, AVG(grade) as average_grade
+        FROM ${sql.identifier(dbSchema)}.submissions s
+        INNER JOIN ${sql.identifier(dbSchema)}.assignments a ON s.assignment_id = a.id
+        WHERE s.grade IS NOT NULL AND a.course_id = ${courseId}
+        GROUP BY student_id
+      ) grade_averages ON u.id = grade_averages.student_id
+      LEFT JOIN (
+        SELECT student_id, MAX(submitted_at) as last_activity
+        FROM ${sql.identifier(dbSchema)}.submissions s
+        INNER JOIN ${sql.identifier(dbSchema)}.assignments a ON s.assignment_id = a.id
+        WHERE a.course_id = ${courseId}
+        GROUP BY student_id
+      ) activity ON u.id = activity.student_id
+      WHERE u.role = 'student' AND e.course_id = ${courseId} AND e.is_active = true
+      ORDER BY u.last_name ASC, u.first_name ASC
+    `);
+    
+    return result.rows.map(row => ({
+      ...this.mapUserFromDb(row),
+      enrolledCourses: parseInt(row.enrolled_courses) || 0,
+      completedAssignments: parseInt(row.completed_assignments) || 0,
+      averageGrade: parseFloat(row.average_grade) || 0,
+      lastActivity: row.last_activity,
+      status: 'active' // Default status
+    })) as UserAttributes[];
+  }
+
   async getStudentDetails(studentId: string): Promise<UserAttributes | undefined> {
     const result = await db.execute(sql`
       SELECT 
@@ -890,6 +941,34 @@ export class DrizzleStorage implements IStorage {
         GROUP BY student_id
       ) grade_averages ON u.id = grade_averages.student_id
       WHERE u.role = 'student' AND c.teacher_id = ${teacherId}
+    `);
+    
+    const row = result.rows[0];
+    return {
+      totalStudents: parseInt(row.total_students) || 0,
+      activeStudents: parseInt(row.active_students) || 0,
+      averageGPA: parseFloat(row.average_gpa) || 0,
+      totalEnrollments: parseInt(row.total_enrollments) || 0
+    };
+  }
+
+  async getCourseStudentStats(courseId: number): Promise<any> {
+    const result = await db.execute(sql`
+      SELECT 
+        COUNT(DISTINCT u.id) as total_students,
+        COUNT(DISTINCT CASE WHEN e.is_active = true THEN u.id END) as active_students,
+        COALESCE(AVG(grade_averages.average_grade), 0) as average_gpa,
+        COUNT(DISTINCT e.id) as total_enrollments
+      FROM ${sql.identifier(dbSchema)}.users u
+      INNER JOIN ${sql.identifier(dbSchema)}.enrollments e ON u.id = e.student_id
+      LEFT JOIN (
+        SELECT student_id, AVG(grade) as average_grade
+        FROM ${sql.identifier(dbSchema)}.submissions s
+        INNER JOIN ${sql.identifier(dbSchema)}.assignments a ON s.assignment_id = a.id
+        WHERE s.grade IS NOT NULL AND a.course_id = ${courseId}
+        GROUP BY student_id
+      ) grade_averages ON u.id = grade_averages.student_id
+      WHERE u.role = 'student' AND e.course_id = ${courseId} AND e.is_active = true
     `);
     
     const row = result.rows[0];
