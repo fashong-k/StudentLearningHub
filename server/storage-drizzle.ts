@@ -988,8 +988,8 @@ export class DrizzleStorage implements IStorage {
   async teacherHasStudentAccess(teacherId: string, studentId: string): Promise<boolean> {
     const result = await db.execute(sql`
       SELECT COUNT(*) as count
-      FROM public.enrollments e
-      INNER JOIN public.courses c ON e.course_id = c.id
+      FROM ${sql.identifier(dbSchema)}.enrollments e
+      INNER JOIN ${sql.identifier(dbSchema)}.courses c ON e.course_id = c.id
       WHERE e.student_id = ${studentId} 
         AND c.teacher_id = ${teacherId}
         AND e.is_active = true
@@ -1016,11 +1016,11 @@ export class DrizzleStorage implements IStorage {
         COUNT(DISTINCT CASE WHEN s.grade < 60 THEN s.id END) as f_grades,
         COUNT(DISTINCT CASE WHEN s.submitted_at > a.due_date THEN s.id END) as late_submissions,
         COUNT(DISTINCT CASE WHEN s.submitted_at IS NULL AND a.due_date < NOW() THEN a.id END) as missing_assignments
-      FROM public.users u
-      LEFT JOIN public.enrollments e ON u.id = e.student_id
-      LEFT JOIN public.courses c ON e.course_id = c.id
-      LEFT JOIN public.assignments a ON c.id = a.course_id
-      LEFT JOIN public.submissions s ON a.id = s.assignment_id AND u.id = s.student_id
+      FROM ${sql.identifier(dbSchema)}.users u
+      LEFT JOIN ${sql.identifier(dbSchema)}.enrollments e ON u.id = e.student_id
+      LEFT JOIN ${sql.identifier(dbSchema)}.courses c ON e.course_id = c.id
+      LEFT JOIN ${sql.identifier(dbSchema)}.assignments a ON c.id = a.course_id
+      LEFT JOIN ${sql.identifier(dbSchema)}.submissions s ON a.id = s.assignment_id AND u.id = s.student_id
       WHERE u.role = 'student' ${sql.raw(courseFilter)}
     `);
     
@@ -1058,10 +1058,10 @@ export class DrizzleStorage implements IStorage {
         c.title as course_title,
         CASE WHEN s.submitted_at > a.due_date THEN true ELSE false END as is_late,
         ROW_NUMBER() OVER (PARTITION BY s.student_id ORDER BY s.submitted_at) as submission_order
-      FROM public.submissions s
-      INNER JOIN public.assignments a ON s.assignment_id = a.id
-      INNER JOIN public.courses c ON a.course_id = c.id
-      INNER JOIN public.users u ON s.student_id = u.id
+      FROM ${sql.identifier(dbSchema)}.submissions s
+      INNER JOIN ${sql.identifier(dbSchema)}.assignments a ON s.assignment_id = a.id
+      INNER JOIN ${sql.identifier(dbSchema)}.courses c ON a.course_id = c.id
+      INNER JOIN ${sql.identifier(dbSchema)}.users u ON s.student_id = u.id
       WHERE s.grade IS NOT NULL ${sql.raw(studentFilter)} ${sql.raw(courseFilter)}
       ORDER BY s.submitted_at ASC
     `);
@@ -1093,11 +1093,11 @@ export class DrizzleStorage implements IStorage {
         COUNT(DISTINCT CASE WHEN s.submitted_at IS NULL AND a.due_date < NOW() THEN a.id END) as missing_assignments,
         MAX(s.submitted_at) as last_submission_date,
         COUNT(DISTINCT c.id) as enrolled_courses
-      FROM public.users u
-      INNER JOIN public.enrollments e ON u.id = e.student_id
-      INNER JOIN public.courses c ON e.course_id = c.id
-      LEFT JOIN public.assignments a ON c.id = a.course_id
-      LEFT JOIN public.submissions s ON a.id = s.assignment_id AND u.id = s.student_id
+      FROM ${sql.identifier(dbSchema)}.users u
+      INNER JOIN ${sql.identifier(dbSchema)}.enrollments e ON u.id = e.student_id
+      INNER JOIN ${sql.identifier(dbSchema)}.courses c ON e.course_id = c.id
+      LEFT JOIN ${sql.identifier(dbSchema)}.assignments a ON c.id = a.course_id
+      LEFT JOIN ${sql.identifier(dbSchema)}.submissions s ON a.id = s.assignment_id AND u.id = s.student_id
       WHERE u.role = 'student' AND e.is_active = true ${sql.raw(courseFilter)}
       GROUP BY u.id, u.first_name, u.last_name, u.email
       HAVING 
@@ -1148,12 +1148,12 @@ export class DrizzleStorage implements IStorage {
               (COUNT(DISTINCT s.id)::float / (COUNT(DISTINCT a.id) * COUNT(DISTINCT e.student_id))) * 100
             ELSE 0 
           END as engagement_rate
-        FROM public.courses c
-        LEFT JOIN public.enrollments e ON c.id = e.course_id AND e.is_active = true
-        LEFT JOIN public.assignments a ON c.id = a.course_id
-        LEFT JOIN public.submissions s ON a.id = s.assignment_id
-        LEFT JOIN public.announcements ann ON c.id = ann.course_id
-        LEFT JOIN public.messages msg ON c.id = msg.course_id
+        FROM ${sql.identifier(dbSchema)}.courses c
+        LEFT JOIN ${sql.identifier(dbSchema)}.enrollments e ON c.id = e.course_id AND e.is_active = true
+        LEFT JOIN ${sql.identifier(dbSchema)}.assignments a ON c.id = a.course_id
+        LEFT JOIN ${sql.identifier(dbSchema)}.submissions s ON a.id = s.assignment_id
+        LEFT JOIN ${sql.identifier(dbSchema)}.announcements ann ON c.id = ann.course_id
+        LEFT JOIN ${sql.identifier(dbSchema)}.messages msg ON c.id = msg.course_id
         WHERE 1=1 ${sql.raw(courseFilter)}
         GROUP BY c.id, c.title, c.course_code
         ORDER BY c.id
@@ -1202,10 +1202,10 @@ export class DrizzleStorage implements IStorage {
             (COUNT(DISTINCT s.id)::float / COUNT(DISTINCT e.student_id)) * 100
           ELSE 0 
         END as completion_rate
-      FROM public.assignments a
-      INNER JOIN public.courses c ON a.course_id = c.id
-      LEFT JOIN public.enrollments e ON c.id = e.course_id AND e.is_active = true
-      LEFT JOIN public.submissions s ON a.id = s.assignment_id
+      FROM ${sql.identifier(dbSchema)}.assignments a
+      INNER JOIN ${sql.identifier(dbSchema)}.courses c ON a.course_id = c.id
+      LEFT JOIN ${sql.identifier(dbSchema)}.enrollments e ON c.id = e.course_id AND e.is_active = true
+      LEFT JOIN ${sql.identifier(dbSchema)}.submissions s ON a.id = s.assignment_id
       WHERE 1=1 ${sql.raw(courseFilter)}
       GROUP BY a.id, a.title, a.due_date, a.max_points, c.title, c.course_code
       ORDER BY a.due_date DESC
