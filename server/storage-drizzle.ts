@@ -1000,10 +1000,7 @@ export class DrizzleStorage implements IStorage {
 
   // Advanced Analytics Methods
   async getAdvancedAnalytics(courseId?: number, teacherId?: string): Promise<any> {
-    const courseFilter = courseId ? `AND c.id = ${courseId}` : '';
-    const teacherFilter = teacherId ? `AND c.teacher_id = '${teacherId}'` : '';
-    
-    const result = await db.execute(sql`
+    let baseQuery = `
       SELECT 
         COUNT(DISTINCT u.id) as total_students,
         COUNT(DISTINCT c.id) as total_courses,
@@ -1017,13 +1014,24 @@ export class DrizzleStorage implements IStorage {
         COUNT(DISTINCT CASE WHEN s.grade < 60 THEN s.id END) as f_grades,
         COUNT(DISTINCT CASE WHEN s.submitted_at > a.due_date THEN s.id END) as late_submissions,
         COUNT(DISTINCT CASE WHEN s.submitted_at IS NULL AND a.due_date < NOW() THEN a.id END) as missing_assignments
-      FROM ${sql.identifier(dbSchema)}.users u
-      LEFT JOIN ${sql.identifier(dbSchema)}.enrollments e ON u.id = e.student_id
-      LEFT JOIN ${sql.identifier(dbSchema)}.courses c ON e.course_id = c.id
-      LEFT JOIN ${sql.identifier(dbSchema)}.assignments a ON c.id = a.course_id
-      LEFT JOIN ${sql.identifier(dbSchema)}.submissions s ON a.id = s.assignment_id AND u.id = s.student_id
-      WHERE u.role = 'student' ${sql.raw(courseFilter)} ${sql.raw(teacherFilter)}
-    `);
+      FROM ${dbSchema}.users u
+      LEFT JOIN ${dbSchema}.enrollments e ON u.id = e.student_id
+      LEFT JOIN ${dbSchema}.courses c ON e.course_id = c.id
+      LEFT JOIN ${dbSchema}.assignments a ON c.id = a.course_id
+      LEFT JOIN ${dbSchema}.submissions s ON a.id = s.assignment_id AND u.id = s.student_id
+      WHERE u.role = 'student'
+    `;
+    
+    // Add filters conditionally
+    if (courseId) {
+      baseQuery += ` AND c.id = ${courseId}`;
+    }
+    
+    if (teacherId) {
+      baseQuery += ` AND c.teacher_id = '${teacherId}'`;
+    }
+    
+    const result = await db.execute(sql.raw(baseQuery));
     
     const row = result.rows[0];
     return {
