@@ -612,8 +612,8 @@ export default function Courses() {
                                   field.onChange(value);
                                   // Clear date fields when switching to semester mode
                                   if (value === "semester") {
-                                    form.setValue("startDate", undefined);
-                                    form.setValue("endDate", undefined);
+                                    form.setValue("startDate", "");
+                                    form.setValue("endDate", "");
                                     // Set default semester to Spring if none selected
                                     if (!form.getValues("semester")) {
                                       form.setValue("semester", "Spring");
@@ -846,8 +846,8 @@ export default function Courses() {
                             field.onChange(value);
                             // Clear date fields when switching to semester mode
                             if (value === "semester") {
-                              editForm.setValue("startDate", undefined);
-                              editForm.setValue("endDate", undefined);
+                              editForm.setValue("startDate", "");
+                              editForm.setValue("endDate", "");
                               // Set default semester to Spring if none selected
                               if (!editForm.getValues("semester")) {
                                 editForm.setValue("semester", "Spring");

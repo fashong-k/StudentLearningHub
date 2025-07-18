@@ -404,6 +404,14 @@ Preferred communication style: Simple, everyday language.
   - Complete date handling pipeline: CustomDatePicker → string dates → server conversion → Date objects → database storage
   - User confirmed: "Dates are handled correctly now" - full date management system working perfectly
 
+- July 17, 2025: Fixed Edit Course form term type switching and year field issues
+  - Fixed year field input handling with proper value conversion and validation
+  - Added automatic semester default selection ("Spring") when switching from "term" to "semester" 
+  - Enhanced year field with placeholder, min/max validation, and proper empty value handling
+  - Applied consistent fixes to both Create and Edit Course forms
+  - Resolved TypeScript errors by using empty strings instead of undefined for date field clearing
+  - Improved form state management for seamless term type switching functionality
+
 - July 17, 2025: Successfully implemented comprehensive analytics data seeding system
   - Enhanced database with 5 realistic courses (CS 101, MATH 201, PSYC 101, CS 201, STAT 301)
   - Created 13 varied assignments with realistic due dates and different assignment types
