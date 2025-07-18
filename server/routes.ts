@@ -436,7 +436,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const success = await storage.unenrollStudent(userId, courseId);
       if (success) {
-        res.json({ message: "Successfully unenrolled from course" });
+        res.json({ 
+          message: "Successfully unenrolled from course",
+          note: "Your academic records (grades, submissions, attendance) have been preserved for institutional records"
+        });
       } else {
         res.status(404).json({ message: "Enrollment not found" });
       }

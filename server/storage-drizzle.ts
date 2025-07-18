@@ -379,8 +379,10 @@ export class DrizzleStorage implements IStorage {
   }
 
   async unenrollStudent(studentId: string, courseId: number): Promise<boolean> {
+    // Use soft delete to preserve academic records
     const result = await db
-      .delete(enrollments)
+      .update(enrollments)
+      .set({ isActive: false })
       .where(and(eq(enrollments.studentId, studentId), eq(enrollments.courseId, courseId)));
     return result.rowCount > 0;
   }
