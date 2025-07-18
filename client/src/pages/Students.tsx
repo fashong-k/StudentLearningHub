@@ -12,6 +12,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { safeFormat, safeFormatDistanceToNow } from "@/lib/dateUtils";
 import { useLocation } from "wouter";
+import Navigation from "@/components/Navigation";
 
 interface Student {
   id: string;
@@ -116,7 +117,10 @@ export default function Students() {
 
   return (
     <ProtectedRoute route="/students">
-      <div className="container mx-auto p-6">
+      <div className="flex h-screen overflow-hidden lms-background">
+        <Navigation />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             {courseId ? "Course Students" : "Student Management"}
@@ -320,6 +324,8 @@ export default function Students() {
             Showing {sortedStudents.length} of {students?.length || 0} students
           </div>
         )}
+          </div>
+        </div>
       </div>
     </ProtectedRoute>
   );
