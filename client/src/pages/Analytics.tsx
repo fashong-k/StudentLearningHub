@@ -209,7 +209,7 @@ export default function Analytics() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Courses</SelectItem>
-                    {coursesData?.map((course: any) => (
+                    {Array.isArray(coursesData) && coursesData.map((course: any) => (
                       <SelectItem key={course.id} value={course.id.toString()}>
                         {course.courseCode} - {course.title}
                       </SelectItem>
