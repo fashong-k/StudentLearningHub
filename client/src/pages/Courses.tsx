@@ -662,20 +662,20 @@ export default function Courses() {
                                 <FormControl>
                                   <Input 
                                     type="number" 
-                                    placeholder="2024"
+                                    placeholder="2025"
                                     min="2020"
                                     max="2030"
                                     value={field.value || ''} 
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       console.log('Create form year input changed:', value);
-                                      // Always update the field value immediately for responsive typing
+                                      // Allow typing intermediate values and update field immediately
                                       if (value === '') {
                                         field.onChange(undefined);
                                       } else {
                                         const numValue = parseInt(value);
-                                        // Only update if it's a valid number
-                                        if (!isNaN(numValue) && numValue > 0) {
+                                        // Allow all valid numbers during typing
+                                        if (!isNaN(numValue)) {
                                           field.onChange(numValue);
                                         }
                                       }
@@ -906,23 +906,16 @@ export default function Courses() {
                           <FormControl>
                             <Input 
                               type="number" 
-                              placeholder="2024"
+                              placeholder="2025"
                               min="2020"
                               max="2030"
+                              {...field}
                               value={field.value || ''} 
                               onChange={(e) => {
                                 const value = e.target.value;
                                 console.log('Edit form year input changed:', value);
-                                // Always update the field value immediately for responsive typing
-                                if (value === '') {
-                                  field.onChange(undefined);
-                                } else {
-                                  const numValue = parseInt(value);
-                                  // Only update if it's a valid number
-                                  if (!isNaN(numValue) && numValue > 0) {
-                                    field.onChange(numValue);
-                                  }
-                                }
+                                // Direct field update without restrictions
+                                field.onChange(value === '' ? undefined : parseInt(value) || value);
                               }} 
                             />
                           </FormControl>
