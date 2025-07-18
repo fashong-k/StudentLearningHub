@@ -429,7 +429,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/courses/:id/enroll", authMiddleware, async (req: any, res) => {
     try {
       const courseId = parseInt(req.params.id);
-      const userId = req.user.claims.sub;
+      const userId = req.user.id; // Use local auth user structure
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== "student") {
@@ -455,7 +455,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/courses/:id/enroll", authMiddleware, async (req: any, res) => {
     try {
       const courseId = parseInt(req.params.id);
-      const userId = req.user.claims.sub;
+      const userId = req.user.id; // Use local auth user structure
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== "student") {
@@ -470,27 +470,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/courses/:id/enroll", authMiddleware, async (req: any, res) => {
-    try {
-      const courseId = parseInt(req.params.id);
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      if (!user || user.role !== "student") {
-        return res.status(403).json({ message: "Only students can unenroll from courses" });
-      }
 
-      const unenrolled = await storage.unenrollStudent(userId, courseId);
-      if (unenrolled) {
-        res.json({ message: "Successfully unenrolled from course" });
-      } else {
-        res.status(404).json({ message: "Enrollment not found" });
-      }
-    } catch (error) {
-      console.error("Error unenrolling student:", error);
-      res.status(500).json({ message: "Failed to unenroll student" });
-    }
-  });
 
   // Assignment routes
   app.get("/api/assignments", authMiddleware, async (req: any, res) => {

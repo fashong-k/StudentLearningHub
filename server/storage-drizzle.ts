@@ -419,11 +419,52 @@ export class DrizzleStorage implements IStorage {
 
   // Enrollment operations
   async enrollStudent(studentId: string, courseId: number): Promise<EnrollmentAttributes> {
-    const [enrollment] = await db
-      .insert(enrollments)
-      .values({ studentId, courseId })
-      .returning();
-    return enrollment;
+    try {
+      // Check if student is already enrolled (active or inactive)
+      const existingEnrollment = await db
+        .select()
+        .from(enrollments)
+        .where(and(eq(enrollments.studentId, studentId), eq(enrollments.courseId, courseId)))
+        .limit(1);
+      
+      if (existingEnrollment.length > 0) {
+        // If inactive enrollment exists, reactivate it
+        if (!existingEnrollment[0].isActive) {
+          const [reactivatedEnrollment] = await db
+            .update(enrollments)
+            .set({ isActive: true, enrolledAt: new Date() })
+            .where(and(eq(enrollments.studentId, studentId), eq(enrollments.courseId, courseId)))
+            .returning();
+          return reactivatedEnrollment;
+        }
+        // If already active, return existing enrollment
+        return existingEnrollment[0];
+      }
+      
+      // Create new enrollment
+      const [enrollment] = await db
+        .insert(enrollments)
+        .values({ 
+          studentId, 
+          courseId,
+          enrolledAt: new Date(),
+          isActive: true 
+        })
+        .returning();
+      return enrollment;
+    } catch (error) {
+      // Handle unique constraint violation (duplicate enrollment)
+      if (error.code === '23505') {
+        // Fetch the existing enrollment and return it
+        const [existingEnrollment] = await db
+          .select()
+          .from(enrollments)
+          .where(and(eq(enrollments.studentId, studentId), eq(enrollments.courseId, courseId)))
+          .limit(1);
+        return existingEnrollment;
+      }
+      throw error;
+    }
   }
 
   async unenrollStudent(studentId: string, courseId: number): Promise<boolean> {
