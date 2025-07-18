@@ -904,19 +904,19 @@ export default function Courses() {
                         <FormItem>
                           <FormLabel>Year</FormLabel>
                           <FormControl>
-                            <Input 
+                            <input
                               type="number" 
                               placeholder="2025"
                               min="2020"
                               max="2030"
-                              {...field}
                               value={field.value || ''} 
                               onChange={(e) => {
                                 const value = e.target.value;
-                                console.log('Edit form year input changed:', value);
-                                // Direct field update without restrictions
-                                field.onChange(value === '' ? undefined : parseInt(value) || value);
-                              }} 
+                                console.log('Edit form year input changed:', value, 'field.value before:', field.value);
+                                field.onChange(value === '' ? undefined : parseInt(value));
+                                console.log('Edit form year field updated to:', value === '' ? undefined : parseInt(value));
+                              }}
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             />
                           </FormControl>
                         </FormItem>
