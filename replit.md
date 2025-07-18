@@ -116,6 +116,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- July 18, 2025: Fixed teacher-specific analytics filtering to show only courses assigned to each teacher
+  - Updated all analytics methods (getAdvancedAnalytics, getCourseEngagementMetrics, getAtRiskStudents, getAssignmentAnalytics) to include teacher filtering
+  - Modified analytics API endpoints to pass teacher ID when user role is teacher
+  - Course Engagement Overview now shows different data for different teachers based on their assigned courses
+  - Teachers now only see analytics for courses they teach, providing proper data isolation
+  - Fixed Grade Distribution pie chart to filter out zero-value grades and added enhanced highlighting
+  - System now properly differentiates between teacher access (own courses) and admin access (all courses)
+
 - July 18, 2025: Successfully implemented comprehensive Student Management system with complete navigation integration
   - Added complete Student Management API endpoints with role-based access control
   - Created comprehensive database queries for student data with performance metrics  

@@ -999,8 +999,9 @@ export class DrizzleStorage implements IStorage {
   }
 
   // Advanced Analytics Methods
-  async getAdvancedAnalytics(courseId?: number): Promise<any> {
+  async getAdvancedAnalytics(courseId?: number, teacherId?: string): Promise<any> {
     const courseFilter = courseId ? `AND c.id = ${courseId}` : '';
+    const teacherFilter = teacherId ? `AND c.teacher_id = '${teacherId}'` : '';
     
     const result = await db.execute(sql`
       SELECT 
@@ -1021,7 +1022,7 @@ export class DrizzleStorage implements IStorage {
       LEFT JOIN ${sql.identifier(dbSchema)}.courses c ON e.course_id = c.id
       LEFT JOIN ${sql.identifier(dbSchema)}.assignments a ON c.id = a.course_id
       LEFT JOIN ${sql.identifier(dbSchema)}.submissions s ON a.id = s.assignment_id AND u.id = s.student_id
-      WHERE u.role = 'student' ${sql.raw(courseFilter)}
+      WHERE u.role = 'student' ${sql.raw(courseFilter)} ${sql.raw(teacherFilter)}
     `);
     
     const row = result.rows[0];
@@ -1079,8 +1080,9 @@ export class DrizzleStorage implements IStorage {
     }));
   }
 
-  async getAtRiskStudents(courseId?: number): Promise<any> {
+  async getAtRiskStudents(courseId?: number, teacherId?: string): Promise<any> {
     const courseFilter = courseId ? `AND c.id = ${courseId}` : '';
+    const teacherFilter = teacherId ? `AND c.teacher_id = '${teacherId}'` : '';
     
     const result = await db.execute(sql`
       SELECT 
@@ -1098,7 +1100,7 @@ export class DrizzleStorage implements IStorage {
       INNER JOIN ${sql.identifier(dbSchema)}.courses c ON e.course_id = c.id
       LEFT JOIN ${sql.identifier(dbSchema)}.assignments a ON c.id = a.course_id
       LEFT JOIN ${sql.identifier(dbSchema)}.submissions s ON a.id = s.assignment_id AND u.id = s.student_id
-      WHERE u.role = 'student' AND e.is_active = true ${sql.raw(courseFilter)}
+      WHERE u.role = 'student' AND e.is_active = true ${sql.raw(courseFilter)} ${sql.raw(teacherFilter)}
       GROUP BY u.id, u.first_name, u.last_name, u.email
       HAVING 
         COALESCE(AVG(s.grade), 0) < 70 OR 
@@ -1126,9 +1128,10 @@ export class DrizzleStorage implements IStorage {
     }));
   }
 
-  async getCourseEngagementMetrics(courseId?: number): Promise<any> {
+  async getCourseEngagementMetrics(courseId?: number, teacherId?: string): Promise<any> {
     try {
       const courseFilter = courseId ? `AND c.id = ${courseId}` : '';
+      const teacherFilter = teacherId ? `AND c.teacher_id = '${teacherId}'` : '';
       
       const result = await db.execute(sql`
         SELECT 
@@ -1154,7 +1157,7 @@ export class DrizzleStorage implements IStorage {
         LEFT JOIN ${sql.identifier(dbSchema)}.submissions s ON a.id = s.assignment_id
         LEFT JOIN ${sql.identifier(dbSchema)}.announcements ann ON c.id = ann.course_id
         LEFT JOIN ${sql.identifier(dbSchema)}.messages msg ON c.id = msg.course_id
-        WHERE 1=1 ${sql.raw(courseFilter)}
+        WHERE 1=1 ${sql.raw(courseFilter)} ${sql.raw(teacherFilter)}
         GROUP BY c.id, c.title, c.course_code
         ORDER BY c.id
       `);
@@ -1179,8 +1182,9 @@ export class DrizzleStorage implements IStorage {
     }
   }
 
-  async getAssignmentAnalytics(courseId?: number): Promise<any> {
+  async getAssignmentAnalytics(courseId?: number, teacherId?: string): Promise<any> {
     const courseFilter = courseId ? `AND c.id = ${courseId}` : '';
+    const teacherFilter = teacherId ? `AND c.teacher_id = '${teacherId}'` : '';
     
     const result = await db.execute(sql`
       SELECT 
@@ -1206,7 +1210,7 @@ export class DrizzleStorage implements IStorage {
       INNER JOIN ${sql.identifier(dbSchema)}.courses c ON a.course_id = c.id
       LEFT JOIN ${sql.identifier(dbSchema)}.enrollments e ON c.id = e.course_id AND e.is_active = true
       LEFT JOIN ${sql.identifier(dbSchema)}.submissions s ON a.id = s.assignment_id
-      WHERE 1=1 ${sql.raw(courseFilter)}
+      WHERE 1=1 ${sql.raw(courseFilter)} ${sql.raw(teacherFilter)}
       GROUP BY a.id, a.title, a.due_date, a.max_points, c.title, c.course_code
       ORDER BY a.due_date DESC
     `);

@@ -983,7 +983,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      const analytics = await storage.getAdvancedAnalytics(courseId);
+      const teacherId = user.role === "teacher" ? userId : undefined;
+      const analytics = await storage.getAdvancedAnalytics(courseId, teacherId);
       res.json(analytics);
     } catch (error) {
       console.error("Error fetching advanced analytics:", error);
@@ -1054,7 +1055,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      const atRiskStudents = await storage.getAtRiskStudents(courseId);
+      const teacherId = user.role === "teacher" ? userId : undefined;
+      const atRiskStudents = await storage.getAtRiskStudents(courseId, teacherId);
       res.json(atRiskStudents);
     } catch (error) {
       console.error("Error fetching at-risk students:", error);
@@ -1084,7 +1086,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      const engagementMetrics = await storage.getCourseEngagementMetrics(courseId);
+      const teacherId = user.role === "teacher" ? userId : undefined;
+      const engagementMetrics = await storage.getCourseEngagementMetrics(courseId, teacherId);
       res.json(engagementMetrics);
     } catch (error) {
       console.error("Error fetching engagement metrics:", error);
@@ -1114,7 +1117,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      const assignmentAnalytics = await storage.getAssignmentAnalytics(courseId);
+      const teacherId = user.role === "teacher" ? userId : undefined;
+      const assignmentAnalytics = await storage.getAssignmentAnalytics(courseId, teacherId);
       res.json(assignmentAnalytics);
     } catch (error) {
       console.error("Error fetching assignment analytics:", error);
