@@ -37,6 +37,7 @@ import {
   Edit,
   Trash2,
   UserPlus,
+  UserMinus,
   AlertCircle,
   CheckCircle,
   Copy,
@@ -312,6 +313,37 @@ export default function Courses() {
     },
   });
 
+  const unenrollCourseMutation = useMutation({
+    mutationFn: async (courseId: number) => {
+      return await apiRequest("DELETE", `/api/courses/${courseId}/enroll`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Successfully unenrolled from course",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/courses"] });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to unenroll from course",
+        variant: "destructive",
+      });
+    },
+  });
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       toast({
@@ -484,6 +516,10 @@ export default function Courses() {
 
   const handleEnrollCourse = (courseId: number) => {
     enrollCourseMutation.mutate(courseId);
+  };
+
+  const handleUnenrollCourse = (courseId: number) => {
+    unenrollCourseMutation.mutate(courseId);
   };
 
   const handleViewCourse = (courseId: number) => {
@@ -1246,10 +1282,12 @@ export default function Courses() {
                         <Button 
                           size="sm" 
                           variant="outline" 
-                          onClick={() => handleEnrollCourse(course.id)}
-                          disabled={enrollCourseMutation.isPending}
+                          onClick={() => handleUnenrollCourse(course.id)}
+                          disabled={unenrollCourseMutation.isPending}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
                         >
-                          <UserPlus className="w-4 h-4" />
+                          <UserMinus className="w-4 h-4" />
+                          {unenrollCourseMutation.isPending ? "Unenrolling..." : "Unenroll"}
                         </Button>
                       )}
                     </div>
