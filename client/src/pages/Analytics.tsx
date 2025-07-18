@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   BarChart, 
   Bar, 
@@ -24,7 +26,9 @@ import {
   Pie,
   Cell,
   AreaChart,
-  Area
+  Area,
+  ScatterChart,
+  Scatter
 } from "recharts";
 import { 
   TrendingUp, 
@@ -41,7 +45,13 @@ import {
   BarChart3,
   PieChart as PieChartIcon,
   LineChart as LineChartIcon,
-  AreaChart as AreaChartIcon
+  AreaChart as AreaChartIcon,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Eye,
+  RefreshCw,
+  Zap
 } from "lucide-react";
 
 export default function Analytics() {
@@ -50,26 +60,41 @@ export default function Analytics() {
   const [selectedCourse, setSelectedCourse] = useState("all");
   const [selectedPeriod, setSelectedPeriod] = useState("semester");
   const [chartType, setChartType] = useState("bar");
+  const [activeTab, setActiveTab] = useState("overview");
 
-  // Fetch real analytics data from backend
-  const { data: gradesData, isLoading: gradesLoading } = useQuery({
-    queryKey: ['/api/grades'],
-    enabled: isAuthenticated && !!user
-  });
+  // Determine course filter based on user role and selection
+  const courseFilter = selectedCourse === "all" ? undefined : parseInt(selectedCourse);
 
+  // Fetch courses for dropdown
   const { data: coursesData, isLoading: coursesLoading } = useQuery({
     queryKey: ['/api/courses'],
     enabled: isAuthenticated && !!user
   });
 
-  const { data: assignmentsData, isLoading: assignmentsLoading } = useQuery({
-    queryKey: ['/api/assignments'],
+  // Fetch advanced analytics data
+  const { data: advancedAnalytics, isLoading: analyticsLoading, refetch: refetchAnalytics } = useQuery({
+    queryKey: ['/api/analytics/advanced', { courseId: courseFilter }],
+    enabled: isAuthenticated && !!user && user.role !== 'student'
+  });
+
+  const { data: performanceTrends, isLoading: trendsLoading } = useQuery({
+    queryKey: ['/api/analytics/performance-trends', { courseId: courseFilter }],
     enabled: isAuthenticated && !!user
   });
 
-  const { data: announcementsData, isLoading: announcementsLoading } = useQuery({
-    queryKey: ['/api/announcements'],
-    enabled: isAuthenticated && !!user
+  const { data: atRiskStudents, isLoading: atRiskLoading } = useQuery({
+    queryKey: ['/api/analytics/at-risk-students', { courseId: courseFilter }],
+    enabled: isAuthenticated && !!user && user.role !== 'student'
+  });
+
+  const { data: engagementMetrics, isLoading: engagementLoading } = useQuery({
+    queryKey: ['/api/analytics/engagement', { courseId: courseFilter }],
+    enabled: isAuthenticated && !!user && user.role !== 'student'
+  });
+
+  const { data: assignmentAnalytics, isLoading: assignmentLoading } = useQuery({
+    queryKey: ['/api/analytics/assignments', { courseId: courseFilter }],
+    enabled: isAuthenticated && !!user && user.role !== 'student'
   });
 
   useEffect(() => {
@@ -86,7 +111,7 @@ export default function Analytics() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  if (isLoading || gradesLoading || coursesLoading || assignmentsLoading || announcementsLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="loading-spinner"></div>
@@ -94,492 +119,743 @@ export default function Analytics() {
     );
   }
 
-  // Calculate real analytics from database data
-  const calculateAnalytics = () => {
-    // Ensure all data is arrays, fallback to empty arrays if undefined or not arrays
-    const grades = Array.isArray(gradesData) ? gradesData : [];
-    const courses = Array.isArray(coursesData) ? coursesData : [];
-    const assignments = Array.isArray(assignmentsData) ? assignmentsData : [];
-    const announcements = Array.isArray(announcementsData) ? announcementsData : [];
-
-    // Calculate grade distribution
-    const gradeDistribution = { A: 0, B: 0, C: 0, D: 0, F: 0 };
-    let totalGrades = 0;
-    let gradeSum = 0;
-
-    grades.forEach((grade: any) => {
-      if (grade.grade) {
-        const gradeValue = parseFloat(grade.grade);
-        gradeSum += gradeValue;
-        totalGrades++;
-        
-        if (gradeValue >= 90) gradeDistribution.A++;
-        else if (gradeValue >= 80) gradeDistribution.B++;
-        else if (gradeValue >= 70) gradeDistribution.C++;
-        else if (gradeValue >= 60) gradeDistribution.D++;
-        else gradeDistribution.F++;
-      }
-    });
-
-    const avgGrade = totalGrades > 0 ? (gradeSum / totalGrades) : 0;
-
-    // Performance data over time (using assignments as timeline)
-    const performanceData = assignments.slice(0, 5).map((assignment: any, index: number) => ({
-      month: `Assignment ${index + 1}`,
-      avgGrade: Math.round(avgGrade + (Math.random() - 0.5) * 10),
-      submissions: grades.filter((g: any) => g.assignment?.id === assignment.id).length,
-      attendance: Math.round(85 + Math.random() * 15)
-    }));
-
-    // Course comparison data
-    const courseComparisonData = courses.map((course: any) => {
-      const courseGrades = grades.filter((g: any) => g.assignment?.course?.id === course.id);
-      const courseAssignments = assignments.filter((a: any) => a.courseId === course.id);
-      const avgCourseGrade = courseGrades.length > 0 
-        ? courseGrades.reduce((sum: number, g: any) => sum + parseFloat(g.grade || 0), 0) / courseGrades.length 
-        : 0;
-
-      return {
-        course: course.name,
-        avgGrade: Math.round(avgCourseGrade * 100) / 100,
-        students: course.enrollmentCount || Math.floor(Math.random() * 50) + 20,
-        assignments: courseAssignments.length
-      };
-    });
-
-    // Grade distribution data
-    const gradeDistributionData = Object.entries(gradeDistribution).map(([grade, count]) => ({
-      grade,
-      count,
-      percentage: totalGrades > 0 ? Math.round((count / totalGrades) * 100) : 0
-    }));
-
-    // Assignment progress data
-    const assignmentProgressData = assignments.slice(0, 5).map((assignment: any, index: number) => {
-      const submissions = grades.filter((g: any) => g.assignment?.id === assignment.id).length;
-      const totalStudents = Math.max(submissions, 30);
-      return {
-        week: `Week ${index + 1}`,
-        submitted: submissions,
-        pending: Math.max(0, totalStudents - submissions - 2),
-        late: Math.floor(Math.random() * 3)
-      };
-    });
-
-    // Engagement data (estimated based on activity)
-    const engagementData = [
-      { day: "Mon", logins: 245, messages: 89, submissions: grades.filter((g: any) => new Date(g.createdAt || '').getDay() === 1).length },
-      { day: "Tue", logins: 289, messages: 102, submissions: grades.filter((g: any) => new Date(g.createdAt || '').getDay() === 2).length },
-      { day: "Wed", logins: 267, messages: 95, submissions: grades.filter((g: any) => new Date(g.createdAt || '').getDay() === 3).length },
-      { day: "Thu", logins: 298, messages: 118, submissions: grades.filter((g: any) => new Date(g.createdAt || '').getDay() === 4).length },
-      { day: "Fri", logins: 201, messages: 76, submissions: grades.filter((g: any) => new Date(g.createdAt || '').getDay() === 5).length },
-      { day: "Sat", logins: 89, messages: 23, submissions: grades.filter((g: any) => new Date(g.createdAt || '').getDay() === 6).length },
-      { day: "Sun", logins: 67, messages: 18, submissions: grades.filter((g: any) => new Date(g.createdAt || '').getDay() === 0).length }
-    ];
-
-    return {
-      performanceData,
-      courseComparisonData,
-      gradeDistributionData,
-      assignmentProgressData,
-      engagementData,
-      avgGrade,
-      totalGrades,
-      totalCourses: courses.length,
-      totalAssignments: assignments.length,
-      totalAnnouncements: announcements.length
-    };
-  };
-
-  const analytics = calculateAnalytics();
-  const { 
-    performanceData, 
-    courseComparisonData, 
-    gradeDistributionData, 
-    assignmentProgressData, 
-    engagementData,
-    avgGrade,
-    totalGrades,
-    totalCourses,
-    totalAssignments,
-    totalAnnouncements
-  } = analytics;
-
-  const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
-
-  const kpiData = [
-    {
-      title: "Average Grade",
-      value: `${Math.round(avgGrade)}%`,
-      change: `+${Math.round(Math.random() * 5)}%`,
-      trend: "up",
-      icon: Award,
-      color: "bg-green-100 text-green-600"
-    },
-    {
-      title: "Total Submissions",
-      value: totalGrades.toString(),
-      change: `+${Math.floor(Math.random() * 10)}`,
-      trend: "up",
-      icon: Users,
-      color: "bg-blue-100 text-blue-600"
-    },
-    {
-      title: "Active Courses",
-      value: totalCourses.toString(),
-      change: totalCourses > 0 ? "stable" : "0",
-      trend: totalCourses > 0 ? "up" : "down",
-      icon: BookOpen,
-      color: "bg-yellow-100 text-yellow-600"
-    },
-    {
-      title: "Total Assignments",
-      value: totalAssignments.toString(),
-      change: `+${Math.floor(Math.random() * 3)}`,
-      trend: "up",
-      icon: Target,
-      color: "bg-purple-100 text-purple-600"
-    }
-  ];
-
-  const recentInsights = [
-    {
-      type: "improvement",
-      title: "Grade Improvement Detected",
-      description: `${courseComparisonData[0]?.course || 'Recent course'} shows positive grade trends`,
-      time: "2 hours ago"
-    },
-    {
-      type: totalGrades < 10 ? "warning" : "success",
-      title: totalGrades < 10 ? "Low Submission Activity" : "Active Submissions",
-      description: `${totalGrades} total submissions across all courses`,
-      time: "1 day ago"
-    },
-    {
-      type: "success",
-      title: "Course Engagement",
-      description: `${totalCourses} active courses with ${totalAssignments} assignments`,
-      time: "2 days ago"
-    }
-  ];
-
-  const getTrendIcon = (trend: string) => {
-    return trend === "up" ? (
-      <TrendingUp className="w-4 h-4 text-green-600" />
-    ) : (
-      <TrendingDown className="w-4 h-4 text-red-600" />
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Please log in to view analytics</h1>
+          <Button onClick={() => window.location.href = "/login"}>
+            Go to Login
+          </Button>
+        </div>
+      </div>
     );
-  };
+  }
 
-  const getInsightIcon = (type: string) => {
-    switch (type) {
-      case "improvement":
-        return <TrendingUp className="w-5 h-5 text-green-600" />;
-      case "warning":
-        return <Clock className="w-5 h-5 text-yellow-600" />;
-      case "success":
-        return <Award className="w-5 h-5 text-blue-600" />;
-      default:
-        return <Activity className="w-5 h-5 text-gray-600" />;
-    }
-  };
+  // Student view - limited analytics
+  if (user?.role === 'student') {
+    return (
+      <div className="flex h-screen overflow-hidden lms-background">
+        <Navigation />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">My Performance Analytics</h1>
+              <p className="text-gray-600">Track your academic progress and performance trends</p>
+            </div>
 
-  const renderChart = () => {
-    switch (chartType) {
-      case "line":
-        return (
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={performanceData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="avgGrade" stroke="#3B82F6" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
-        );
-      case "area":
-        return (
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={performanceData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Area type="monotone" dataKey="avgGrade" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.3} />
-            </AreaChart>
-          </ResponsiveContainer>
-        );
-      default:
-        return (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={performanceData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="avgGrade" fill="#3B82F6" />
-            </BarChart>
-          </ResponsiveContainer>
-        );
-    }
-  };
+            {trendsLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <Card key={i}>
+                    <CardContent className="p-6">
+                      <Skeleton className="h-4 w-full mb-4" />
+                      <Skeleton className="h-32 w-full" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <StudentAnalytics 
+                performanceTrends={performanceTrends || []} 
+                courseFilter={courseFilter}
+                courses={coursesData || []}
+                onCourseChange={setSelectedCourse}
+                selectedCourse={selectedCourse}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Teacher/Admin view - comprehensive analytics
+  const isDataLoading = analyticsLoading || trendsLoading || atRiskLoading || engagementLoading || assignmentLoading;
 
   return (
     <div className="flex h-screen overflow-hidden lms-background">
       <Navigation />
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="lms-surface border-b border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">Analytics Dashboard</h1>
-              <p className="text-gray-600 mt-1">
-                {user?.role === "teacher" 
-                  ? "Monitor student performance and course effectiveness"
-                  : "Track your academic progress and performance insights"}
-              </p>
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Advanced Analytics Dashboard</h1>
+                <p className="text-gray-600">Comprehensive insights into student performance and engagement</p>
+              </div>
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => refetchAnalytics()}
+                  disabled={isDataLoading}
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isDataLoading ? 'animate-spin' : ''}`} />
+                  Refresh Data
+                </Button>
+                <Button variant="outline">
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Report
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="week">This Week</SelectItem>
-                  <SelectItem value="month">This Month</SelectItem>
-                  <SelectItem value="semester">This Semester</SelectItem>
-                  <SelectItem value="year">This Year</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button variant="outline">
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </Button>
-              <Button variant="outline">
-                <Filter className="w-4 h-4 mr-2" />
-                Filter
-              </Button>
+            
+            <div className="flex items-center space-x-4 mb-6">
+              <div className="flex items-center space-x-2">
+                <Filter className="h-4 w-4 text-gray-500" />
+                <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Select course" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Courses</SelectItem>
+                    {coursesData?.map((course: any) => (
+                      <SelectItem key={course.id} value={course.id.toString()}>
+                        {course.courseCode} - {course.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
-        </header>
 
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-6">
-          {/* KPI Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            {kpiData.map((kpi, index) => {
-              const Icon = kpi.icon;
+          {isDataLoading ? (
+            <AnalyticsLoading />
+          ) : (
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="performance">Performance</TabsTrigger>
+                <TabsTrigger value="engagement">Engagement</TabsTrigger>
+                <TabsTrigger value="at-risk">At Risk</TabsTrigger>
+                <TabsTrigger value="assignments">Assignments</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="overview">
+                <OverviewTab 
+                  analytics={advancedAnalytics} 
+                  engagementMetrics={engagementMetrics || []}
+                  chartType={chartType}
+                  onChartTypeChange={setChartType}
+                />
+              </TabsContent>
+              
+              <TabsContent value="performance">
+                <PerformanceTab 
+                  performanceTrends={performanceTrends || []} 
+                  analytics={advancedAnalytics}
+                />
+              </TabsContent>
+              
+              <TabsContent value="engagement">
+                <EngagementTab 
+                  engagementMetrics={engagementMetrics || []}
+                  analytics={advancedAnalytics}
+                />
+              </TabsContent>
+              
+              <TabsContent value="at-risk">
+                <AtRiskTab 
+                  atRiskStudents={atRiskStudents || []}
+                  analytics={advancedAnalytics}
+                />
+              </TabsContent>
+              
+              <TabsContent value="assignments">
+                <AssignmentsTab 
+                  assignmentAnalytics={assignmentAnalytics || []}
+                  analytics={advancedAnalytics}
+                />
+              </TabsContent>
+            </Tabs>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Analytics Tab Components
+function AnalyticsLoading() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <Card key={i}>
+          <CardContent className="p-6">
+            <Skeleton className="h-4 w-full mb-4" />
+            <Skeleton className="h-8 w-3/4 mb-2" />
+            <Skeleton className="h-32 w-full" />
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function StudentAnalytics({ performanceTrends, courseFilter, courses, onCourseChange, selectedCourse }: any) {
+  const processedData = performanceTrends.map((trend: any, index: number) => ({
+    assignment: trend.assignmentTitle,
+    grade: trend.grade,
+    course: trend.courseTitle,
+    isLate: trend.isLate,
+    order: index + 1
+  }));
+
+  const avgGrade = processedData.length > 0 
+    ? processedData.reduce((sum: number, item: any) => sum + item.grade, 0) / processedData.length 
+    : 0;
+
+  const lateCount = processedData.filter((item: any) => item.isLate).length;
+  const onTimeCount = processedData.length - lateCount;
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Award className="h-5 w-5 mr-2 text-blue-600" />
+              Average Grade
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-blue-600">{avgGrade.toFixed(1)}%</div>
+            <p className="text-sm text-gray-600">Across all assignments</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
+              On Time Submissions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-green-600">{onTimeCount}</div>
+            <p className="text-sm text-gray-600">Submitted on time</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Clock className="h-5 w-5 mr-2 text-orange-600" />
+              Late Submissions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-orange-600">{lateCount}</div>
+            <p className="text-sm text-gray-600">Submitted late</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Performance Over Time</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={processedData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="order" />
+              <YAxis />
+              <Tooltip />
+              <Line type="monotone" dataKey="grade" stroke="#3B82F6" strokeWidth={2} />
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function OverviewTab({ analytics, engagementMetrics, chartType, onChartTypeChange }: any) {
+  if (!analytics) return <div>No analytics data available</div>;
+
+  const gradeDistributionData = [
+    { grade: 'A', count: analytics.gradeDistribution.A, color: '#10B981' },
+    { grade: 'B', count: analytics.gradeDistribution.B, color: '#3B82F6' },
+    { grade: 'C', count: analytics.gradeDistribution.C, color: '#F59E0B' },
+    { grade: 'D', count: analytics.gradeDistribution.D, color: '#EF4444' },
+    { grade: 'F', count: analytics.gradeDistribution.F, color: '#8B5CF6' }
+  ];
+
+  const kpiData = [
+    {
+      title: "Total Students",
+      value: analytics.totalStudents,
+      icon: Users,
+      color: "bg-blue-100 text-blue-600"
+    },
+    {
+      title: "Average Grade",
+      value: `${analytics.averageGrade.toFixed(1)}%`,
+      icon: Award,
+      color: "bg-green-100 text-green-600"
+    },
+    {
+      title: "Total Submissions",
+      value: analytics.totalSubmissions,
+      icon: Target,
+      color: "bg-purple-100 text-purple-600"
+    },
+    {
+      title: "Late Submissions",
+      value: analytics.lateSubmissions,
+      icon: Clock,
+      color: "bg-orange-100 text-orange-600"
+    }
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {kpiData.map((kpi, index) => (
+          <Card key={index}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">{kpi.title}</p>
+                  <p className="text-2xl font-bold text-gray-900">{kpi.value}</p>
+                </div>
+                <div className={`p-3 rounded-full ${kpi.color}`}>
+                  <kpi.icon className="h-6 w-6" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Grade Distribution</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={gradeDistributionData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ grade, count }) => `${grade}: ${count}`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="count"
+                >
+                  {gradeDistributionData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Course Engagement Overview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {engagementMetrics.slice(0, 5).map((course: any, index: number) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{course.courseTitle}</p>
+                    <p className="text-sm text-gray-600">{course.enrolledStudents} students</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-blue-600">{course.engagementRate}%</p>
+                    <p className="text-sm text-gray-600">engagement</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function PerformanceTab({ performanceTrends, analytics }: any) {
+  if (!performanceTrends || !analytics) return <div>No performance data available</div>;
+
+  const processedTrends = performanceTrends.map((trend: any, index: number) => ({
+    assignment: trend.assignmentTitle.substring(0, 20) + "...",
+    grade: trend.grade,
+    course: trend.courseTitle,
+    order: index + 1
+  }));
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Performance Metrics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Average Grade</span>
+                <span className="font-bold">{analytics.averageGrade.toFixed(1)}%</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Total Submissions</span>
+                <span className="font-bold">{analytics.totalSubmissions}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Late Submissions</span>
+                <span className="font-bold text-orange-600">{analytics.lateSubmissions}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Grade Analysis</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm">A grades</span>
+                <Badge variant="outline" className="bg-green-100 text-green-800">
+                  {analytics.gradeDistribution.A}
+                </Badge>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm">B grades</span>
+                <Badge variant="outline" className="bg-blue-100 text-blue-800">
+                  {analytics.gradeDistribution.B}
+                </Badge>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm">C grades</span>
+                <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
+                  {analytics.gradeDistribution.C}
+                </Badge>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm">D grades</span>
+                <Badge variant="outline" className="bg-orange-100 text-orange-800">
+                  {analytics.gradeDistribution.D}
+                </Badge>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm">F grades</span>
+                <Badge variant="outline" className="bg-red-100 text-red-800">
+                  {analytics.gradeDistribution.F}
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Success Rate</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-green-600">
+                {analytics.totalSubmissions > 0 ? 
+                  (((analytics.gradeDistribution.A + analytics.gradeDistribution.B + analytics.gradeDistribution.C) / analytics.totalSubmissions) * 100).toFixed(1) : 0}%
+              </div>
+              <p className="text-sm text-gray-600">Students passing (C+ or better)</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Performance Trends</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={processedTrends}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="order" />
+              <YAxis />
+              <Tooltip />
+              <Line type="monotone" dataKey="grade" stroke="#3B82F6" strokeWidth={2} />
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function EngagementTab({ engagementMetrics, analytics }: any) {
+  if (!engagementMetrics || !analytics) return <div>No engagement data available</div>;
+
+  const sortedCourses = engagementMetrics.sort((a: any, b: any) => b.engagementRate - a.engagementRate);
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Total Courses</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-blue-600">{analytics.totalCourses}</div>
+            <p className="text-sm text-gray-600">Active courses</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Avg Engagement</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-green-600">
+              {engagementMetrics.length > 0 ? 
+                (engagementMetrics.reduce((sum: number, course: any) => sum + course.engagementRate, 0) / engagementMetrics.length).toFixed(1) : 0}%
+            </div>
+            <p className="text-sm text-gray-600">Across all courses</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Performer</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg font-bold text-purple-600">
+              {sortedCourses[0]?.courseCode || 'N/A'}
+            </div>
+            <p className="text-sm text-gray-600">
+              {sortedCourses[0]?.engagementRate.toFixed(1)}% engagement
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Total Messages</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-orange-600">
+              {engagementMetrics.reduce((sum: number, course: any) => sum + course.totalMessages, 0)}
+            </div>
+            <p className="text-sm text-gray-600">Course messages</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Course Engagement Comparison</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={400}>
+            <BarChart data={sortedCourses}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="courseCode" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="engagementRate" fill="#3B82F6" />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function AtRiskTab({ atRiskStudents, analytics }: any) {
+  if (!atRiskStudents || !analytics) return <div>No at-risk data available</div>;
+
+  const getRiskLevel = (student: any) => {
+    const riskCount = Object.values(student.riskFactors).filter(Boolean).length;
+    if (riskCount >= 3) return { level: 'High', color: 'bg-red-100 text-red-800' };
+    if (riskCount >= 2) return { level: 'Medium', color: 'bg-orange-100 text-orange-800' };
+    return { level: 'Low', color: 'bg-yellow-100 text-yellow-800' };
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <AlertTriangle className="h-5 w-5 mr-2 text-red-600" />
+              At-Risk Students
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-red-600">{atRiskStudents.length}</div>
+            <p className="text-sm text-gray-600">Need attention</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <XCircle className="h-5 w-5 mr-2 text-orange-600" />
+              Missing Assignments
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-orange-600">{analytics.missingAssignments}</div>
+            <p className="text-sm text-gray-600">Total overdue</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Clock className="h-5 w-5 mr-2 text-yellow-600" />
+              Late Submissions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-yellow-600">{analytics.lateSubmissions}</div>
+            <p className="text-sm text-gray-600">Total late</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>At-Risk Student Details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {atRiskStudents.map((student: any, index: number) => {
+              const risk = getRiskLevel(student);
               return (
-                <Card key={index}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-600">{kpi.title}</p>
-                        <div className="flex items-center space-x-2">
-                          <p className="text-2xl font-bold text-gray-900">{kpi.value}</p>
-                          <div className={`flex items-center space-x-1 text-sm ${
-                            kpi.trend === "up" ? "text-green-600" : "text-red-600"
-                          }`}>
-                            {getTrendIcon(kpi.trend)}
-                            <span>{kpi.change}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className={`w-12 h-12 ${kpi.color} rounded-lg flex items-center justify-center`}>
-                        <Icon className="w-6 h-6" />
-                      </div>
+                <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <p className="font-medium">{student.studentName}</p>
+                    <p className="text-sm text-gray-600">{student.email}</p>
+                    <div className="flex items-center space-x-4 mt-1">
+                      <span className="text-sm">
+                        Grade: <span className="font-bold">{student.averageGrade.toFixed(1)}%</span>
+                      </span>
+                      <span className="text-sm">
+                        Missing: <span className="font-bold">{student.missingAssignments}</span>
+                      </span>
+                      <span className="text-sm">
+                        Late: <span className="font-bold">{student.lateSubmissions}</span>
+                      </span>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                  <div className="text-right">
+                    <Badge className={risk.color}>{risk.level} Risk</Badge>
+                    <div className="text-sm text-gray-600 mt-1">
+                      {student.enrolledCourses} courses
+                    </div>
+                  </div>
+                </div>
               );
             })}
           </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
-          {/* Main Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {/* Performance Trends */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Performance Trends</CardTitle>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant={chartType === "bar" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setChartType("bar")}
-                    >
-                      <BarChart3 className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant={chartType === "line" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setChartType("line")}
-                    >
-                      <LineChartIcon className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant={chartType === "area" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setChartType("area")}
-                    >
-                      <AreaChartIcon className="w-4 h-4" />
-                    </Button>
+function AssignmentsTab({ assignmentAnalytics, analytics }: any) {
+  if (!assignmentAnalytics || !analytics) return <div>No assignment data available</div>;
+
+  const sortedAssignments = assignmentAnalytics.sort((a: any, b: any) => b.completionRate - a.completionRate);
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Total Assignments</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-blue-600">{analytics.totalAssignments}</div>
+            <p className="text-sm text-gray-600">Across all courses</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Avg Completion</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-green-600">
+              {assignmentAnalytics.length > 0 ? 
+                (assignmentAnalytics.reduce((sum: number, assignment: any) => sum + assignment.completionRate, 0) / assignmentAnalytics.length).toFixed(1) : 0}%
+            </div>
+            <p className="text-sm text-gray-600">Completion rate</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Avg Grade</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-purple-600">
+              {assignmentAnalytics.length > 0 ? 
+                (assignmentAnalytics.reduce((sum: number, assignment: any) => sum + assignment.averageGrade, 0) / assignmentAnalytics.length).toFixed(1) : 0}%
+            </div>
+            <p className="text-sm text-gray-600">Average grade</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Late Submissions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-orange-600">
+              {assignmentAnalytics.reduce((sum: number, assignment: any) => sum + assignment.lateSubmissions, 0)}
+            </div>
+            <p className="text-sm text-gray-600">Total late</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Assignment Performance Details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {sortedAssignments.map((assignment: any, index: number) => (
+              <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                <div>
+                  <p className="font-medium">{assignment.assignmentTitle}</p>
+                  <p className="text-sm text-gray-600">{assignment.courseCode} - {assignment.courseTitle}</p>
+                  <div className="flex items-center space-x-4 mt-1">
+                    <span className="text-sm">
+                      Avg: <span className="font-bold">{assignment.averageGrade.toFixed(1)}%</span>
+                    </span>
+                    <span className="text-sm">
+                      Range: <span className="font-bold">{assignment.lowestGrade.toFixed(1)}% - {assignment.highestGrade.toFixed(1)}%</span>
+                    </span>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                {renderChart()}
-              </CardContent>
-            </Card>
-
-            {/* Grade Distribution */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Grade Distribution</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={gradeDistributionData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ grade, percentage }) => `${grade}: ${percentage}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="count"
-                    >
-                      {gradeDistributionData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+                <div className="text-right">
+                  <div className="text-lg font-bold text-blue-600">{assignment.completionRate.toFixed(1)}%</div>
+                  <p className="text-sm text-gray-600">completion rate</p>
+                  <div className="text-sm text-gray-600 mt-1">
+                    {assignment.totalSubmissions}/{assignment.enrolledStudents} submitted
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-
-          {/* Detailed Analytics Tabs */}
-          <Tabs defaultValue="courses" className="mb-6">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="courses">Course Comparison</TabsTrigger>
-              <TabsTrigger value="assignments">Assignment Progress</TabsTrigger>
-              <TabsTrigger value="engagement">Student Engagement</TabsTrigger>
-              <TabsTrigger value="insights">Insights</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="courses" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Course Performance Comparison</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {courseComparisonData.map((course: any) => (
-                      <div key={course.course} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <BookOpen className="w-6 h-6 text-blue-600" />
-                          </div>
-                          <div>
-                            <h4 className="font-medium">{course.course}</h4>
-                            <p className="text-sm text-gray-600">{course.students} students</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-6">
-                          <div className="text-center">
-                            <div className="text-lg font-bold text-gray-900">{course.avgGrade.toFixed(1)}%</div>
-                            <div className="text-sm text-gray-600">Avg Grade</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-lg font-bold text-gray-900">{course.assignments}</div>
-                            <div className="text-sm text-gray-600">Assignments</div>
-                          </div>
-                          <div className="w-32">
-                            <Progress value={course.avgGrade} className="h-2" />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="assignments" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Assignment Submission Trends</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={assignmentProgressData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="week" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="submitted" stackId="a" fill="#10B981" />
-                      <Bar dataKey="pending" stackId="a" fill="#F59E0B" />
-                      <Bar dataKey="late" stackId="a" fill="#EF4444" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="engagement" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Daily Student Engagement</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={engagementData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="day" />
-                      <YAxis />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="logins" stroke="#3B82F6" strokeWidth={2} />
-                      <Line type="monotone" dataKey="messages" stroke="#10B981" strokeWidth={2} />
-                      <Line type="monotone" dataKey="submissions" stroke="#F59E0B" strokeWidth={2} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="insights" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Insights</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {recentInsights.map((insight, index) => (
-                      <div key={index} className="flex items-start space-x-4 p-4 border rounded-lg">
-                        <div className="flex-shrink-0">
-                          {getInsightIcon(insight.type)}
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{insight.title}</h4>
-                          <p className="text-gray-600 mt-1">{insight.description}</p>
-                          <p className="text-sm text-gray-500 mt-2">{insight.time}</p>
-                        </div>
-                        <Badge variant={insight.type === "warning" ? "destructive" : "secondary"}>
-                          {insight.type}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </main>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

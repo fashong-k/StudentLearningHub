@@ -959,6 +959,169 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Advanced Analytics endpoints
+  app.get("/api/analytics/advanced", authMiddleware, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const courseId = req.query.courseId ? parseInt(req.query.courseId as string) : undefined;
+      
+      // Role-based access control
+      if (user.role === "student") {
+        return res.status(403).json({ message: "Students cannot access advanced analytics" });
+      }
+      
+      if (user.role === "teacher" && courseId) {
+        const course = await storage.getCourseById(courseId);
+        if (!course || course.teacherId !== userId) {
+          return res.status(403).json({ message: "You can only view analytics for your own courses" });
+        }
+      }
+
+      const analytics = await storage.getAdvancedAnalytics(courseId);
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching advanced analytics:", error);
+      res.status(500).json({ message: "Failed to fetch advanced analytics" });
+    }
+  });
+
+  app.get("/api/analytics/performance-trends", authMiddleware, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const studentId = req.query.studentId as string;
+      const courseId = req.query.courseId ? parseInt(req.query.courseId as string) : undefined;
+      
+      // Role-based access control
+      if (user.role === "student") {
+        // Students can only view their own performance trends
+        if (studentId && studentId !== userId) {
+          return res.status(403).json({ message: "You can only view your own performance trends" });
+        }
+        const trends = await storage.getStudentPerformanceTrends(userId, courseId);
+        res.json(trends);
+      } else if (user.role === "teacher") {
+        // Teachers can view trends for their courses
+        if (courseId) {
+          const course = await storage.getCourseById(courseId);
+          if (!course || course.teacherId !== userId) {
+            return res.status(403).json({ message: "You can only view trends for your own courses" });
+          }
+        }
+        const trends = await storage.getStudentPerformanceTrends(studentId, courseId);
+        res.json(trends);
+      } else {
+        // Admins can view all trends
+        const trends = await storage.getStudentPerformanceTrends(studentId, courseId);
+        res.json(trends);
+      }
+    } catch (error) {
+      console.error("Error fetching performance trends:", error);
+      res.status(500).json({ message: "Failed to fetch performance trends" });
+    }
+  });
+
+  app.get("/api/analytics/at-risk-students", authMiddleware, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (user.role === "student") {
+        return res.status(403).json({ message: "Students cannot access at-risk analytics" });
+      }
+
+      const courseId = req.query.courseId ? parseInt(req.query.courseId as string) : undefined;
+      
+      if (user.role === "teacher" && courseId) {
+        const course = await storage.getCourseById(courseId);
+        if (!course || course.teacherId !== userId) {
+          return res.status(403).json({ message: "You can only view at-risk students for your own courses" });
+        }
+      }
+
+      const atRiskStudents = await storage.getAtRiskStudents(courseId);
+      res.json(atRiskStudents);
+    } catch (error) {
+      console.error("Error fetching at-risk students:", error);
+      res.status(500).json({ message: "Failed to fetch at-risk students" });
+    }
+  });
+
+  app.get("/api/analytics/engagement", authMiddleware, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (user.role === "student") {
+        return res.status(403).json({ message: "Students cannot access engagement analytics" });
+      }
+
+      const courseId = req.query.courseId ? parseInt(req.query.courseId as string) : undefined;
+      
+      if (user.role === "teacher" && courseId) {
+        const course = await storage.getCourseById(courseId);
+        if (!course || course.teacherId !== userId) {
+          return res.status(403).json({ message: "You can only view engagement for your own courses" });
+        }
+      }
+
+      const engagementMetrics = await storage.getCourseEngagementMetrics(courseId);
+      res.json(engagementMetrics);
+    } catch (error) {
+      console.error("Error fetching engagement metrics:", error);
+      res.status(500).json({ message: "Failed to fetch engagement metrics" });
+    }
+  });
+
+  app.get("/api/analytics/assignments", authMiddleware, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (user.role === "student") {
+        return res.status(403).json({ message: "Students cannot access assignment analytics" });
+      }
+
+      const courseId = req.query.courseId ? parseInt(req.query.courseId as string) : undefined;
+      
+      if (user.role === "teacher" && courseId) {
+        const course = await storage.getCourseById(courseId);
+        if (!course || course.teacherId !== userId) {
+          return res.status(403).json({ message: "You can only view assignment analytics for your own courses" });
+        }
+      }
+
+      const assignmentAnalytics = await storage.getAssignmentAnalytics(courseId);
+      res.json(assignmentAnalytics);
+    } catch (error) {
+      console.error("Error fetching assignment analytics:", error);
+      res.status(500).json({ message: "Failed to fetch assignment analytics" });
+    }
+  });
+
   // Plagiarism detection endpoints
   app.post("/api/plagiarism/check", authMiddleware, async (req: any, res) => {
     try {

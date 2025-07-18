@@ -65,6 +65,11 @@ export interface IStorage {
   getStudentGrades(studentId: string): Promise<any[]>;
   getCourseStats(courseId: number): Promise<any>;
   getStudentStats(studentId: string): Promise<any>;
+  getAdvancedAnalytics(courseId?: number): Promise<any>;
+  getStudentPerformanceTrends(studentId?: string, courseId?: number): Promise<any>;
+  getAtRiskStudents(courseId?: number): Promise<any>;
+  getCourseEngagementMetrics(courseId?: number): Promise<any>;
+  getAssignmentAnalytics(courseId?: number): Promise<any>;
   
   // Plagiarism operations
   getPlagiarismCheck(submissionId: number): Promise<any>;
@@ -991,6 +996,236 @@ export class DrizzleStorage implements IStorage {
     `);
     
     return parseInt(result.rows[0].count) > 0;
+  }
+
+  // Advanced Analytics Methods
+  async getAdvancedAnalytics(courseId?: number): Promise<any> {
+    const courseFilter = courseId ? sql`AND c.id = ${courseId}` : sql``;
+    
+    const result = await db.execute(sql`
+      SELECT 
+        COUNT(DISTINCT u.id) as total_students,
+        COUNT(DISTINCT c.id) as total_courses,
+        COUNT(DISTINCT a.id) as total_assignments,
+        COUNT(DISTINCT s.id) as total_submissions,
+        COALESCE(AVG(s.grade), 0) as average_grade,
+        COUNT(DISTINCT CASE WHEN s.grade >= 90 THEN s.id END) as a_grades,
+        COUNT(DISTINCT CASE WHEN s.grade >= 80 AND s.grade < 90 THEN s.id END) as b_grades,
+        COUNT(DISTINCT CASE WHEN s.grade >= 70 AND s.grade < 80 THEN s.id END) as c_grades,
+        COUNT(DISTINCT CASE WHEN s.grade >= 60 AND s.grade < 70 THEN s.id END) as d_grades,
+        COUNT(DISTINCT CASE WHEN s.grade < 60 THEN s.id END) as f_grades,
+        COUNT(DISTINCT CASE WHEN s.submitted_at > a.due_date THEN s.id END) as late_submissions,
+        COUNT(DISTINCT CASE WHEN s.submitted_at IS NULL AND a.due_date < NOW() THEN a.id END) as missing_assignments
+      FROM ${sql.identifier(dbSchema)}.users u
+      LEFT JOIN ${sql.identifier(dbSchema)}.enrollments e ON u.id = e.student_id
+      LEFT JOIN ${sql.identifier(dbSchema)}.courses c ON e.course_id = c.id
+      LEFT JOIN ${sql.identifier(dbSchema)}.assignments a ON c.id = a.course_id
+      LEFT JOIN ${sql.identifier(dbSchema)}.submissions s ON a.id = s.assignment_id AND u.id = s.student_id
+      WHERE u.role = 'student' ${courseFilter}
+    `);
+    
+    const row = result.rows[0];
+    return {
+      totalStudents: parseInt(row.total_students) || 0,
+      totalCourses: parseInt(row.total_courses) || 0,
+      totalAssignments: parseInt(row.total_assignments) || 0,
+      totalSubmissions: parseInt(row.total_submissions) || 0,
+      averageGrade: parseFloat(row.average_grade) || 0,
+      gradeDistribution: {
+        A: parseInt(row.a_grades) || 0,
+        B: parseInt(row.b_grades) || 0,
+        C: parseInt(row.c_grades) || 0,
+        D: parseInt(row.d_grades) || 0,
+        F: parseInt(row.f_grades) || 0
+      },
+      lateSubmissions: parseInt(row.late_submissions) || 0,
+      missingAssignments: parseInt(row.missing_assignments) || 0
+    };
+  }
+
+  async getStudentPerformanceTrends(studentId?: string, courseId?: number): Promise<any> {
+    const studentFilter = studentId ? sql`AND s.student_id = ${studentId}` : sql``;
+    const courseFilter = courseId ? sql`AND a.course_id = ${courseId}` : sql``;
+    
+    const result = await db.execute(sql`
+      SELECT 
+        s.student_id,
+        u.first_name || ' ' || u.last_name as student_name,
+        a.title as assignment_title,
+        s.grade,
+        s.submitted_at,
+        a.due_date,
+        c.title as course_title,
+        CASE WHEN s.submitted_at > a.due_date THEN true ELSE false END as is_late,
+        ROW_NUMBER() OVER (PARTITION BY s.student_id ORDER BY s.submitted_at) as submission_order
+      FROM ${sql.identifier(dbSchema)}.submissions s
+      INNER JOIN ${sql.identifier(dbSchema)}.assignments a ON s.assignment_id = a.id
+      INNER JOIN ${sql.identifier(dbSchema)}.courses c ON a.course_id = c.id
+      INNER JOIN ${sql.identifier(dbSchema)}.users u ON s.student_id = u.id
+      WHERE s.grade IS NOT NULL ${studentFilter} ${courseFilter}
+      ORDER BY s.submitted_at ASC
+    `);
+    
+    return result.rows.map(row => ({
+      studentId: row.student_id,
+      studentName: row.student_name,
+      assignmentTitle: row.assignment_title,
+      grade: parseFloat(row.grade),
+      submittedAt: row.submitted_at,
+      dueDate: row.due_date,
+      courseTitle: row.course_title,
+      isLate: row.is_late,
+      submissionOrder: parseInt(row.submission_order)
+    }));
+  }
+
+  async getAtRiskStudents(courseId?: number): Promise<any> {
+    const courseFilter = courseId ? sql`AND c.id = ${courseId}` : sql``;
+    
+    const result = await db.execute(sql`
+      SELECT 
+        u.id,
+        u.first_name || ' ' || u.last_name as student_name,
+        u.email,
+        COALESCE(AVG(s.grade), 0) as average_grade,
+        COUNT(DISTINCT s.id) as total_submissions,
+        COUNT(DISTINCT CASE WHEN s.submitted_at > a.due_date THEN s.id END) as late_submissions,
+        COUNT(DISTINCT CASE WHEN s.submitted_at IS NULL AND a.due_date < NOW() THEN a.id END) as missing_assignments,
+        MAX(s.submitted_at) as last_submission_date,
+        COUNT(DISTINCT c.id) as enrolled_courses
+      FROM ${sql.identifier(dbSchema)}.users u
+      INNER JOIN ${sql.identifier(dbSchema)}.enrollments e ON u.id = e.student_id
+      INNER JOIN ${sql.identifier(dbSchema)}.courses c ON e.course_id = c.id
+      LEFT JOIN ${sql.identifier(dbSchema)}.assignments a ON c.id = a.course_id
+      LEFT JOIN ${sql.identifier(dbSchema)}.submissions s ON a.id = s.assignment_id AND u.id = s.student_id
+      WHERE u.role = 'student' AND e.is_active = true ${courseFilter}
+      GROUP BY u.id, u.first_name, u.last_name, u.email
+      HAVING 
+        COALESCE(AVG(s.grade), 0) < 70 OR 
+        COUNT(DISTINCT CASE WHEN s.submitted_at IS NULL AND a.due_date < NOW() THEN a.id END) > 2 OR
+        COUNT(DISTINCT CASE WHEN s.submitted_at > a.due_date THEN s.id END) > 3
+      ORDER BY average_grade ASC, missing_assignments DESC
+    `);
+    
+    return result.rows.map(row => ({
+      id: row.id,
+      studentName: row.student_name,
+      email: row.email,
+      averageGrade: parseFloat(row.average_grade),
+      totalSubmissions: parseInt(row.total_submissions),
+      lateSubmissions: parseInt(row.late_submissions),
+      missingAssignments: parseInt(row.missing_assignments),
+      lastSubmissionDate: row.last_submission_date,
+      enrolledCourses: parseInt(row.enrolled_courses),
+      riskFactors: {
+        lowGrade: parseFloat(row.average_grade) < 70,
+        missingAssignments: parseInt(row.missing_assignments) > 2,
+        lateSubmissions: parseInt(row.late_submissions) > 3,
+        inactivity: !row.last_submission_date || new Date(row.last_submission_date) < new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+      }
+    }));
+  }
+
+  async getCourseEngagementMetrics(courseId?: number): Promise<any> {
+    const courseFilter = courseId ? sql`AND c.id = ${courseId}` : sql``;
+    
+    const result = await db.execute(sql`
+      SELECT 
+        c.id as course_id,
+        c.title as course_title,
+        c.course_code,
+        COUNT(DISTINCT e.student_id) as enrolled_students,
+        COUNT(DISTINCT a.id) as total_assignments,
+        COUNT(DISTINCT s.id) as total_submissions,
+        COUNT(DISTINCT CASE WHEN s.grade IS NOT NULL THEN s.id END) as graded_submissions,
+        COALESCE(AVG(s.grade), 0) as average_grade,
+        COUNT(DISTINCT CASE WHEN s.submitted_at > a.due_date THEN s.id END) as late_submissions,
+        COUNT(DISTINCT ann.id) as total_announcements,
+        COUNT(DISTINCT msg.id) as total_messages,
+        ROUND(
+          CASE 
+            WHEN COUNT(DISTINCT a.id) > 0 THEN 
+              (COUNT(DISTINCT s.id)::float / (COUNT(DISTINCT a.id) * COUNT(DISTINCT e.student_id))) * 100
+            ELSE 0 
+          END, 2
+        ) as engagement_rate
+      FROM ${sql.identifier(dbSchema)}.courses c
+      LEFT JOIN ${sql.identifier(dbSchema)}.enrollments e ON c.id = e.course_id AND e.is_active = true
+      LEFT JOIN ${sql.identifier(dbSchema)}.assignments a ON c.id = a.course_id
+      LEFT JOIN ${sql.identifier(dbSchema)}.submissions s ON a.id = s.assignment_id
+      LEFT JOIN ${sql.identifier(dbSchema)}.announcements ann ON c.id = ann.course_id
+      LEFT JOIN ${sql.identifier(dbSchema)}.messages msg ON c.id = msg.course_id
+      WHERE 1=1 ${courseFilter}
+      GROUP BY c.id, c.title, c.course_code
+      ORDER BY engagement_rate DESC
+    `);
+    
+    return result.rows.map(row => ({
+      courseId: parseInt(row.course_id),
+      courseTitle: row.course_title,
+      courseCode: row.course_code,
+      enrolledStudents: parseInt(row.enrolled_students),
+      totalAssignments: parseInt(row.total_assignments),
+      totalSubmissions: parseInt(row.total_submissions),
+      gradedSubmissions: parseInt(row.graded_submissions),
+      averageGrade: parseFloat(row.average_grade),
+      lateSubmissions: parseInt(row.late_submissions),
+      totalAnnouncements: parseInt(row.total_announcements),
+      totalMessages: parseInt(row.total_messages),
+      engagementRate: parseFloat(row.engagement_rate)
+    }));
+  }
+
+  async getAssignmentAnalytics(courseId?: number): Promise<any> {
+    const courseFilter = courseId ? sql`AND c.id = ${courseId}` : sql``;
+    
+    const result = await db.execute(sql`
+      SELECT 
+        a.id as assignment_id,
+        a.title as assignment_title,
+        a.due_date,
+        a.max_points,
+        c.title as course_title,
+        c.course_code,
+        COUNT(DISTINCT s.id) as total_submissions,
+        COUNT(DISTINCT CASE WHEN s.grade IS NOT NULL THEN s.id END) as graded_submissions,
+        COALESCE(AVG(s.grade), 0) as average_grade,
+        COALESCE(MAX(s.grade), 0) as highest_grade,
+        COALESCE(MIN(s.grade), 0) as lowest_grade,
+        COUNT(DISTINCT CASE WHEN s.submitted_at > a.due_date THEN s.id END) as late_submissions,
+        COUNT(DISTINCT e.student_id) as enrolled_students,
+        ROUND(
+          CASE 
+            WHEN COUNT(DISTINCT e.student_id) > 0 THEN 
+              (COUNT(DISTINCT s.id)::float / COUNT(DISTINCT e.student_id)) * 100
+            ELSE 0 
+          END, 2
+        ) as completion_rate
+      FROM ${sql.identifier(dbSchema)}.assignments a
+      INNER JOIN ${sql.identifier(dbSchema)}.courses c ON a.course_id = c.id
+      LEFT JOIN ${sql.identifier(dbSchema)}.enrollments e ON c.id = e.course_id AND e.is_active = true
+      LEFT JOIN ${sql.identifier(dbSchema)}.submissions s ON a.id = s.assignment_id
+      WHERE 1=1 ${courseFilter}
+      GROUP BY a.id, a.title, a.due_date, a.max_points, c.title, c.course_code
+      ORDER BY a.due_date DESC
+    `);
+    
+    return result.rows.map(row => ({
+      assignmentId: parseInt(row.assignment_id),
+      assignmentTitle: row.assignment_title,
+      dueDate: row.due_date,
+      maxPoints: parseFloat(row.max_points) || 100,
+      courseTitle: row.course_title,
+      courseCode: row.course_code,
+      totalSubmissions: parseInt(row.total_submissions),
+      gradedSubmissions: parseInt(row.graded_submissions),
+      averageGrade: parseFloat(row.average_grade),
+      highestGrade: parseFloat(row.highest_grade),
+      lowestGrade: parseFloat(row.lowest_grade),
+      lateSubmissions: parseInt(row.late_submissions),
+      enrolledStudents: parseInt(row.enrolled_students),
+      completionRate: parseFloat(row.completion_rate)
+    }));
   }
 }
 
