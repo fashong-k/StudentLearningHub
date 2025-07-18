@@ -24,6 +24,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { useDataFallback } from "@/hooks/useDataFallback";
 import { DataFallbackAlert } from "@/components/DataFallbackAlert";
 import { hasPermission } from "@/lib/roleUtils";
+import { courseFormFields, handleNumberFieldChange, getStandardFieldProps } from "@/lib/formUtils";
 import { 
   BookOpen, 
   Users, 
@@ -539,7 +540,10 @@ export default function Courses() {
                           <FormItem>
                             <FormLabel>Course Title</FormLabel>
                             <FormControl>
-                              <Input placeholder="Introduction to Computer Science" {...field} />
+                              <Input 
+                                {...getStandardFieldProps(courseFormFields.title)}
+                                {...field} 
+                              />
                             </FormControl>
                           </FormItem>
                         )}
@@ -664,24 +668,18 @@ export default function Courses() {
                                 <FormLabel>Year</FormLabel>
                                 <FormControl>
                                   <Input 
+                                    {...getStandardFieldProps(courseFormFields.year)}
                                     type="number" 
-                                    placeholder="2025"
-                                    min="2020"
-                                    max="2030"
+                                    min={courseFormFields.year.min}
+                                    max={courseFormFields.year.max}
                                     value={field.value || ''} 
                                     onChange={(e) => {
                                       const value = e.target.value;
-                                      console.log('Create form year input changed:', value);
-                                      // Allow typing intermediate values and update field immediately
-                                      if (value === '') {
-                                        field.onChange(undefined);
-                                      } else {
-                                        const numValue = parseInt(value);
-                                        // Allow all valid numbers during typing
-                                        if (!isNaN(numValue)) {
-                                          field.onChange(numValue);
-                                        }
-                                      }
+                                      handleNumberFieldChange(value, field.onChange, {
+                                        allowEmpty: true,
+                                        min: courseFormFields.year.min as number,
+                                        max: courseFormFields.year.max as number,
+                                      });
                                     }} 
                                   />
                                 </FormControl>
@@ -809,7 +807,10 @@ export default function Courses() {
                     <FormItem>
                       <FormLabel>Course Title</FormLabel>
                       <FormControl>
-                        <Input placeholder="Introduction to Computer Science" {...field} />
+                        <Input 
+                          {...getStandardFieldProps(courseFormFields.title)}
+                          {...field} 
+                        />
                       </FormControl>
                     </FormItem>
                   )}
@@ -908,18 +909,19 @@ export default function Courses() {
                           <FormLabel>Year</FormLabel>
                           <FormControl>
                             <input
+                              {...getStandardFieldProps(courseFormFields.year)}
                               type="number" 
-                              placeholder="2025"
-                              min="2020"
-                              max="2030"
+                              min={courseFormFields.year.min}
+                              max={courseFormFields.year.max}
                               value={editYearDisplayValue || field.value || ''} 
                               onChange={(e) => {
                                 const value = e.target.value;
-                                console.log('Edit form year input changed:', value);
                                 setEditYearDisplayValue(value);
-                                const numValue = value === '' ? undefined : parseInt(value);
-                                field.onChange(numValue);
-                                console.log('Edit form year field updated to:', numValue);
+                                handleNumberFieldChange(value, field.onChange, {
+                                  allowEmpty: true,
+                                  min: courseFormFields.year.min as number,
+                                  max: courseFormFields.year.max as number,
+                                });
                               }}
                               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             />
