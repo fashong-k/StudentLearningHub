@@ -1031,10 +1031,13 @@ export class DrizzleStorage implements IStorage {
       baseQuery += ` AND c.teacher_id = '${teacherId}'`;
     }
     
+    console.log('🔍 Analytics Query:', baseQuery);
+    console.log('🔍 Course ID:', courseId, 'Teacher ID:', teacherId);
+    
     const result = await db.execute(sql.raw(baseQuery));
     
     const row = result.rows[0];
-    return {
+    const analyticsData = {
       totalStudents: parseInt(row.total_students) || 0,
       totalCourses: parseInt(row.total_courses) || 0,
       totalAssignments: parseInt(row.total_assignments) || 0,
@@ -1050,6 +1053,9 @@ export class DrizzleStorage implements IStorage {
       lateSubmissions: parseInt(row.late_submissions) || 0,
       missingAssignments: parseInt(row.missing_assignments) || 0
     };
+    
+    console.log('📊 Analytics Results:', analyticsData);
+    return analyticsData;
   }
 
   async getStudentPerformanceTrends(studentId?: string, courseId?: number): Promise<any> {
