@@ -58,24 +58,36 @@ export default function CourseView() {
   });
 
   // Fetch course assignments
-  const { data: assignments = [] } = useQuery({
-    queryKey: ["/api/assignments", courseId],
+  const { data: assignments = [], isLoading: assignmentsLoading } = useQuery({
+    queryKey: [`/api/assignments/${courseId}`],
     enabled: !!courseId,
     retry: false,
   });
 
   // Fetch course announcements
-  const { data: announcements = [] } = useQuery({
-    queryKey: ["/api/announcements", courseId],
+  const { data: announcements = [], isLoading: announcementsLoading } = useQuery({
+    queryKey: [`/api/announcements/${courseId}`],
     enabled: !!courseId,
     retry: false,
   });
 
   // Fetch course enrollments (for teachers)
-  const { data: enrollments = [] } = useQuery({
-    queryKey: ["/api/enrollments", courseId],
+  const { data: enrollments = [], isLoading: enrollmentsLoading } = useQuery({
+    queryKey: [`/api/enrollments/${courseId}`],
     enabled: !!courseId && can('canCreateCourses'),
     retry: false,
+  });
+
+  // Debug logging for all data
+  console.log('CourseView Data Debug:', {
+    courseId,
+    course,
+    assignments: assignments?.length || 0,
+    announcements: announcements?.length || 0,
+    enrollments: enrollments?.length || 0,
+    assignmentsLoading,
+    announcementsLoading,
+    enrollmentsLoading
   });
 
   // Check if current user is enrolled (for students)

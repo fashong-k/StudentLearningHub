@@ -503,7 +503,30 @@ export class DrizzleStorage implements IStorage {
   }
 
   async getCourseEnrollments(courseId: number): Promise<EnrollmentAttributes[]> {
-    return await db.select().from(enrollments).where(eq(enrollments.courseId, courseId));
+    const result = await db.execute(sql`
+      SELECT 
+        e.id, e.course_id, e.student_id, e.enrolled_at, e.is_active,
+        u.id as student_id, u.first_name, u.last_name, u.email, u.profile_image_url
+      FROM ${sql.identifier(dbSchema)}.enrollments e
+      INNER JOIN ${sql.identifier(dbSchema)}.users u ON e.student_id = u.id
+      WHERE e.course_id = ${courseId} AND e.is_active = true
+      ORDER BY e.enrolled_at DESC
+    `);
+    
+    return result.rows.map(row => ({
+      id: row.id,
+      courseId: row.course_id,
+      studentId: row.student_id,
+      enrolledAt: row.enrolled_at,
+      isActive: row.is_active,
+      student: {
+        id: row.student_id,
+        firstName: row.first_name,
+        lastName: row.last_name,
+        email: row.email,
+        profileImageUrl: row.profile_image_url
+      }
+    })) as EnrollmentAttributes[];
   }
 
   async getStudentEnrollments(studentId: string): Promise<EnrollmentAttributes[]> {
@@ -578,11 +601,31 @@ export class DrizzleStorage implements IStorage {
 
   // Announcement operations
   async getCourseAnnouncements(courseId: number): Promise<AnnouncementAttributes[]> {
-    return await db
-      .select()
-      .from(announcements)
-      .where(eq(announcements.courseId, courseId))
-      .orderBy(desc(announcements.createdAt));
+    const result = await db.execute(sql`
+      SELECT 
+        a.id, a.course_id, a.title, a.content, a.created_at, a.updated_at, a.author_id,
+        u.id as author_id, u.first_name, u.last_name, u.email
+      FROM ${sql.identifier(dbSchema)}.announcements a
+      INNER JOIN ${sql.identifier(dbSchema)}.users u ON a.author_id = u.id
+      WHERE a.course_id = ${courseId}
+      ORDER BY a.created_at DESC
+    `);
+    
+    return result.rows.map(row => ({
+      id: row.id,
+      courseId: row.course_id,
+      title: row.title,
+      content: row.content,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      authorId: row.author_id,
+      author: {
+        id: row.author_id,
+        firstName: row.first_name,
+        lastName: row.last_name,
+        email: row.email
+      }
+    })) as AnnouncementAttributes[];
   }
 
   async getAnnouncementById(id: number): Promise<AnnouncementAttributes | undefined> {
