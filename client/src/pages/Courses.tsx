@@ -96,10 +96,15 @@ export default function Courses() {
   const { isUsingFallback, failedEndpoints, showAlert, reportFailure, clearFailures } = useDataFallback();
   const [, setLocation] = useLocation();
 
+  // Custom form schema that handles date strings properly
+  const createCourseFormSchema = insertCourseSchema.extend({
+    teacherId: z.string().min(1, "Teacher ID is required"),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+  });
+
   const form = useForm({
-    resolver: zodResolver(insertCourseSchema.extend({
-      teacherId: z.string().min(1, "Teacher ID is required"),
-    })),
+    resolver: zodResolver(createCourseFormSchema),
     defaultValues: {
       title: "",
       description: "",
@@ -116,9 +121,7 @@ export default function Courses() {
   });
 
   const editForm = useForm({
-    resolver: zodResolver(insertCourseSchema.extend({
-      teacherId: z.string().min(1, "Teacher ID is required"),
-    })),
+    resolver: zodResolver(createCourseFormSchema),
     defaultValues: {
       title: "",
       description: "",
