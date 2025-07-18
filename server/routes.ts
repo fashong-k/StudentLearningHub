@@ -288,8 +288,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You can only update your own courses" });
       }
 
-      // Parse and validate the request body - let Zod handle date conversion
-      const courseData = req.body;
+      // Parse and validate the request body - convert dates properly
+      const courseData = {
+        ...req.body,
+        // Convert string dates to Date objects if they exist
+        startDate: req.body.startDate ? new Date(req.body.startDate) : null,
+        endDate: req.body.endDate ? new Date(req.body.endDate) : null,
+      };
       
       // Validate the update before proceeding
       const { validateCourseUpdate } = await import('./courseUpdateValidator-simple');
