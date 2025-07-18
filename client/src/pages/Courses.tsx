@@ -456,7 +456,7 @@ export default function Courses() {
       description: course.description,
       courseCode: course.courseCode,
       semester: course.semester,
-      year: course.year,
+      year: course.year || new Date().getFullYear(),
       termType: course.termType || "semester",
       startDate: course.startDate ? formatDateForInput(course.startDate) : "",
       endDate: course.endDate ? formatDateForInput(course.endDate) : "",
@@ -669,12 +669,13 @@ export default function Courses() {
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       console.log('Create form year input changed:', value);
-                                      // Allow empty string or valid numbers
+                                      // Always update the field value immediately for responsive typing
                                       if (value === '') {
                                         field.onChange(undefined);
                                       } else {
                                         const numValue = parseInt(value);
-                                        if (!isNaN(numValue)) {
+                                        // Only update if it's a valid number
+                                        if (!isNaN(numValue) && numValue > 0) {
                                           field.onChange(numValue);
                                         }
                                       }
@@ -912,12 +913,13 @@ export default function Courses() {
                               onChange={(e) => {
                                 const value = e.target.value;
                                 console.log('Edit form year input changed:', value);
-                                // Allow empty string or valid numbers
+                                // Always update the field value immediately for responsive typing
                                 if (value === '') {
                                   field.onChange(undefined);
                                 } else {
                                   const numValue = parseInt(value);
-                                  if (!isNaN(numValue)) {
+                                  // Only update if it's a valid number
+                                  if (!isNaN(numValue) && numValue > 0) {
                                     field.onChange(numValue);
                                   }
                                 }
