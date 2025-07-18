@@ -10,7 +10,8 @@ import {
   ChartScatter, 
   School,
   LayoutDashboard,
-  LogOut
+  LogOut,
+  Users
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ const getNavigationItems = (userRole: string) => {
     { path: "/grades", icon: BadgePercent, label: "Grades", roles: ["student", "teacher", "admin"] },
     { path: "/messages", icon: MessageCircle, label: "Messages", roles: ["student", "teacher", "admin"] },
     { path: "/announcements", icon: CircleAlert, label: "Announcements", roles: ["student", "teacher", "admin"] },
+    { path: "/students", icon: Users, label: "Manage Students", roles: ["teacher", "admin"] },
     { path: "/analytics", icon: ChartScatter, label: "Analytics", roles: ["teacher", "admin"] },
   ];
 

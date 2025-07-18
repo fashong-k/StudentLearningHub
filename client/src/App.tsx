@@ -18,6 +18,7 @@ import Profile from "@/pages/Profile";
 import Analytics from "@/pages/Analytics";
 import Announcements from "@/pages/Announcements";
 import Messages from "@/pages/Messages";
+import Students from "@/pages/Students";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -83,6 +84,11 @@ function Router() {
           <Route path="/messages">
             <ProtectedRoute route="/messages">
               <Messages />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/students">
+            <ProtectedRoute route="/students">
+              <Students />
             </ProtectedRoute>
           </Route>
           <Route path="/profile">

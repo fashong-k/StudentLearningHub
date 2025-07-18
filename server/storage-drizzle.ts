@@ -69,6 +69,14 @@ export interface IStorage {
   // Plagiarism operations
   getPlagiarismCheck(submissionId: number): Promise<any>;
   getCoursePlagiarismChecks(courseId: number): Promise<any[]>;
+  
+  // Student management operations
+  getAllStudents(): Promise<UserAttributes[]>;
+  getStudentsFromTeacherCourses(teacherId: string): Promise<UserAttributes[]>;
+  getStudentDetails(studentId: string): Promise<UserAttributes | undefined>;
+  getAllStudentStats(): Promise<any>;
+  getTeacherStudentStats(teacherId: string): Promise<any>;
+  teacherHasStudentAccess(teacherId: string, studentId: string): Promise<boolean>;
 }
 
 export class DrizzleStorage implements IStorage {
@@ -90,6 +98,19 @@ export class DrizzleStorage implements IStorage {
       isActive: dbCourse.is_active,
       createdAt: dbCourse.created_at,
       updatedAt: dbCourse.updated_at,
+    };
+  }
+
+  private mapUserFromDb(dbUser: any): UserAttributes {
+    return {
+      id: dbUser.id,
+      email: dbUser.email,
+      firstName: dbUser.first_name,
+      lastName: dbUser.last_name,
+      profileImageUrl: dbUser.profile_image_url,
+      role: dbUser.role,
+      createdAt: dbUser.created_at,
+      updatedAt: dbUser.updated_at,
     };
   }
 
@@ -678,6 +699,219 @@ export class DrizzleStorage implements IStorage {
       .innerJoin(submissions, eq(plagiarismChecks.submissionId, submissions.id))
       .innerJoin(assignments, eq(submissions.assignmentId, assignments.id))
       .where(eq(assignments.courseId, courseId));
+  }
+
+  // Student management operations
+  async getAllStudents(): Promise<UserAttributes[]> {
+    const result = await db.execute(sql`
+      SELECT 
+        u.id, u.email, u.first_name, u.last_name, u.role, u.profile_image_url, u.created_at,
+        COALESCE(course_counts.enrolled_courses, 0) as enrolled_courses,
+        COALESCE(assignment_counts.completed_assignments, 0) as completed_assignments,
+        COALESCE(grade_averages.average_grade, 0) as average_grade,
+        COALESCE(activity.last_activity, NULL) as last_activity
+      FROM ${sql.identifier(dbSchema)}.users u
+      LEFT JOIN (
+        SELECT student_id, COUNT(*) as enrolled_courses
+        FROM ${sql.identifier(dbSchema)}.enrollments
+        WHERE is_active = true
+        GROUP BY student_id
+      ) course_counts ON u.id = course_counts.student_id
+      LEFT JOIN (
+        SELECT student_id, COUNT(*) as completed_assignments
+        FROM ${sql.identifier(dbSchema)}.submissions
+        WHERE grade IS NOT NULL
+        GROUP BY student_id
+      ) assignment_counts ON u.id = assignment_counts.student_id
+      LEFT JOIN (
+        SELECT student_id, AVG(grade) as average_grade
+        FROM ${sql.identifier(dbSchema)}.submissions
+        WHERE grade IS NOT NULL
+        GROUP BY student_id
+      ) grade_averages ON u.id = grade_averages.student_id
+      LEFT JOIN (
+        SELECT student_id, MAX(submitted_at) as last_activity
+        FROM ${sql.identifier(dbSchema)}.submissions
+        GROUP BY student_id
+      ) activity ON u.id = activity.student_id
+      WHERE u.role = 'student'
+      ORDER BY u.last_name ASC, u.first_name ASC
+    `);
+    
+    return result.rows.map(row => ({
+      ...this.mapUserFromDb(row),
+      enrolledCourses: parseInt(row.enrolled_courses) || 0,
+      completedAssignments: parseInt(row.completed_assignments) || 0,
+      averageGrade: parseFloat(row.average_grade) || 0,
+      lastActivity: row.last_activity,
+      status: 'active' // Default status
+    })) as UserAttributes[];
+  }
+
+  async getStudentsFromTeacherCourses(teacherId: string): Promise<UserAttributes[]> {
+    const result = await db.execute(sql`
+      SELECT DISTINCT
+        u.id, u.email, u.first_name, u.last_name, u.role, u.profile_image_url, u.created_at,
+        COALESCE(course_counts.enrolled_courses, 0) as enrolled_courses,
+        COALESCE(assignment_counts.completed_assignments, 0) as completed_assignments,
+        COALESCE(grade_averages.average_grade, 0) as average_grade,
+        COALESCE(activity.last_activity, NULL) as last_activity
+      FROM ${sql.identifier(dbSchema)}.users u
+      INNER JOIN ${sql.identifier(dbSchema)}.enrollments e ON u.id = e.student_id
+      INNER JOIN ${sql.identifier(dbSchema)}.courses c ON e.course_id = c.id
+      LEFT JOIN (
+        SELECT student_id, COUNT(*) as enrolled_courses
+        FROM ${sql.identifier(dbSchema)}.enrollments
+        WHERE is_active = true
+        GROUP BY student_id
+      ) course_counts ON u.id = course_counts.student_id
+      LEFT JOIN (
+        SELECT student_id, COUNT(*) as completed_assignments
+        FROM ${sql.identifier(dbSchema)}.submissions
+        WHERE grade IS NOT NULL
+        GROUP BY student_id
+      ) assignment_counts ON u.id = assignment_counts.student_id
+      LEFT JOIN (
+        SELECT student_id, AVG(grade) as average_grade
+        FROM ${sql.identifier(dbSchema)}.submissions
+        WHERE grade IS NOT NULL
+        GROUP BY student_id
+      ) grade_averages ON u.id = grade_averages.student_id
+      LEFT JOIN (
+        SELECT student_id, MAX(submitted_at) as last_activity
+        FROM ${sql.identifier(dbSchema)}.submissions
+        GROUP BY student_id
+      ) activity ON u.id = activity.student_id
+      WHERE u.role = 'student' AND c.teacher_id = ${teacherId} AND e.is_active = true
+      ORDER BY u.last_name ASC, u.first_name ASC
+    `);
+    
+    return result.rows.map(row => ({
+      ...this.mapUserFromDb(row),
+      enrolledCourses: parseInt(row.enrolled_courses) || 0,
+      completedAssignments: parseInt(row.completed_assignments) || 0,
+      averageGrade: parseFloat(row.average_grade) || 0,
+      lastActivity: row.last_activity,
+      status: 'active' // Default status
+    })) as UserAttributes[];
+  }
+
+  async getStudentDetails(studentId: string): Promise<UserAttributes | undefined> {
+    const result = await db.execute(sql`
+      SELECT 
+        u.id, u.email, u.first_name, u.last_name, u.role, u.profile_image_url, u.created_at,
+        COALESCE(course_counts.enrolled_courses, 0) as enrolled_courses,
+        COALESCE(assignment_counts.completed_assignments, 0) as completed_assignments,
+        COALESCE(grade_averages.average_grade, 0) as average_grade,
+        COALESCE(activity.last_activity, NULL) as last_activity
+      FROM ${sql.identifier(dbSchema)}.users u
+      LEFT JOIN (
+        SELECT student_id, COUNT(*) as enrolled_courses
+        FROM ${sql.identifier(dbSchema)}.enrollments
+        WHERE is_active = true
+        GROUP BY student_id
+      ) course_counts ON u.id = course_counts.student_id
+      LEFT JOIN (
+        SELECT student_id, COUNT(*) as completed_assignments
+        FROM ${sql.identifier(dbSchema)}.submissions
+        WHERE grade IS NOT NULL
+        GROUP BY student_id
+      ) assignment_counts ON u.id = assignment_counts.student_id
+      LEFT JOIN (
+        SELECT student_id, AVG(grade) as average_grade
+        FROM ${sql.identifier(dbSchema)}.submissions
+        WHERE grade IS NOT NULL
+        GROUP BY student_id
+      ) grade_averages ON u.id = grade_averages.student_id
+      LEFT JOIN (
+        SELECT student_id, MAX(submitted_at) as last_activity
+        FROM ${sql.identifier(dbSchema)}.submissions
+        GROUP BY student_id
+      ) activity ON u.id = activity.student_id
+      WHERE u.id = ${studentId} AND u.role = 'student'
+    `);
+    
+    if (!result.rows[0]) {
+      return undefined;
+    }
+    
+    const row = result.rows[0];
+    return {
+      ...this.mapUserFromDb(row),
+      enrolledCourses: parseInt(row.enrolled_courses) || 0,
+      completedAssignments: parseInt(row.completed_assignments) || 0,
+      averageGrade: parseFloat(row.average_grade) || 0,
+      lastActivity: row.last_activity,
+      status: 'active' // Default status
+    } as UserAttributes;
+  }
+
+  async getAllStudentStats(): Promise<any> {
+    const result = await db.execute(sql`
+      SELECT 
+        COUNT(DISTINCT u.id) as total_students,
+        COUNT(DISTINCT CASE WHEN e.is_active = true THEN u.id END) as active_students,
+        COALESCE(AVG(grade_averages.average_grade), 0) as average_gpa,
+        COUNT(DISTINCT e.id) as total_enrollments
+      FROM ${sql.identifier(dbSchema)}.users u
+      LEFT JOIN ${sql.identifier(dbSchema)}.enrollments e ON u.id = e.student_id
+      LEFT JOIN (
+        SELECT student_id, AVG(grade) as average_grade
+        FROM ${sql.identifier(dbSchema)}.submissions
+        WHERE grade IS NOT NULL
+        GROUP BY student_id
+      ) grade_averages ON u.id = grade_averages.student_id
+      WHERE u.role = 'student'
+    `);
+    
+    const row = result.rows[0];
+    return {
+      totalStudents: parseInt(row.total_students) || 0,
+      activeStudents: parseInt(row.active_students) || 0,
+      averageGPA: parseFloat(row.average_gpa) || 0,
+      totalEnrollments: parseInt(row.total_enrollments) || 0
+    };
+  }
+
+  async getTeacherStudentStats(teacherId: string): Promise<any> {
+    const result = await db.execute(sql`
+      SELECT 
+        COUNT(DISTINCT u.id) as total_students,
+        COUNT(DISTINCT CASE WHEN e.is_active = true THEN u.id END) as active_students,
+        COALESCE(AVG(grade_averages.average_grade), 0) as average_gpa,
+        COUNT(DISTINCT e.id) as total_enrollments
+      FROM ${sql.identifier(dbSchema)}.users u
+      INNER JOIN ${sql.identifier(dbSchema)}.enrollments e ON u.id = e.student_id
+      INNER JOIN ${sql.identifier(dbSchema)}.courses c ON e.course_id = c.id
+      LEFT JOIN (
+        SELECT student_id, AVG(grade) as average_grade
+        FROM ${sql.identifier(dbSchema)}.submissions
+        WHERE grade IS NOT NULL
+        GROUP BY student_id
+      ) grade_averages ON u.id = grade_averages.student_id
+      WHERE u.role = 'student' AND c.teacher_id = ${teacherId}
+    `);
+    
+    const row = result.rows[0];
+    return {
+      totalStudents: parseInt(row.total_students) || 0,
+      activeStudents: parseInt(row.active_students) || 0,
+      averageGPA: parseFloat(row.average_gpa) || 0,
+      totalEnrollments: parseInt(row.total_enrollments) || 0
+    };
+  }
+
+  async teacherHasStudentAccess(teacherId: string, studentId: string): Promise<boolean> {
+    const result = await db.execute(sql`
+      SELECT COUNT(*) as count
+      FROM ${sql.identifier(dbSchema)}.enrollments e
+      INNER JOIN ${sql.identifier(dbSchema)}.courses c ON e.course_id = c.id
+      WHERE e.student_id = ${studentId} 
+        AND c.teacher_id = ${teacherId}
+        AND e.is_active = true
+    `);
+    
+    return parseInt(result.rows[0].count) > 0;
   }
 }
 

@@ -1078,6 +1078,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Student Management API endpoints
+  app.get("/api/students", authMiddleware, async (req: any, res) => {
+    try {
+      const userId = req.user.id; // Use local auth user structure
+      const user = await storage.getUser(userId);
+      
+      if (!user || (user.role !== "teacher" && user.role !== "admin")) {
+        return res.status(403).json({ message: "Only teachers and admins can view student management" });
+      }
+
+      let students = [];
+      
+      if (user.role === "admin") {
+        // Admins can see all students
+        students = await storage.getAllStudents();
+      } else if (user.role === "teacher") {
+        // Teachers can see students from their courses
+        students = await storage.getStudentsFromTeacherCourses(userId);
+      }
+
+      res.json(students);
+    } catch (error) {
+      console.error("Error fetching students:", error);
+      res.status(500).json({ message: "Failed to fetch students" });
+    }
+  });
+
+  app.get("/api/students/stats", authMiddleware, async (req: any, res) => {
+    try {
+      const userId = req.user.id; // Use local auth user structure
+      const user = await storage.getUser(userId);
+      
+      if (!user || (user.role !== "teacher" && user.role !== "admin")) {
+        return res.status(403).json({ message: "Only teachers and admins can view student statistics" });
+      }
+
+      let stats = {};
+      
+      if (user.role === "admin") {
+        // Admins can see all student statistics
+        stats = await storage.getAllStudentStats();
+      } else if (user.role === "teacher") {
+        // Teachers can see statistics for students in their courses
+        stats = await storage.getTeacherStudentStats(userId);
+      }
+
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching student statistics:", error);
+      res.status(500).json({ message: "Failed to fetch student statistics" });
+    }
+  });
+
+  app.get("/api/students/:studentId", authMiddleware, async (req: any, res) => {
+    try {
+      const { studentId } = req.params;
+      const userId = req.user.id; // Use local auth user structure
+      const user = await storage.getUser(userId);
+      
+      if (!user || (user.role !== "teacher" && user.role !== "admin")) {
+        return res.status(403).json({ message: "Only teachers and admins can view student details" });
+      }
+
+      const student = await storage.getStudentDetails(studentId);
+      if (!student) {
+        return res.status(404).json({ message: "Student not found" });
+      }
+
+      // Check if teacher has permission to view this student
+      if (user.role === "teacher") {
+        const hasPermission = await storage.teacherHasStudentAccess(userId, studentId);
+        if (!hasPermission) {
+          return res.status(403).json({ message: "You can only view students from your courses" });
+        }
+      }
+
+      res.json(student);
+    } catch (error) {
+      console.error("Error fetching student details:", error);
+      res.status(500).json({ message: "Failed to fetch student details" });
+    }
+  });
+
+  app.get("/api/students/:studentId/courses", authMiddleware, async (req: any, res) => {
+    try {
+      const { studentId } = req.params;
+      const userId = req.user.id; // Use local auth user structure
+      const user = await storage.getUser(userId);
+      
+      if (!user || (user.role !== "teacher" && user.role !== "admin")) {
+        return res.status(403).json({ message: "Only teachers and admins can view student courses" });
+      }
+
+      // Check if teacher has permission to view this student
+      if (user.role === "teacher") {
+        const hasPermission = await storage.teacherHasStudentAccess(userId, studentId);
+        if (!hasPermission) {
+          return res.status(403).json({ message: "You can only view students from your courses" });
+        }
+      }
+
+      const courses = await storage.getStudentCourses(studentId);
+      res.json(courses);
+    } catch (error) {
+      console.error("Error fetching student courses:", error);
+      res.status(500).json({ message: "Failed to fetch student courses" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -7,6 +7,7 @@ export interface RolePermissions {
   canModerateDiscussions: boolean;
   canAccessAllCourses: boolean;
   canManageSystemSettings: boolean;
+  manageStudents: boolean;
 }
 
 export const getRolePermissions = (role: string): RolePermissions => {
@@ -21,6 +22,7 @@ export const getRolePermissions = (role: string): RolePermissions => {
         canModerateDiscussions: true,
         canAccessAllCourses: true,
         canManageSystemSettings: true,
+        manageStudents: true,
       };
     case 'teacher':
       return {
@@ -32,6 +34,7 @@ export const getRolePermissions = (role: string): RolePermissions => {
         canModerateDiscussions: true,
         canAccessAllCourses: false,
         canManageSystemSettings: false,
+        manageStudents: true,
       };
     case 'student':
     default:
@@ -44,6 +47,7 @@ export const getRolePermissions = (role: string): RolePermissions => {
         canModerateDiscussions: false,
         canAccessAllCourses: false,
         canManageSystemSettings: false,
+        manageStudents: false,
       };
   }
 };
@@ -61,6 +65,7 @@ export const canAccessRoute = (userRole: string, route: string): boolean => {
     '/grades': ['student', 'teacher', 'admin'],
     '/messages': ['student', 'teacher', 'admin'],
     '/announcements': ['student', 'teacher', 'admin'],
+    '/students': ['teacher', 'admin'],
     '/analytics': ['teacher', 'admin'],
     '/profile': ['student', 'teacher', 'admin'],
   };
