@@ -116,16 +116,18 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-- July 18, 2025: Successfully completed comprehensive analytics system with course-specific filtering
-  - Fixed TanStack Query parameter handling to properly convert courseId parameters to query strings
-  - Updated query client to construct URLs with proper query parameters (e.g., /api/analytics/advanced?courseId=3)
-  - All KPI cards now filter correctly based on selected course: Total Students, Average Grade, Total Submissions, Late Submissions
-  - Course Engagement Overview filters to show only selected course data with proper teacher isolation
-  - Fixed Grade Distribution pie chart by removing complex activeShape component that caused overlapping labels
-  - Pie chart now displays cleanly with standard labels and hover tooltips without highlighting issues
-  - Complete course filtering system: selecting specific course filters ALL analytics data, selecting "All Courses" shows aggregate data
-  - System properly differentiates between teacher access (own courses) and admin access (all courses)
-  - Analytics system now provides accurate course-specific data visualization with clean user interface
+- July 18, 2025: Successfully completed comprehensive course data filtering system
+  - Fixed Course Information page data accuracy by correcting API query structure in CourseView component
+  - Updated frontend queries to use proper URL paths: /api/assignments/{courseId}, /api/announcements/{courseId}, /api/enrollments/{courseId}
+  - Enhanced backend storage methods with proper user data joins for enrollments and announcements
+  - Course Quick Stats now show accurate course-specific counts instead of incorrect aggregate data
+  - Assignments tab displays only assignments from selected course with proper total counts
+  - Announcements tab shows course-specific announcements with correct author information
+  - Students tab displays actual enrolled students instead of showing "No students enrolled" error
+  - Fixed TanStack Query parameter handling for analytics with proper courseId filtering
+  - Grade Distribution pie chart cleaned up by removing overlapping label issues
+  - Complete data consistency between course cards and detailed course information pages
+  - System now provides accurate course-specific data across all components and tabs
 
 - July 18, 2025: Successfully implemented comprehensive Student Management system with complete navigation integration
   - Added complete Student Management API endpoints with role-based access control
