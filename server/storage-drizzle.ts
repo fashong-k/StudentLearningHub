@@ -22,6 +22,7 @@ export interface IStorage {
   getCourseById(id: number): Promise<CourseAttributes | undefined>;
   getTeacherCourses(teacherId: string): Promise<CourseAttributes[]>;
   getStudentCourses(studentId: string): Promise<CourseAttributes[]>;
+  getCoursesForStudent(studentId: string): Promise<CourseAttributes[]>;
   createCourse(course: Omit<CourseAttributes, 'id' | 'createdAt' | 'updatedAt'>): Promise<CourseAttributes>;
   updateCourse(id: number, course: Partial<CourseAttributes>): Promise<CourseAttributes>;
   deleteCourse(id: number): Promise<boolean>;
@@ -155,6 +156,53 @@ export class DrizzleStorage implements IStorage {
       // Add enrollment and assignment counts
       (course as any).enrolledCount = parseInt(row.enrolled_count) || 0;
       (course as any).assignmentCount = parseInt(row.assignment_count) || 0;
+      return course;
+    }) as CourseAttributes[];
+  }
+
+  async getCoursesForStudent(studentId: string): Promise<CourseAttributes[]> {
+    const result = await db.execute(sql`
+      SELECT 
+        c.id, c.title, c.description, c.course_code, c.teacher_id, c.semester, c.year, 
+        c.term_type, c.start_date, c.end_date, c.visibility, c.grading_scheme, c.is_active, 
+        c.created_at, c.updated_at,
+        u.first_name as teacher_first_name, u.last_name as teacher_last_name, u.email as teacher_email,
+        COALESCE(enrollment_counts.enrolled_count, 0) as enrolled_count,
+        COALESCE(assignment_counts.assignment_count, 0) as assignment_count,
+        CASE WHEN student_enrollment.is_active = true THEN true ELSE false END as is_enrolled
+      FROM ${sql.identifier(dbSchema)}.courses c
+      LEFT JOIN ${sql.identifier(dbSchema)}.users u ON c.teacher_id = u.id
+      LEFT JOIN (
+        SELECT course_id, COUNT(*) as enrolled_count
+        FROM ${sql.identifier(dbSchema)}.enrollments
+        WHERE is_active = true
+        GROUP BY course_id
+      ) enrollment_counts ON c.id = enrollment_counts.course_id
+      LEFT JOIN (
+        SELECT course_id, COUNT(*) as assignment_count
+        FROM ${sql.identifier(dbSchema)}.assignments
+        GROUP BY course_id
+      ) assignment_counts ON c.id = assignment_counts.course_id
+      LEFT JOIN (
+        SELECT course_id, is_active
+        FROM ${sql.identifier(dbSchema)}.enrollments
+        WHERE student_id = ${studentId}
+      ) student_enrollment ON c.id = student_enrollment.course_id
+      ORDER BY c.title ASC
+    `);
+    return result.rows.map(row => {
+      const course = this.mapCourseFromDb(row);
+      if (row.teacher_first_name && row.teacher_last_name) {
+        (course as any).teacher = {
+          firstName: row.teacher_first_name,
+          lastName: row.teacher_last_name,
+          email: row.teacher_email
+        };
+      }
+      // Add enrollment and assignment counts
+      (course as any).enrolledCount = parseInt(row.enrolled_count) || 0;
+      (course as any).assignmentCount = parseInt(row.assignment_count) || 0;
+      (course as any).isEnrolled = row.is_enrolled === true;
       return course;
     }) as CourseAttributes[];
   }

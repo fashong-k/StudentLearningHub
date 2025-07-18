@@ -137,8 +137,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let courses;
       if (user.role === "teacher") {
         courses = await storage.getTeacherCourses(userId);
+      } else if (user.role === "student") {
+        courses = await storage.getCoursesForStudent(userId);
       } else {
-        courses = await storage.getStudentCourses(userId);
+        courses = await storage.getCourses();
       }
 
       res.json(courses);

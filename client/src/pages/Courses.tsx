@@ -317,11 +317,23 @@ export default function Courses() {
     mutationFn: async (courseId: number) => {
       return await apiRequest("DELETE", `/api/courses/${courseId}/enroll`);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Success",
-        description: "Successfully unenrolled from course",
+        description: data.message || "Successfully unenrolled from course",
       });
+      
+      // Show additional information about preserved records
+      if (data.note) {
+        setTimeout(() => {
+          toast({
+            title: "Academic Records Preserved",
+            description: data.note,
+            variant: "default",
+          });
+        }, 1000);
+      }
+      
       queryClient.invalidateQueries({ queryKey: ["/api/courses"] });
     },
     onError: (error: Error) => {
@@ -547,12 +559,12 @@ export default function Courses() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-800">
-                {user?.role === "teacher" ? "My Courses" : "Enrolled Courses"}
+                {user?.role === "teacher" ? "My Courses" : "Courses"}
               </h1>
               <p className="text-gray-600 mt-1">
                 {user?.role === "teacher" 
                   ? "Manage your teaching courses and materials"
-                  : "View your enrolled courses and assignments"}
+                  : "Browse and manage your course enrollments"}
               </p>
             </div>
             {hasPermission(user?.role || "student", "canCreateCourses") && (
@@ -1279,16 +1291,29 @@ export default function Courses() {
                         </Button>
                       )}
                       {user?.role === "student" && (
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={() => handleUnenrollCourse(course.id)}
-                          disabled={unenrollCourseMutation.isPending}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-                        >
-                          <UserMinus className="w-4 h-4" />
-                          {unenrollCourseMutation.isPending ? "Unenrolling..." : "Unenroll"}
-                        </Button>
+                        (course as any).isEnrolled ? (
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => handleUnenrollCourse(course.id)}
+                            disabled={unenrollCourseMutation.isPending}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                          >
+                            <UserMinus className="w-4 h-4" />
+                            {unenrollCourseMutation.isPending ? "Unenrolling..." : "Unenroll"}
+                          </Button>
+                        ) : (
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => handleEnrollCourse(course.id)}
+                            disabled={enrollCourseMutation.isPending}
+                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-200"
+                          >
+                            <UserPlus className="w-4 h-4" />
+                            {enrollCourseMutation.isPending ? "Enrolling..." : "Enroll"}
+                          </Button>
+                        )
                       )}
                     </div>
                   </CardContent>
@@ -1304,7 +1329,7 @@ export default function Courses() {
               <p className="text-gray-600 mb-4">
                 {user?.role === "teacher" 
                   ? "Create your first course to get started"
-                  : "You're not enrolled in any courses yet"}
+                  : "No courses are available at the moment"}
               </p>
               {user?.role === "teacher" && (
                 <Button onClick={() => setIsCreateOpen(true)}>
