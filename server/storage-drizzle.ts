@@ -125,9 +125,22 @@ export class DrizzleStorage implements IStorage {
         c.id, c.title, c.description, c.course_code, c.teacher_id, c.semester, c.year, 
         c.term_type, c.start_date, c.end_date, c.visibility, c.grading_scheme, c.is_active, 
         c.created_at, c.updated_at,
-        u.first_name as teacher_first_name, u.last_name as teacher_last_name, u.email as teacher_email
+        u.first_name as teacher_first_name, u.last_name as teacher_last_name, u.email as teacher_email,
+        COALESCE(enrollment_counts.enrolled_count, 0) as enrolled_count,
+        COALESCE(assignment_counts.assignment_count, 0) as assignment_count
       FROM ${sql.identifier(dbSchema)}.courses c
       LEFT JOIN ${sql.identifier(dbSchema)}.users u ON c.teacher_id = u.id
+      LEFT JOIN (
+        SELECT course_id, COUNT(*) as enrolled_count
+        FROM ${sql.identifier(dbSchema)}.enrollments
+        WHERE is_active = true
+        GROUP BY course_id
+      ) enrollment_counts ON c.id = enrollment_counts.course_id
+      LEFT JOIN (
+        SELECT course_id, COUNT(*) as assignment_count
+        FROM ${sql.identifier(dbSchema)}.assignments
+        GROUP BY course_id
+      ) assignment_counts ON c.id = assignment_counts.course_id
       ORDER BY c.title ASC
     `);
     return result.rows.map(row => {
@@ -139,6 +152,9 @@ export class DrizzleStorage implements IStorage {
           email: row.teacher_email
         };
       }
+      // Add enrollment and assignment counts
+      (course as any).enrolledCount = parseInt(row.enrolled_count) || 0;
+      (course as any).assignmentCount = parseInt(row.assignment_count) || 0;
       return course;
     }) as CourseAttributes[];
   }
@@ -149,9 +165,22 @@ export class DrizzleStorage implements IStorage {
         c.id, c.title, c.description, c.course_code, c.teacher_id, c.semester, c.year, 
         c.term_type, c.start_date, c.end_date, c.visibility, c.grading_scheme, c.is_active, 
         c.created_at, c.updated_at,
-        u.first_name as teacher_first_name, u.last_name as teacher_last_name, u.email as teacher_email
+        u.first_name as teacher_first_name, u.last_name as teacher_last_name, u.email as teacher_email,
+        COALESCE(enrollment_counts.enrolled_count, 0) as enrolled_count,
+        COALESCE(assignment_counts.assignment_count, 0) as assignment_count
       FROM ${sql.identifier(dbSchema)}.courses c
       LEFT JOIN ${sql.identifier(dbSchema)}.users u ON c.teacher_id = u.id
+      LEFT JOIN (
+        SELECT course_id, COUNT(*) as enrolled_count
+        FROM ${sql.identifier(dbSchema)}.enrollments
+        WHERE is_active = true
+        GROUP BY course_id
+      ) enrollment_counts ON c.id = enrollment_counts.course_id
+      LEFT JOIN (
+        SELECT course_id, COUNT(*) as assignment_count
+        FROM ${sql.identifier(dbSchema)}.assignments
+        GROUP BY course_id
+      ) assignment_counts ON c.id = assignment_counts.course_id
       WHERE c.id = ${id}
     `);
     
@@ -171,6 +200,10 @@ export class DrizzleStorage implements IStorage {
       };
     }
     
+    // Add enrollment and assignment counts
+    (course as any).enrolledCount = parseInt(row.enrolled_count) || 0;
+    (course as any).assignmentCount = parseInt(row.assignment_count) || 0;
+    
     return course;
   }
 
@@ -180,9 +213,22 @@ export class DrizzleStorage implements IStorage {
         c.id, c.title, c.description, c.course_code, c.teacher_id, c.semester, c.year, 
         c.term_type, c.start_date, c.end_date, c.visibility, c.grading_scheme, c.is_active, 
         c.created_at, c.updated_at,
-        u.first_name as teacher_first_name, u.last_name as teacher_last_name, u.email as teacher_email
+        u.first_name as teacher_first_name, u.last_name as teacher_last_name, u.email as teacher_email,
+        COALESCE(enrollment_counts.enrolled_count, 0) as enrolled_count,
+        COALESCE(assignment_counts.assignment_count, 0) as assignment_count
       FROM ${sql.identifier(dbSchema)}.courses c
       LEFT JOIN ${sql.identifier(dbSchema)}.users u ON c.teacher_id = u.id
+      LEFT JOIN (
+        SELECT course_id, COUNT(*) as enrolled_count
+        FROM ${sql.identifier(dbSchema)}.enrollments
+        WHERE is_active = true
+        GROUP BY course_id
+      ) enrollment_counts ON c.id = enrollment_counts.course_id
+      LEFT JOIN (
+        SELECT course_id, COUNT(*) as assignment_count
+        FROM ${sql.identifier(dbSchema)}.assignments
+        GROUP BY course_id
+      ) assignment_counts ON c.id = assignment_counts.course_id
       WHERE c.teacher_id = ${teacherId}
       ORDER BY c.title ASC
     `);
@@ -195,6 +241,9 @@ export class DrizzleStorage implements IStorage {
           email: row.teacher_email
         };
       }
+      // Add enrollment and assignment counts
+      (course as any).enrolledCount = parseInt(row.enrolled_count) || 0;
+      (course as any).assignmentCount = parseInt(row.assignment_count) || 0;
       return course;
     }) as CourseAttributes[];
   }
@@ -205,10 +254,23 @@ export class DrizzleStorage implements IStorage {
         c.id, c.title, c.description, c.course_code, c.teacher_id, c.semester, c.year, 
         c.term_type, c.start_date, c.end_date, c.visibility, c.grading_scheme, c.is_active, 
         c.created_at, c.updated_at,
-        u.first_name as teacher_first_name, u.last_name as teacher_last_name, u.email as teacher_email
+        u.first_name as teacher_first_name, u.last_name as teacher_last_name, u.email as teacher_email,
+        COALESCE(enrollment_counts.enrolled_count, 0) as enrolled_count,
+        COALESCE(assignment_counts.assignment_count, 0) as assignment_count
       FROM ${sql.identifier(dbSchema)}.courses c
       INNER JOIN ${sql.identifier(dbSchema)}.enrollments e ON e.course_id = c.id
       LEFT JOIN ${sql.identifier(dbSchema)}.users u ON c.teacher_id = u.id
+      LEFT JOIN (
+        SELECT course_id, COUNT(*) as enrolled_count
+        FROM ${sql.identifier(dbSchema)}.enrollments
+        WHERE is_active = true
+        GROUP BY course_id
+      ) enrollment_counts ON c.id = enrollment_counts.course_id
+      LEFT JOIN (
+        SELECT course_id, COUNT(*) as assignment_count
+        FROM ${sql.identifier(dbSchema)}.assignments
+        GROUP BY course_id
+      ) assignment_counts ON c.id = assignment_counts.course_id
       WHERE e.student_id = ${studentId}
       ORDER BY c.title ASC
     `);
@@ -221,6 +283,9 @@ export class DrizzleStorage implements IStorage {
           email: row.teacher_email
         };
       }
+      // Add enrollment and assignment counts
+      (course as any).enrolledCount = parseInt(row.enrolled_count) || 0;
+      (course as any).assignmentCount = parseInt(row.assignment_count) || 0;
       return course;
     }) as CourseAttributes[];
   }
