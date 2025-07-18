@@ -121,41 +121,108 @@ export class DrizzleStorage implements IStorage {
   // Course operations
   async getCourses(): Promise<CourseAttributes[]> {
     const result = await db.execute(sql`
-      SELECT id, title, description, course_code, teacher_id, semester, year, term_type, start_date, end_date, visibility, grading_scheme, is_active, created_at, updated_at
-      FROM ${sql.identifier(dbSchema)}.courses
-      ORDER BY title ASC
+      SELECT 
+        c.id, c.title, c.description, c.course_code, c.teacher_id, c.semester, c.year, 
+        c.term_type, c.start_date, c.end_date, c.visibility, c.grading_scheme, c.is_active, 
+        c.created_at, c.updated_at,
+        u.first_name as teacher_first_name, u.last_name as teacher_last_name, u.email as teacher_email
+      FROM ${sql.identifier(dbSchema)}.courses c
+      LEFT JOIN ${sql.identifier(dbSchema)}.users u ON c.teacher_id = u.id
+      ORDER BY c.title ASC
     `);
-    return result.rows.map(this.mapCourseFromDb) as CourseAttributes[];
+    return result.rows.map(row => {
+      const course = this.mapCourseFromDb(row);
+      if (row.teacher_first_name && row.teacher_last_name) {
+        (course as any).teacher = {
+          firstName: row.teacher_first_name,
+          lastName: row.teacher_last_name,
+          email: row.teacher_email
+        };
+      }
+      return course;
+    }) as CourseAttributes[];
   }
 
   async getCourseById(id: number): Promise<CourseAttributes | undefined> {
     const result = await db.execute(sql`
-      SELECT id, title, description, course_code, teacher_id, semester, year, term_type, start_date, end_date, visibility, grading_scheme, is_active, created_at, updated_at
-      FROM ${sql.identifier(dbSchema)}.courses
-      WHERE id = ${id}
+      SELECT 
+        c.id, c.title, c.description, c.course_code, c.teacher_id, c.semester, c.year, 
+        c.term_type, c.start_date, c.end_date, c.visibility, c.grading_scheme, c.is_active, 
+        c.created_at, c.updated_at,
+        u.first_name as teacher_first_name, u.last_name as teacher_last_name, u.email as teacher_email
+      FROM ${sql.identifier(dbSchema)}.courses c
+      LEFT JOIN ${sql.identifier(dbSchema)}.users u ON c.teacher_id = u.id
+      WHERE c.id = ${id}
     `);
-    return result.rows[0] ? this.mapCourseFromDb(result.rows[0]) : undefined;
+    
+    if (!result.rows[0]) {
+      return undefined;
+    }
+    
+    const row = result.rows[0];
+    const course = this.mapCourseFromDb(row);
+    
+    // Add teacher information if available
+    if (row.teacher_first_name && row.teacher_last_name) {
+      (course as any).teacher = {
+        firstName: row.teacher_first_name,
+        lastName: row.teacher_last_name,
+        email: row.teacher_email
+      };
+    }
+    
+    return course;
   }
 
   async getTeacherCourses(teacherId: string): Promise<CourseAttributes[]> {
     const result = await db.execute(sql`
-      SELECT id, title, description, course_code, teacher_id, semester, year, term_type, start_date, end_date, visibility, grading_scheme, is_active, created_at, updated_at
-      FROM ${sql.identifier(dbSchema)}.courses
-      WHERE teacher_id = ${teacherId}
-      ORDER BY title ASC
+      SELECT 
+        c.id, c.title, c.description, c.course_code, c.teacher_id, c.semester, c.year, 
+        c.term_type, c.start_date, c.end_date, c.visibility, c.grading_scheme, c.is_active, 
+        c.created_at, c.updated_at,
+        u.first_name as teacher_first_name, u.last_name as teacher_last_name, u.email as teacher_email
+      FROM ${sql.identifier(dbSchema)}.courses c
+      LEFT JOIN ${sql.identifier(dbSchema)}.users u ON c.teacher_id = u.id
+      WHERE c.teacher_id = ${teacherId}
+      ORDER BY c.title ASC
     `);
-    return result.rows.map(this.mapCourseFromDb) as CourseAttributes[];
+    return result.rows.map(row => {
+      const course = this.mapCourseFromDb(row);
+      if (row.teacher_first_name && row.teacher_last_name) {
+        (course as any).teacher = {
+          firstName: row.teacher_first_name,
+          lastName: row.teacher_last_name,
+          email: row.teacher_email
+        };
+      }
+      return course;
+    }) as CourseAttributes[];
   }
 
   async getStudentCourses(studentId: string): Promise<CourseAttributes[]> {
     const result = await db.execute(sql`
-      SELECT c.id, c.title, c.description, c.course_code, c.teacher_id, c.semester, c.year, c.term_type, c.start_date, c.end_date, c.visibility, c.grading_scheme, c.is_active, c.created_at, c.updated_at
+      SELECT 
+        c.id, c.title, c.description, c.course_code, c.teacher_id, c.semester, c.year, 
+        c.term_type, c.start_date, c.end_date, c.visibility, c.grading_scheme, c.is_active, 
+        c.created_at, c.updated_at,
+        u.first_name as teacher_first_name, u.last_name as teacher_last_name, u.email as teacher_email
       FROM ${sql.identifier(dbSchema)}.courses c
       INNER JOIN ${sql.identifier(dbSchema)}.enrollments e ON e.course_id = c.id
+      LEFT JOIN ${sql.identifier(dbSchema)}.users u ON c.teacher_id = u.id
       WHERE e.student_id = ${studentId}
       ORDER BY c.title ASC
     `);
-    return result.rows.map(this.mapCourseFromDb) as CourseAttributes[];
+    return result.rows.map(row => {
+      const course = this.mapCourseFromDb(row);
+      if (row.teacher_first_name && row.teacher_last_name) {
+        (course as any).teacher = {
+          firstName: row.teacher_first_name,
+          lastName: row.teacher_last_name,
+          email: row.teacher_email
+        };
+      }
+      return course;
+    }) as CourseAttributes[];
   }
 
   async createCourse(course: Omit<CourseAttributes, 'id' | 'createdAt' | 'updatedAt'>): Promise<CourseAttributes> {
