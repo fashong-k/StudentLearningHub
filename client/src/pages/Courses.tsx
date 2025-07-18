@@ -614,6 +614,10 @@ export default function Courses() {
                                   if (value === "semester") {
                                     form.setValue("startDate", undefined);
                                     form.setValue("endDate", undefined);
+                                    // Set default semester to Spring if none selected
+                                    if (!form.getValues("semester")) {
+                                      form.setValue("semester", "Spring");
+                                    }
                                   }
                                 }}
                                 placeholder="Select term type"
@@ -656,7 +660,17 @@ export default function Courses() {
                               <FormItem>
                                 <FormLabel>Year</FormLabel>
                                 <FormControl>
-                                  <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} />
+                                  <Input 
+                                    type="number" 
+                                    placeholder="2024"
+                                    min="2020"
+                                    max="2030"
+                                    value={field.value || ''} 
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      field.onChange(value === '' ? undefined : parseInt(value));
+                                    }} 
+                                  />
                                 </FormControl>
                               </FormItem>
                             )}
@@ -834,6 +848,10 @@ export default function Courses() {
                             if (value === "semester") {
                               editForm.setValue("startDate", undefined);
                               editForm.setValue("endDate", undefined);
+                              // Set default semester to Spring if none selected
+                              if (!editForm.getValues("semester")) {
+                                editForm.setValue("semester", "Spring");
+                              }
                             }
                           }}
                           placeholder="Select term type"
@@ -876,7 +894,17 @@ export default function Courses() {
                         <FormItem>
                           <FormLabel>Year</FormLabel>
                           <FormControl>
-                            <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} />
+                            <Input 
+                              type="number" 
+                              placeholder="2024"
+                              min="2020"
+                              max="2030"
+                              value={field.value || ''} 
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                field.onChange(value === '' ? undefined : parseInt(value));
+                              }} 
+                            />
                           </FormControl>
                         </FormItem>
                       )}
