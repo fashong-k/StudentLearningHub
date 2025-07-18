@@ -375,9 +375,20 @@ export default function Courses() {
   };
 
   const onSubmit = (data: any) => {
-    console.log("Form submission reached!", data);
-    console.log("Form validation state:", JSON.stringify(form.formState.errors, null, 2));
-    console.log("Code validation state:", codeValidation);
+    console.log("✅ Form submission reached!", data);
+    console.log("📋 Form validation state:", JSON.stringify(form.formState.errors, null, 2));
+    console.log("🔍 Code validation state:", codeValidation);
+    
+    // Validate required fields
+    if (!data.title || !data.courseCode) {
+      console.log("❌ Missing required fields");
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
     
     // Clean up the data and ensure proper field values
     const courseData = {
@@ -388,11 +399,16 @@ export default function Courses() {
       endDate: data.termType === "term" && data.endDate && data.endDate !== "" ? new Date(data.endDate) : null,
     };
     
-    console.log("Final course data with teacherId:", courseData);
+    console.log("📤 Final course data being sent:", courseData);
+    console.log("🚀 Starting mutation...");
     createCourseMutation.mutate(courseData);
   };
 
   const onEditSubmit = async (data: any) => {
+    console.log("✅ Edit form submission reached!", data);
+    console.log("📋 Edit form validation state:", JSON.stringify(editForm.formState.errors, null, 2));
+    console.log("🏗️ Editing course:", editingCourse);
+    
     if (editingCourse) {
       // Clean up the data and ensure proper field values
       const courseData = {
@@ -403,11 +419,15 @@ export default function Courses() {
         endDate: data.termType === "term" && data.endDate && data.endDate !== "" ? new Date(data.endDate) : null,
       };
       
+      console.log("📤 Final edit data being sent:", courseData);
+      
       // First validate the update
       try {
+        console.log("🔍 Starting validation...");
         const validationResult = await apiRequest("POST", `/api/courses/${editingCourse.id}/validate-update`, courseData);
         
         if (validationResult.validation.warnings.length > 0) {
+          console.log("⚠️ Validation warnings found:", validationResult.validation.warnings);
           setValidationWarnings(validationResult.validation.warnings);
           setPendingUpdate({ id: editingCourse.id, data: courseData });
           setShowValidationDialog(true);
@@ -415,10 +435,12 @@ export default function Courses() {
         }
         
         // If no warnings, proceed with update
+        console.log("✅ No validation warnings, proceeding with update...");
         updateCourseMutation.mutate({ id: editingCourse.id, data: courseData });
       } catch (error) {
-        console.error("Validation error:", error);
+        console.error("❌ Validation error:", error);
         // Fall back to direct update if validation fails
+        console.log("🔄 Falling back to direct update...");
         updateCourseMutation.mutate({ id: editingCourse.id, data: courseData });
       }
     }
@@ -730,20 +752,6 @@ export default function Courses() {
                         <Button 
                           type="submit" 
                           disabled={createCourseMutation.isPending || (codeValidation.message !== "" && !codeValidation.isValid)}
-                          onClick={(e) => {
-                            console.log("Button clicked!");
-                            console.log("Mutation pending:", createCourseMutation.isPending);
-                            console.log("Code validation:", codeValidation);
-                            console.log("Form valid:", form.formState.isValid);
-                            console.log("Form errors:", JSON.stringify(form.formState.errors, null, 2));
-                            console.log("Form values:", JSON.stringify(form.getValues(), null, 2));
-                            
-                            // Force form submission if validation passes
-                            if (form.formState.isValid && codeValidation.isValid) {
-                              console.log("Manually triggering form submission...");
-                              form.handleSubmit(onSubmit)();
-                            }
-                          }}
                         >
                           {createCourseMutation.isPending ? "Creating..." : "Create Course"}
                         </Button>
