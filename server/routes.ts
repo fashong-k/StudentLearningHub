@@ -121,7 +121,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const result = await db.execute(sql`SELECT 1 as test`);
       res.json({ status: "success", message: "Database connection working", result: result.rows });
     } catch (error) {
-      res.status(500).json({ status: "error", message: "Database connection failed", error: error.message });
+      res.status(500).json({ status: "error", message: "Database connection failed", error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
@@ -1425,7 +1425,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Only teachers and admins can view student management" });
       }
 
-      let students = [];
+      let students: any[] = [];
       
       if (courseId) {
         // Course-specific students
@@ -1449,7 +1449,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      res.json(students);
+      res.json(students as any[]);
     } catch (error) {
       console.error("Error fetching students:", error);
       res.status(500).json({ message: "Failed to fetch students" });
