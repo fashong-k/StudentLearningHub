@@ -155,12 +155,14 @@ export default function Assignments() {
   });
 
   const handleCreateAssignment = (data: any) => {
-    // Convert datetime-local format to ISO string
+    console.log('Form data before processing:', data);
+    // The dueDate is already an ISO string from the field onChange
     const assignmentData = {
       ...data,
-      dueDate: new Date(data.dueDate).toISOString(),
+      dueDate: data.dueDate, // Already converted to ISO in the field
       isActive: true
     };
+    console.log('Assignment data being sent:', assignmentData);
     
     createAssignmentMutation.mutate(assignmentData);
   };
@@ -390,6 +392,17 @@ export default function Assignments() {
                   </DialogHeader>
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(handleCreateAssignment)} className="space-y-4">
+                      {/* Debug form errors */}
+                      {Object.keys(form.formState.errors).length > 0 && (
+                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                          <p className="text-sm text-red-800 font-medium">Form Validation Errors:</p>
+                          <ul className="text-sm text-red-700 mt-1">
+                            {Object.entries(form.formState.errors).map(([field, error]) => (
+                              <li key={field}>{field}: {error?.message || 'Invalid value'}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                       <FormField
                         control={form.control}
                         name="title"
@@ -465,8 +478,27 @@ export default function Assignments() {
                             <FormControl>
                               <Input 
                                 type="datetime-local" 
-                                value={field.value ? new Date(field.value).toISOString().slice(0, 16) : ""}
-                                onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value).toISOString() : "")}
+                                value={field.value ? (() => {
+                                  try {
+                                    const date = new Date(field.value);
+                                    return date.toISOString().slice(0, 16);
+                                  } catch {
+                                    return "";
+                                  }
+                                })() : ""}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  if (value) {
+                                    try {
+                                      const isoString = new Date(value).toISOString();
+                                      field.onChange(isoString);
+                                    } catch {
+                                      field.onChange("");
+                                    }
+                                  } else {
+                                    field.onChange("");
+                                  }
+                                }}
                               />
                             </FormControl>
                           </FormItem>

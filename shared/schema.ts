@@ -756,6 +756,9 @@ export const insertAssignmentSchema = createInsertSchema(assignments).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  dueDate: z.string().optional(),
+  maxPoints: z.string().optional(),
 });
 
 export const insertSubmissionSchema = createInsertSchema(submissions).omit({
