@@ -56,8 +56,8 @@ export default function Assignments() {
     defaultValues: {
       title: "",
       description: "",
-      dueDate: "",
-      maxPoints: 100,
+      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // Default to 1 week from now
+      maxPoints: "100.00",
       assignmentType: "homework",
       courseId: 1,
     },
@@ -446,7 +446,11 @@ export default function Assignments() {
                             <FormItem>
                               <FormLabel>Max Points</FormLabel>
                               <FormControl>
-                                <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} />
+                                <Input 
+                                  type="number" 
+                                  {...field} 
+                                  onChange={(e) => field.onChange(parseFloat(e.target.value).toFixed(2))} 
+                                />
                               </FormControl>
                             </FormItem>
                           )}
@@ -459,7 +463,12 @@ export default function Assignments() {
                           <FormItem>
                             <FormLabel>Due Date</FormLabel>
                             <FormControl>
-                              <Input type="datetime-local" {...field} />
+                              <Input 
+                                type="datetime-local" 
+                                {...field}
+                                value={field.value ? new Date(field.value).toISOString().slice(0, 16) : ""}
+                                onChange={(e) => field.onChange(new Date(e.target.value).toISOString())}
+                              />
                             </FormControl>
                           </FormItem>
                         )}
