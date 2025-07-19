@@ -270,7 +270,8 @@ export default function Assignments() {
 
   const displayAssignments = sampleAssignments.filter(assignment => {
     const matchesSearch = assignment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         assignment.courseCode.toLowerCase().includes(searchTerm.toLowerCase());
+                         (assignment.courseCode && assignment.courseCode.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                         (assignment.description && assignment.description.toLowerCase().includes(searchTerm.toLowerCase()));
     
     if (activeTab === "all") return matchesSearch;
     if (activeTab === "pending") return matchesSearch && (!assignment.submittedAt);
