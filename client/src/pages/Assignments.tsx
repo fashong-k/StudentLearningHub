@@ -115,7 +115,57 @@ export default function Assignments() {
     runPlagiarismCheck.mutate(submissionId);
   };
 
-  // Fetch assignments for all courses
+  // Assignment creation mutation
+  const createAssignmentMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest("POST", "/api/assignments", data);
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Success",
+        description: "Assignment created successfully",
+      });
+      // Invalidate and refetch assignments
+      queryClient.invalidateQueries({ queryKey: ["/api/assignments"] });
+      // Also invalidate individual course assignment queries
+      queryClient.invalidateQueries({ queryKey: ["/api/courses"] });
+      setIsCreateOpen(false);
+      form.reset();
+    },
+    onError: (error: any) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 500);
+        return;
+      }
+      
+      const errorMessage = error?.response?.data?.message || error?.message || "Failed to create assignment";
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCreateAssignment = (data: any) => {
+    // Convert datetime-local format to ISO string
+    const assignmentData = {
+      ...data,
+      dueDate: new Date(data.dueDate).toISOString(),
+      isActive: true
+    };
+    
+    createAssignmentMutation.mutate(assignmentData);
+  };
+
+  // Fetch assignments using new CRUD endpoints
   const { data: assignments = [], isLoading: assignmentsLoading } = useQuery<any[]>({
     queryKey: ["/api/assignments"],
     enabled: !!user && courses.length > 0,
@@ -123,12 +173,33 @@ export default function Assignments() {
       const allAssignments = [];
       for (const course of courses) {
         try {
-          const courseAssignments = await apiRequest("GET", `/api/courses/${course.id}/assignments`);
+          // Use new CRUD endpoint for getting assignments by course
+          const courseAssignments = await apiRequest("GET", `/api/assignments/${course.id}`);
           if (Array.isArray(courseAssignments)) {
-            allAssignments.push(...courseAssignments);
+            // Add course information to each assignment
+            const assignmentsWithCourse = courseAssignments.map(assignment => ({
+              ...assignment,
+              courseCode: course.courseCode || `COURSE-${course.id}`,
+              courseName: course.name || course.title
+            }));
+            allAssignments.push(...assignmentsWithCourse);
           }
         } catch (error) {
-          reportFailure(`/api/courses/${course.id}/assignments`, error);
+          console.log(`Failed to fetch assignments for course ${course.id}, falling back to legacy endpoint`);
+          try {
+            // Fallback to legacy endpoint if new one fails
+            const courseAssignments = await apiRequest("GET", `/api/courses/${course.id}/assignments`);
+            if (Array.isArray(courseAssignments)) {
+              const assignmentsWithCourse = courseAssignments.map(assignment => ({
+                ...assignment,
+                courseCode: course.courseCode || `COURSE-${course.id}`,
+                courseName: course.name || course.title
+              }));
+              allAssignments.push(...assignmentsWithCourse);
+            }
+          } catch (legacyError) {
+            reportFailure(`/api/courses/${course.id}/assignments`, legacyError);
+          }
         }
       }
       return allAssignments;
@@ -157,8 +228,8 @@ export default function Assignments() {
     );
   }
 
-  // Use real assignments data; fallback to sample data only if retrieval fails
-  const sampleAssignments = assignments.length === 0 ? [
+  // Use real assignments data; fallback to sample data only if retrieval fails  
+  const fallbackAssignments = [
     {
       id: 1,
       title: "Problem Set 3: Sorting Algorithms",
@@ -229,7 +300,10 @@ export default function Assignments() {
       submittedAt: null,
       feedback: null
     }
-  ] : assignments;
+  ];
+
+  // Use real assignments or fallback data
+  const sampleAssignments = assignments.length > 0 ? assignments : fallbackAssignments;
 
   const getStatusBadge = (assignment: any) => {
     const today = new Date();
@@ -315,7 +389,7 @@ export default function Assignments() {
                     <DialogTitle>Create New Assignment</DialogTitle>
                   </DialogHeader>
                   <Form {...form}>
-                    <form className="space-y-4">
+                    <form onSubmit={form.handleSubmit(handleCreateAssignment)} className="space-y-4">
                       <FormField
                         control={form.control}
                         name="title"
@@ -394,8 +468,8 @@ export default function Assignments() {
                         <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
                           Cancel
                         </Button>
-                        <Button type="submit">
-                          Create Assignment
+                        <Button type="submit" disabled={createAssignmentMutation.isPending}>
+                          {createAssignmentMutation.isPending ? "Creating..." : "Create Assignment"}
                         </Button>
                       </div>
                     </form>
